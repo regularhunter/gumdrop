@@ -29,14 +29,14 @@ appstream_data = configuration_data()
 appstream_data.set('APPLICATION_ID', application_id)
 appstream_file = i18n.merge_file(
   input: configure_file(
-    input: 'io.bassi.Amberol.appdata.xml.in.in',
-    output: 'io.bassi.Amberol.appdata.xml.in',
+    input: 'io.bassi.Amberol.metainfo.xml.in.in',
+    output: 'io.bassi.Amberol.metainfo.xml.in',
     configuration: appstream_data,
   ),
-  output: '@0@.appdata.xml'.format(application_id),
+  output: '@0@.metainfo.xml'.format(application_id),
   po_dir: '../po',
   install: true,
-  install_dir: get_option('datadir') / 'appdata',
+  install_dir: get_option('datadir') / 'metainfo',
 )
 
 appstreamcli = find_program('appstreamcli', required: false)

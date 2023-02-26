@@ -1,6 +1,6 @@
 data/io.bassi.Amberol.desktop.in.in
-data/io.bassi.Amberol.appdata.xml.in.in
 data/io.bassi.Amberol.gschema.xml
+data/io.bassi.Amberol.metainfo.xml.in.in
 src/audio/inhibit_controller.rs
 src/audio/song.rs
 src/gtk/help-overlay.ui
