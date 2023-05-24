@@ -138,13 +138,44 @@ mod imp {
                     p.toggle_repeat_mode();
                 }
             });
-            klass.install_action("queue.add-song", None, move |win, _, _| {
+            klass.install_action_async("queue.add-song", None, |win, _, _| async move {
                 debug!("Window::win.add-song()");
-                win.add_song();
+                let filters = gio::ListStore::new::<gtk::FileFilter>();
+                let filter = gtk::FileFilter::new();
+                gtk::FileFilter::set_name(&filter, Some(&i18n("Audio files")));
+                filter.add_mime_type("audio/*");
+                filters.append(&filter);
+
+                let dialog = gtk::FileDialog::builder()
+                    .accept_label(&i18n("_Add Song"))
+                    .filters(&filters)
+                    .modal(true)
+                    .title(&i18n("Open File"))
+                    .build();
+
+                if let Ok(files) = dialog.open_multiple_future(Some(&win)).await {
+                    if files.n_items() == 0 {
+                        win.add_toast(i18n("Unable to access files"));
+                    } else {
+                        win.add_files_to_queue(&files);
+                    }
+                }
             });
-            klass.install_action("queue.add-folder", None, move |win, _, _| {
+            klass.install_action_async("queue.add-folder", None, |win, _, _| async move {
                 debug!("Window::win.add-folder()");
-                win.add_folder();
+                let dialog = gtk::FileDialog::builder()
+                    .accept_label(&i18n("_Add Folder"))
+                    .modal(true)
+                    .title(&i18n("Open Folder"))
+                    .build();
+
+                if let Ok(files) = dialog.select_multiple_folders_future(Some(&win)).await {
+                    if files.n_items() == 0 {
+                        win.add_toast(i18n("Unable to access files"));
+                    } else {
+                        win.add_files_to_queue(&files);
+                    }
+                }
             });
             klass.install_action("queue.restore-playlist", None, move |win, _, _| {
                 debug!("Window::queue.restore-playlist()");
@@ -444,59 +475,6 @@ impl Window {
             imp.playlist_view.set_search(search);
             self.notify("playlist-search");
         }
-    }
-
-    fn add_song(&self) {
-        let ctx = glib::MainContext::default();
-        ctx.spawn_local(clone!(
-            #[weak(rename_to = win)]
-            self,
-            async move {
-                let filters = gio::ListStore::new::<gtk::FileFilter>();
-                let filter = gtk::FileFilter::new();
-                gtk::FileFilter::set_name(&filter, Some(&i18n("Audio files")));
-                filter.add_mime_type("audio/*");
-                filters.append(&filter);
-
-                let dialog = gtk::FileDialog::builder()
-                    .accept_label(i18n("_Add Song"))
-                    .filters(&filters)
-                    .modal(true)
-                    .title(i18n("Open File"))
-                    .build();
-
-                if let Ok(files) = dialog.open_multiple_future(Some(&win)).await {
-                    if files.n_items() == 0 {
-                        win.add_toast(i18n("Unable to access files"));
-                    } else {
-                        win.add_files_to_queue(&files);
-                    }
-                }
-            }
-        ));
-    }
-
-    fn add_folder(&self) {
-        let ctx = glib::MainContext::default();
-        ctx.spawn_local(clone!(
-            #[weak(rename_to = win)]
-            self,
-            async move {
-                let dialog = gtk::FileDialog::builder()
-                    .accept_label(i18n("_Add Folder"))
-                    .modal(true)
-                    .title(i18n("Open Folder"))
-                    .build();
-
-                if let Ok(files) = dialog.select_multiple_folders_future(Some(&win)).await {
-                    if files.n_items() == 0 {
-                        win.add_toast(i18n("Unable to access files"));
-                    } else {
-                        win.add_files_to_queue(&files);
-                    }
-                }
-            }
-        ));
     }
 
     fn restore_playlist(&self) {
