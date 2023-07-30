@@ -13,9 +13,8 @@
             <property name="margin-start">6</property>
             <property name="margin-end">6</property>
             <child>
-              <object class="GtkLabel" id="song_title_label">
-                <property name="xalign">0.5</property>
-                <property name="ellipsize">end</property>
+              <object class="AmberolMarquee" id="song_title_label">
+                <property name="width-chars">20</property>
                 <style>
                   <class name="song-title"/>
                 </style>
