@@ -82,7 +82,7 @@ mod imp {
                 .value_from(0.0)
                 .value_to(1.0)
                 .target(&target)
-                .easing(adw::Easing::Linear)
+                .easing(adw::Easing::EaseInOutCubic)
                 .build();
 
             // TODO: I think animation rest duration property can be useful in libadwaita
