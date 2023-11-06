@@ -74,7 +74,7 @@ impl Controller for WaveformGenerator {
         self.load_peaks();
     }
 
-    fn set_position(&self, _position: u64) {}
+    fn set_position(&self, _position: u64, _notify: bool) {}
     fn set_repeat_mode(&self, _mode: RepeatMode) {}
 }
 

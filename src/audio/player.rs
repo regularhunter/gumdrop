@@ -28,7 +28,7 @@ pub enum PlaybackAction {
     SkipPrevious,
     SkipNext,
 
-    UpdatePosition(u64),
+    UpdatePosition(u64, bool),
     VolumeChanged(f64),
     Repeat(RepeatMode),
     Seek(u64),
@@ -184,7 +184,7 @@ impl AudioPlayer {
             PlaybackAction::Stop => self.set_playback_state(PlaybackState::Stopped),
             PlaybackAction::SkipPrevious => self.skip_previous(),
             PlaybackAction::SkipNext => self.skip_next(),
-            PlaybackAction::UpdatePosition(pos) => self.update_position(pos),
+            PlaybackAction::UpdatePosition(pos, notify) => self.update_position(pos, notify),
             PlaybackAction::VolumeChanged(vol) => self.update_volume(vol),
             PlaybackAction::PlayNext => self.play_next(),
             PlaybackAction::Raise => self.present(),
@@ -460,11 +460,11 @@ impl AudioPlayer {
         self.state.set_current_song(song);
     }
 
-    fn update_position(&self, position: u64) {
+    fn update_position(&self, position: u64, notify: bool) {
         self.state.set_position(position);
 
         for c in &self.controllers {
-            c.set_position(position);
+            c.set_position(position, notify);
         }
     }
 
