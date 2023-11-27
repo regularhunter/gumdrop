@@ -12,7 +12,8 @@ use crate::audio::{PlaybackAction, ReplayGainMode, SeekDirection};
 #[derive(Debug)]
 pub struct GstBackend {
     sender: Sender<PlaybackAction>,
-    gst_player: gst_player::Player,
+    gst_player: gst_play::Play,
+    gst_signals: gst_play::PlaySignalAdapter,
     replaygain: Option<GstReplayGain>,
 }
 
@@ -71,11 +72,9 @@ impl GstReplayGain {
 
 impl GstBackend {
     pub fn new(sender: Sender<PlaybackAction>) -> Self {
-        let dispatcher = gst_player::PlayerGMainContextSignalDispatcher::new(None);
-        let gst_player = gst_player::Player::new(
-            None::<gst_player::PlayerVideoRenderer>,
-            Some(dispatcher.upcast::<gst_player::PlayerSignalDispatcher>()),
-        );
+        let gst_player = gst_play::Play::default();
+        let gst_signals = gst_play::PlaySignalAdapter::new(&gst_player);
+
         gst_player.set_video_track_enabled(false);
 
         let mut config = gst_player.config();
@@ -85,6 +84,7 @@ impl GstBackend {
         let res = Self {
             sender,
             gst_player,
+            gst_signals,
             replaygain: GstReplayGain::new().ok(),
         };
 
@@ -94,11 +94,11 @@ impl GstBackend {
     }
 
     fn setup_signals(&self) {
-        self.gst_player.connect_warning(move |_, warn| {
+        self.gst_signals.connect_warning(move |_, warn, _| {
             warn!("GStreamer warning: {}", warn);
         });
 
-        self.gst_player.connect_end_of_stream(clone!(
+        self.gst_signals.connect_end_of_stream(clone!(
             #[strong(rename_to = sender)]
             self.sender,
             move |_| {
@@ -108,7 +108,7 @@ impl GstBackend {
             }
         ));
 
-        self.gst_player.connect_position_updated(clone!(
+        self.gst_signals.connect_position_updated(clone!(
             #[strong(rename_to = sender)]
             self.sender,
             move |_, clock| {
@@ -118,7 +118,7 @@ impl GstBackend {
             }
         ));
 
-        self.gst_player.connect_seek_done(clone!(
+        self.gst_signals.connect_seek_done(clone!(
             #[strong(rename_to = sender)]
             self.sender,
             move |_, clock| {
@@ -126,14 +126,14 @@ impl GstBackend {
             }
         ));
 
-        self.gst_player.connect_volume_changed(clone!(
+        self.gst_signals.connect_volume_changed(clone!(
             #[strong(rename_to = sender)]
             self.sender,
-            move |player| {
+            move |_, volume| {
                 let volume = gst_audio::StreamVolume::convert_volume(
                     gst_audio::StreamVolumeFormat::Linear,
                     gst_audio::StreamVolumeFormat::Cubic,
-                    player.volume(),
+                    volume,
                 );
                 if let Err(e) = sender.send_blocking(PlaybackAction::VolumeChanged(volume)) {
                     error!("Failed to send VolumeChanged({volume}): {e}");
