@@ -42,6 +42,9 @@
   <url type="vcs-browser">https://gitlab.gnome.org/World/amberol</url>
   <url type="translate">https://l10n.gnome.org/module/amberol/</url>
   <developer_name>Emmanuele Bassi</developer_name>
+  <developer id="io.bassi">
+    <name>Emmanuele Bassi</name>
+  </developer>
   <update_contact>ebassi_at_gnome.org</update_contact>
   <translation type="gettext">amberol</translation>
   <custom>
