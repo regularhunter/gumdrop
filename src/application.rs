@@ -32,7 +32,7 @@ mod imp {
     pub struct Application {
         pub player: Rc<AudioPlayer>,
         pub receiver: RefCell<Option<Receiver<ApplicationAction>>>,
-        pub background_hold: RefCell<Option<ApplicationHoldGuard>>,
+        pub background_hold: RefCell<Option<gio::ApplicationHoldGuard>>,
         pub settings: gio::Settings,
     }
 
