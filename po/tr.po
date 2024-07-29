@@ -9,16 +9,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: amberol main\n"
 "Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/amberol/issues\n"
-"POT-Creation-Date: 2023-05-23 19:06+0000\n"
-"PO-Revision-Date: 2023-06-06 13:58+0300\n"
-"Last-Translator: Sabri Ünal <libreajans@gmail.com>\n"
+"POT-Creation-Date: 2023-11-27 13:06+0000\n"
+"PO-Revision-Date: 2024-05-09 10:27+0300\n"
+"Last-Translator: Sabri Ünal <yakushabb@gmail.com>\n"
 "Language-Team: Turkish <takim@gnome.org.tr>\n"
 "Language: tr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=1; plural=0\n"
-"X-Generator: Gtranslator 42.0\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Poedit 3.4.3\n"
 "X-Project-Style: gnome\n"
 "X-DL-Team: tr\n"
 "X-DL-Module: amberol\n"
@@ -39,8 +39,8 @@ msgstr "Müzik Çalar"
 #: data/io.bassi.Amberol.desktop.in.in:12
 msgid "music;player;media;audio;playlist;"
 msgstr ""
-"müzik;oynatıcı;çalıcı;çalar;müzik çalar;müzik oynatıcı;medya;ortam;ses;"
-"oynatma listesi;çalma listesi;"
+"music;player;media;audio;playlist;müzik;oynatıcı;çalıcı;çalar;müzik çalar;"
+"müzik oynatıcı;medya;ortam;ses;oynatma listesi;çalma listesi;"
 
 #: data/io.bassi.Amberol.appdata.xml.in.in:7
 msgid "Plays music, and nothing else"
@@ -81,7 +81,7 @@ msgid "MPRIS integration"
 msgstr "MPRIS tümleşimi"
 
 # Uygulamanın yazarının adı.
-#: data/io.bassi.Amberol.appdata.xml.in.in:42
+#: data/io.bassi.Amberol.appdata.xml.in.in:44
 msgid "Emmanuele Bassi"
 msgstr "Emmanuele Bassi"
 
@@ -308,7 +308,7 @@ msgstr "Amberol _Hakkında"
 msgid "_Quit"
 msgstr "_Çık"
 
-#: src/gtk/playlist-view.ui:19
+#: src/gtk/playlist-view.ui:18
 msgid "Playlist"
 msgstr "Çalma Listesi"
 
@@ -324,19 +324,19 @@ msgstr "Çalma Listesindeki Şarkıları Seç"
 msgid "Close the Playlist"
 msgstr "Çalma Listesini Kapat"
 
-#: src/gtk/playlist-view.ui:135
+#: src/gtk/playlist-view.ui:133
 msgid "Select All Songs"
 msgstr "Tüm Şarkıları Seç"
 
-#: src/gtk/playlist-view.ui:148
+#: src/gtk/playlist-view.ui:146
 msgid "Remove Selected Songs"
 msgstr "Seçili Şarkıları Kaldır"
 
-#: src/gtk/window.ui:12
+#: src/gtk/window.ui:13
 msgid "Drop a song to add it to the playlist"
 msgstr "Çalma listesine eklenecek şarkı bırak"
 
-#: src/gtk/window.ui:49
+#: src/gtk/window.ui:43
 msgid ""
 "Select a file or a folder, or drag files from your file manager to the "
 "application window to add songs to the playlist"
@@ -344,24 +344,24 @@ msgstr ""
 "Çalma listesine şarkı eklemek için dosya veya klasör seç ya da dosyaları "
 "dosya yöneticisinden uygulama penceresine sürükle"
 
-#: src/gtk/window.ui:58
+#: src/gtk/window.ui:52
 msgid "Restore Playlist"
 msgstr "Çalma Listesini Geri Yükle"
 
-#: src/gtk/window.ui:68
+#: src/gtk/window.ui:62
 msgid "Add Folder"
 msgstr "Klasör Ekle"
 
-#: src/gtk/window.ui:77
+#: src/gtk/window.ui:71
 msgid "Add Song"
 msgstr "Şarkı Ekle"
 
-#: src/gtk/window.ui:161
+#: src/gtk/window.ui:148
 msgctxt "a11y"
 msgid "Elapsed time"
 msgstr "Geçen süre"
 
-#: src/gtk/window.ui:173
+#: src/gtk/window.ui:160
 msgctxt "a11y"
 msgid "Remaining time"
 msgstr "Kalan süre"
@@ -397,7 +397,7 @@ msgstr "Şarkı _Ekle"
 msgid "Open File"
 msgstr "Dosya Aç"
 
-#: src/window.rs:445 src/window.rs:465 src/window.rs:1365
+#: src/window.rs:445 src/window.rs:465 src/window.rs:1354
 msgid "Unable to access files"
 msgstr "Dosyalara erişilemiyor"
 
@@ -413,36 +413,36 @@ msgstr "Klasör Aç"
 msgid "No available song found"
 msgstr "Kullanılabilir şarkı bulunamadı"
 
-#: src/window.rs:539
+#: src/window.rs:537
 msgid "No songs found"
 msgstr "Şarkı bulunamadı"
 
-#: src/window.rs:569
+#: src/window.rs:567
 msgid "Added a new song"
 msgstr "Yeni şarkı eklendi"
 
-#: src/window.rs:570
+#: src/window.rs:568
 msgid "Play"
 msgstr "Çal"
 
 #. Translators: the `{}` must be left unmodified;
 #. it will be expanded to the number of songs added
 #. to the playlist
-#: src/window.rs:579
+#: src/window.rs:577
 msgid "Added one song"
 msgid_plural "Added {} songs"
 msgstr[0] "{} şarkı eklendi"
 
-#: src/window.rs:1129
+#: src/window.rs:1118
 msgid "Unable to access dropped files"
 msgstr "Bırakılan dosyalara erişilemiyor"
 
-#: src/window.rs:1223
+#: src/window.rs:1212
 msgid "{} minute"
 msgid_plural "{} minutes"
 msgstr[0] "{} dakika"
 
-#: src/window.rs:1234
+#: src/window.rs:1223
 msgid "{hours} hour {minutes} remaining"
 msgid_plural "{hours} hours {minutes} remaining"
 msgstr[0] "{hours} saat {minutes} kaldı"
@@ -450,18 +450,18 @@ msgstr[0] "{hours} saat {minutes} kaldı"
 #. Translators: the '{}' must be left unmodified, and
 #. it will be replaced by the number of minutes remaining
 #. in the playlist
-#: src/window.rs:1244
+#: src/window.rs:1233
 msgid "{} minute remaining"
 msgid_plural "{} minutes remaining"
 msgstr[0] "{} dakika kaldı"
 
-#: src/window.rs:1344
+#: src/window.rs:1333
 msgid "No song selected"
 msgstr "Şarkı seçilmedi"
 
 #. Translators: The '{}' must be left unmodified, and
 #. it is expanded to the number of songs selected
-#: src/window.rs:1349
+#: src/window.rs:1338
 msgid "{} song selected"
 msgid_plural "{} songs selected"
 msgstr[0] "{} şarkı seçildi"
@@ -469,7 +469,7 @@ msgstr[0] "{} şarkı seçildi"
 #. Translators: `{title}` and `{artist}` must be left
 #. untranslated; they will expand to the title and
 #. artist of the currently playing song, respectively
-#: src/window.rs:1403
+#: src/window.rs:1392
 msgid "Currently playing “{title}” by “{artist}”"
 msgstr "“{artist}”, “{title}” çalıyor"
 
