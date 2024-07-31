@@ -163,14 +163,18 @@ impl AudioPlayer {
     fn setup_channel(self: Rc<Self>) {
         let receiver = self.receiver.borrow_mut().take().unwrap();
 
-        glib::MainContext::default().spawn_local(clone!(@strong self as this => async move {
-            use futures::prelude::*;
+        glib::MainContext::default().spawn_local(clone!(
+            #[strong(rename_to = this)]
+            self,
+            async move {
+                use futures::prelude::*;
 
-            let mut receiver = std::pin::pin!(receiver);
-            while let Some(action) = receiver.next().await {
-                this.process_action(action);
+                let mut receiver = std::pin::pin!(receiver);
+                while let Some(action) = receiver.next().await {
+                    this.process_action(action);
+                }
             }
-        }));
+        ));
     }
 
     fn process_action(&self, action: PlaybackAction) -> glib::ControlFlow {

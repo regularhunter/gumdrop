@@ -59,9 +59,13 @@ mod imp {
 
             self.obj().connect_notify_local(
                 Some("scale-factor"),
-                clone!(@weak self as obj => move |picture, _| {
-                    picture.queue_draw();
-                }),
+                clone!(
+                    #[weak(rename_to = _obj)]
+                    self,
+                    move |picture, _| {
+                        picture.queue_draw();
+                    }
+                ),
             );
         }
 

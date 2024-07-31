@@ -50,72 +50,96 @@ impl MprisController {
     }
 
     fn setup_signals(&self) {
-        self.mpris.connect_play_pause(
-            clone!(@weak self.mpris as mpris, @strong self.sender as sender => move || {
+        self.mpris.connect_play_pause(clone!(
+            #[weak(rename_to = mpris)]
+            self.mpris,
+            #[strong(rename_to = sender)]
+            self.sender,
+            move || {
                 match mpris.get_playback_status().unwrap().as_ref() {
                     "Paused" => {
                         if let Err(e) = sender.send_blocking(PlaybackAction::Play) {
                             error!("Unable to send Play: {e}");
                         }
-                    },
+                    }
                     "Stopped" => {
                         if let Err(e) = sender.send_blocking(PlaybackAction::Stop) {
                             error!("Unable to send Stop: {e}");
                         }
-                    },
+                    }
                     _ => {
                         if let Err(e) = sender.send_blocking(PlaybackAction::Pause) {
                             error!("Unable to send Pause: {e}");
                         }
-                    },
+                    }
                 };
-            }),
-        );
+            }
+        ));
 
-        self.mpris
-            .connect_play(clone!(@strong self.sender as sender => move || {
+        self.mpris.connect_play(clone!(
+            #[strong(rename_to = sender)]
+            self.sender,
+            move || {
                 if let Err(e) = sender.send_blocking(PlaybackAction::Play) {
                     error!("Unable to send Play: {e}");
                 }
-            }));
+            }
+        ));
 
-        self.mpris
-            .connect_stop(clone!(@strong self.sender as sender => move || {
+        self.mpris.connect_stop(clone!(
+            #[strong(rename_to = sender)]
+            self.sender,
+            move || {
                 if let Err(e) = sender.send_blocking(PlaybackAction::Stop) {
                     error!("Unable to send Stop: {e}");
                 }
-            }));
+            }
+        ));
 
-        self.mpris
-            .connect_pause(clone!(@strong self.sender as sender => move || {
+        self.mpris.connect_pause(clone!(
+            #[strong(rename_to = sender)]
+            self.sender,
+            move || {
                 if let Err(e) = sender.send_blocking(PlaybackAction::Pause) {
                     error!("Unable to send Pause: {e}");
                 }
-            }));
+            }
+        ));
 
-        self.mpris
-            .connect_previous(clone!(@strong self.sender as sender => move || {
+        self.mpris.connect_previous(clone!(
+            #[strong(rename_to = sender)]
+            self.sender,
+            move || {
                 if let Err(e) = sender.send_blocking(PlaybackAction::SkipPrevious) {
                     error!("Unable to send SkipPrevious: {e}");
                 }
-            }));
+            }
+        ));
 
-        self.mpris
-            .connect_next(clone!(@strong self.sender as sender => move || {
+        self.mpris.connect_next(clone!(
+            #[strong(rename_to = sender)]
+            self.sender,
+            move || {
                 if let Err(e) = sender.send_blocking(PlaybackAction::SkipNext) {
                     error!("Unable to send SkipNext: {e}");
                 }
-            }));
+            }
+        ));
 
-        self.mpris
-            .connect_raise(clone!(@strong self.sender as sender => move || {
+        self.mpris.connect_raise(clone!(
+            #[strong(rename_to = sender)]
+            self.sender,
+            move || {
                 if let Err(e) = sender.send_blocking(PlaybackAction::Raise) {
                     error!("Unable to send Raise: {e}");
                 }
-            }));
+            }
+        ));
 
-        self.mpris
-            .connect_loop_status(clone!(@strong self.sender as sender => move |status| {
+        self.mpris.connect_loop_status(clone!(
+            #[strong(rename_to = sender)]
+            self.sender,
+            move |status| {
                 let mode = match status {
                     LoopStatus::None => RepeatMode::Consecutive,
                     LoopStatus::Track => RepeatMode::RepeatOne,
@@ -125,16 +149,20 @@ impl MprisController {
                 if let Err(e) = sender.send_blocking(PlaybackAction::Repeat(mode)) {
                     error!("Unable to send Repeat({mode}): {e}");
                 }
-            }));
+            }
+        ));
 
-        self.mpris
-            .connect_seek(clone!(@strong self.sender as sender => move |position| {
+        self.mpris.connect_seek(clone!(
+            #[strong(rename_to = sender)]
+            self.sender,
+            move |position| {
                 let pos = Duration::from_micros(position as u64).as_secs();
 
                 if let Err(e) = sender.send_blocking(PlaybackAction::Seek(pos)) {
                     error!("Unable to send Seek({pos}): {e}");
                 }
-            }));
+            }
+        ));
     }
 
     fn update_metadata(&self) {
