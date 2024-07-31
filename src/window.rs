@@ -884,16 +884,20 @@ impl Window {
         self.imp().waveform_view.connect_closure(
             "position-changed",
             false,
-            closure_local!(@watch self as win => move |_wv: WaveformView, position: f64| {
-                debug!("New position: {}", position);
-                if let Some(player) = win.player() {
-                    let state = player.state();
-                    if state.current_song().is_some() {
-                        player.seek_position_rel(position);
-                        player.play();
+            closure_local!(
+                #[watch(rename_to = win)]
+                self,
+                move |_wv: WaveformView, position: f64| {
+                    debug!("New position: {}", position);
+                    if let Some(player) = win.player() {
+                        let state = player.state();
+                        if state.current_song().is_some() {
+                            player.seek_position_rel(position);
+                            player.play();
+                        }
                     }
                 }
-            }),
+            ),
         );
 
         self.imp()
@@ -902,12 +906,16 @@ impl Window {
             .connect_closure(
                 "volume-changed",
                 false,
-                closure_local!(@watch self as win => move |_vc: VolumeControl, volume: f64| {
-                    debug!("Volume changed: {}", volume);
-                    if let Some(p) = win.player() {
-                        p.set_volume(volume);
+                closure_local!(
+                    #[watch(rename_to = win)]
+                    self,
+                    move |_vc: VolumeControl, volume: f64| {
+                        debug!("Volume changed: {}", volume);
+                        if let Some(p) = win.player() {
+                            p.set_volume(volume);
+                        }
                     }
-                }),
+                ),
             );
 
         self.imp()
