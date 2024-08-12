@@ -15,7 +15,6 @@ use log::{debug, warn};
 use crate::{
     audio::AudioPlayer,
     config::{APPLICATION_ID, VERSION},
-    gio::ApplicationHoldGuard,
     i18n::i18n,
     utils,
     window::Window,
@@ -32,7 +31,7 @@ mod imp {
     pub struct Application {
         pub player: Rc<AudioPlayer>,
         pub receiver: RefCell<Option<Receiver<ApplicationAction>>>,
-        pub background_hold: RefCell<Option<ApplicationHoldGuard>>,
+        pub background_hold: RefCell<Option<gio::ApplicationHoldGuard>>,
         pub settings: gio::Settings,
     }
 
