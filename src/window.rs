@@ -333,10 +333,14 @@ impl Window {
 
             let notify_peaks_id = player.waveform_generator().connect_notify_local(
                 Some("has-peaks"),
-                clone!(@weak self as win => move |gen, _| {
-                    let peaks = gen.peaks();
-                    win.imp().waveform_view.set_peaks(peaks);
-                }),
+                clone!(
+                    #[weak(rename_to = win)]
+                    self,
+                    move |gen, _| {
+                        let peaks = gen.peaks();
+                        win.imp().waveform_view.set_peaks(peaks);
+                    }
+                ),
             );
             self.imp().notify_peaks_id.replace(Some(notify_peaks_id));
         }
@@ -444,47 +448,55 @@ impl Window {
 
     fn add_song(&self) {
         let ctx = glib::MainContext::default();
-        ctx.spawn_local(clone!(@weak self as win => async move {
-            let filters = gio::ListStore::new::<gtk::FileFilter>();
-            let filter = gtk::FileFilter::new();
-            gtk::FileFilter::set_name(&filter, Some(&i18n("Audio files")));
-            filter.add_mime_type("audio/*");
-            filters.append(&filter);
+        ctx.spawn_local(clone!(
+            #[weak(rename_to = win)]
+            self,
+            async move {
+                let filters = gio::ListStore::new::<gtk::FileFilter>();
+                let filter = gtk::FileFilter::new();
+                gtk::FileFilter::set_name(&filter, Some(&i18n("Audio files")));
+                filter.add_mime_type("audio/*");
+                filters.append(&filter);
 
-            let dialog = gtk::FileDialog::builder()
-                .accept_label(i18n("_Add Song"))
-                .filters(&filters)
-                .modal(true)
-                .title(i18n("Open File"))
-                .build();
+                let dialog = gtk::FileDialog::builder()
+                    .accept_label(i18n("_Add Song"))
+                    .filters(&filters)
+                    .modal(true)
+                    .title(i18n("Open File"))
+                    .build();
 
-            if let Ok(files) = dialog.open_multiple_future(Some(&win)).await {
-                if files.n_items() == 0 {
-                    win.add_toast(i18n("Unable to access files"));
-                } else {
-                    win.add_files_to_queue(&files);
+                if let Ok(files) = dialog.open_multiple_future(Some(&win)).await {
+                    if files.n_items() == 0 {
+                        win.add_toast(i18n("Unable to access files"));
+                    } else {
+                        win.add_files_to_queue(&files);
+                    }
                 }
             }
-        }));
+        ));
     }
 
     fn add_folder(&self) {
         let ctx = glib::MainContext::default();
-        ctx.spawn_local(clone!(@weak self as win => async move {
-            let dialog = gtk::FileDialog::builder()
-                .accept_label(i18n("_Add Folder"))
-                .modal(true)
-                .title(i18n("Open Folder"))
-                .build();
+        ctx.spawn_local(clone!(
+            #[weak(rename_to = win)]
+            self,
+            async move {
+                let dialog = gtk::FileDialog::builder()
+                    .accept_label(i18n("_Add Folder"))
+                    .modal(true)
+                    .title(i18n("Open Folder"))
+                    .build();
 
-            if let Ok(files) = dialog.select_multiple_folders_future(Some(&win)).await {
-                if files.n_items() == 0 {
-                    win.add_toast(i18n("Unable to access files"));
-                } else {
-                    win.add_files_to_queue(&files);
+                if let Ok(files) = dialog.select_multiple_folders_future(Some(&win)).await {
+                    if files.n_items() == 0 {
+                        win.add_toast(i18n("Unable to access files"));
+                    } else {
+                        win.add_files_to_queue(&files);
+                    }
                 }
             }
-        }));
+        ));
     }
 
     fn restore_playlist(&self) {
@@ -519,9 +531,14 @@ impl Window {
         let mut cur_file: u32 = 0;
         let mut duplicates: u32 = 0;
 
-        glib::idle_add_local(
-            clone!(@weak self as win => @default-return glib::ControlFlow::Break, move || {
-                files.next()
+        glib::idle_add_local(clone!(
+            #[weak(rename_to = win)]
+            self,
+            #[upgrade_or]
+            glib::ControlFlow::Break,
+            move || {
+                files
+                    .next()
                     .map(|f| {
                         win.imp().playlist_view.update_loading(cur_file, n_files);
                         if let Ok(s) = Song::from_uri(f.uri().as_str()) {
@@ -538,7 +555,11 @@ impl Window {
                     })
                     .map(|_| glib::ControlFlow::Continue)
                     .unwrap_or_else(|| {
-                        debug!("Total loading time for {} files: {} ms", n_files, now.elapsed().as_millis());
+                        debug!(
+                            "Total loading time for {} files: {} ms",
+                            n_files,
+                            now.elapsed().as_millis()
+                        );
 
                         // Re-enable the actions
                         win.action_set_enabled("queue.add-song", true);
@@ -561,7 +582,11 @@ impl Window {
                             // Store the current state of the playlist
                             utils::store_playlist(queue);
 
-                            debug!("Queue was empty: {}, new size: {}", was_empty, queue.n_songs());
+                            debug!(
+                                "Queue was empty: {}, new size: {}",
+                                was_empty,
+                                queue.n_songs()
+                            );
                             if was_empty {
                                 player.skip_to(0);
                             }
@@ -598,8 +623,8 @@ impl Window {
 
                         glib::ControlFlow::Break
                     })
-            }),
-        );
+            }
+        ));
     }
 
     fn add_files_to_queue(&self, model: &gio::ListModel) {
@@ -645,10 +670,14 @@ impl Window {
             self.update_play_button();
             let notify_playing_id = state.connect_notify_local(
                 Some("playing"),
-                clone!(@weak self as win => move |_, _| {
-                    win.set_playlist_selection(false);
-                    win.update_play_button();
-                }),
+                clone!(
+                    #[weak(rename_to = win)]
+                    self,
+                    move |_, _| {
+                        win.set_playlist_selection(false);
+                        win.update_play_button();
+                    }
+                ),
             );
             imp.notify_playing_id.replace(Some(notify_playing_id));
 
@@ -656,9 +685,13 @@ impl Window {
             self.update_position_labels();
             let notify_position_id = state.connect_notify_local(
                 Some("position"),
-                clone!(@weak self as win => move |_, _| {
-                    win.update_position_labels();
-                }),
+                clone!(
+                    #[weak(rename_to = win)]
+                    self,
+                    move |_, _| {
+                        win.update_position_labels();
+                    }
+                ),
             );
             imp.notify_position_id.replace(Some(notify_position_id));
 
@@ -666,9 +699,13 @@ impl Window {
             self.update_song();
             let notify_song_id = state.connect_notify_local(
                 Some("song"),
-                clone!(@weak self as win => move |_, _| {
-                    win.update_song();
-                }),
+                clone!(
+                    #[weak(rename_to = win)]
+                    self,
+                    move |_, _| {
+                        win.update_song();
+                    }
+                ),
             );
             imp.notify_song_id.replace(Some(notify_song_id));
 
@@ -676,9 +713,13 @@ impl Window {
             self.update_cover();
             let notify_cover_id = state.connect_notify_local(
                 Some("cover"),
-                clone!(@weak self as win => move |_, _| {
-                    win.update_cover();
-                }),
+                clone!(
+                    #[weak(rename_to = win)]
+                    self,
+                    move |_, _| {
+                        win.update_cover();
+                    }
+                ),
             );
             imp.notify_cover_id.replace(Some(notify_cover_id));
 
@@ -732,54 +773,68 @@ impl Window {
 
             let notify_nsongs_id = queue.connect_notify_local(
                 Some("n-songs"),
-                clone!(@weak self as win => move |queue, _| {
-                    debug!("queue.n_songs() = {}", queue.n_songs());
-                    if queue.is_empty() {
-                        win.set_initial_state();
-                        win.reset_queue();
-                    } else {
-                        win.action_set_enabled("queue.toggle", true);
-                        win.action_set_enabled("queue.shuffle", queue.n_songs() > 1);
+                clone!(
+                    #[weak(rename_to = win)]
+                    self,
+                    move |queue, _| {
+                        debug!("queue.n_songs() = {}", queue.n_songs());
+                        if queue.is_empty() {
+                            win.set_initial_state();
+                            win.reset_queue();
+                        } else {
+                            win.action_set_enabled("queue.toggle", true);
+                            win.action_set_enabled("queue.shuffle", queue.n_songs() > 1);
 
-                        win.action_set_enabled("win.play", true);
-                        win.action_set_enabled("win.previous", true);
-                        win.action_set_enabled("win.next", queue.n_songs() > 1);
-                    }
-
-                    if queue.n_songs() == 1 {
-                        if let Some(p) = win.player() {
-                            p.skip_next();
+                            win.action_set_enabled("win.play", true);
+                            win.action_set_enabled("win.previous", true);
+                            win.action_set_enabled("win.next", queue.n_songs() > 1);
                         }
-                    }
 
-                    win.update_playlist_time();
-                }),
+                        if queue.n_songs() == 1 {
+                            if let Some(p) = win.player() {
+                                p.skip_next();
+                            }
+                        }
+
+                        win.update_playlist_time();
+                    }
+                ),
             );
             self.imp().notify_nsongs_id.replace(Some(notify_nsongs_id));
 
             queue.connect_notify_local(
                 Some("repeat-mode"),
-                clone!(@weak self as win => move |queue, _| {
-                    win.imp().playback_control.set_repeat_mode(queue.repeat_mode());
-                }),
+                clone!(
+                    #[weak(rename_to = win)]
+                    self,
+                    move |queue, _| {
+                        win.imp()
+                            .playback_control
+                            .set_repeat_mode(queue.repeat_mode());
+                    }
+                ),
             );
 
             let notify_current_id = queue.connect_notify_local(
                 Some("current"),
-                clone!(@weak self as win => move |queue, _| {
-                    if queue.is_last_song() {
-                        match queue.repeat_mode() {
-                            RepeatMode::Consecutive => {
-                                win.action_set_enabled("win.next", false);
-                            },
-                            _ => {
-                                win.action_set_enabled("win.next", true);
+                clone!(
+                    #[weak(rename_to = win)]
+                    self,
+                    move |queue, _| {
+                        if queue.is_last_song() {
+                            match queue.repeat_mode() {
+                                RepeatMode::Consecutive => {
+                                    win.action_set_enabled("win.next", false);
+                                }
+                                _ => {
+                                    win.action_set_enabled("win.next", true);
+                                }
                             }
+                        } else {
+                            win.action_set_enabled("win.next", true);
                         }
-                    } else {
-                        win.action_set_enabled("win.next", true);
                     }
-                }),
+                ),
             );
             self.imp()
                 .notify_current_id
@@ -802,32 +857,47 @@ impl Window {
     fn connect_signals(&self) {
         self.imp().split_view.connect_notify_local(
             Some("collapsed"),
-            clone!(@weak self as win => move |split_view, _| {
-                win.set_playlist_visible(split_view.shows_sidebar());
-                win.imp().playlist_view.back_button().set_visible(split_view.is_collapsed());
-            }),
+            clone!(
+                #[weak(rename_to = win)]
+                self,
+                move |split_view, _| {
+                    win.set_playlist_visible(split_view.shows_sidebar());
+                    win.imp()
+                        .playlist_view
+                        .back_button()
+                        .set_visible(split_view.is_collapsed());
+                }
+            ),
         );
 
         self.imp().split_view.connect_notify_local(
             Some("show-sidebar"),
-            clone!(@weak self as win => move |split_view, _| {
-                win.set_playlist_visible(split_view.shows_sidebar());
-            }),
+            clone!(
+                #[weak(rename_to = win)]
+                self,
+                move |split_view, _| {
+                    win.set_playlist_visible(split_view.shows_sidebar());
+                }
+            ),
         );
 
         self.imp().waveform_view.connect_closure(
             "position-changed",
             false,
-            closure_local!(@watch self as win => move |_wv: WaveformView, position: f64| {
-                debug!("New position: {}", position);
-                if let Some(player) = win.player() {
-                    let state = player.state();
-                    if state.current_song().is_some() {
-                        player.seek_position_rel(position);
-                        player.play();
+            closure_local!(
+                #[watch(rename_to = win)]
+                self,
+                move |_wv: WaveformView, position: f64| {
+                    debug!("New position: {}", position);
+                    if let Some(player) = win.player() {
+                        let state = player.state();
+                        if state.current_song().is_some() {
+                            player.seek_position_rel(position);
+                            player.play();
+                        }
                     }
                 }
-            }),
+            ),
         );
 
         self.imp()
@@ -836,79 +906,102 @@ impl Window {
             .connect_closure(
                 "volume-changed",
                 false,
-                closure_local!(@watch self as win => move |_vc: VolumeControl, volume: f64| {
-                    debug!("Volume changed: {}", volume);
-                    if let Some(p) = win.player() {
-                        p.set_volume(volume);
+                closure_local!(
+                    #[watch(rename_to = win)]
+                    self,
+                    move |_vc: VolumeControl, volume: f64| {
+                        debug!("Volume changed: {}", volume);
+                        if let Some(p) = win.player() {
+                            p.set_volume(volume);
+                        }
                     }
-                }),
+                ),
             );
 
         self.imp()
             .playlist_view
             .queue_select_all_button()
-            .connect_clicked(clone!(@weak self as win => move |_| {
-                if win.playlist_search() {
-                    if let Some(ref model) = *win.imp().playlist_filtermodel.borrow() {
-                        for idx in 0..model.n_items() {
-                            let item = model.item(idx).unwrap();
-                            let song = item.downcast_ref::<Song>().unwrap();
+            .connect_clicked(clone!(
+                #[weak(rename_to = win)]
+                self,
+                move |_| {
+                    if win.playlist_search() {
+                        if let Some(ref model) = *win.imp().playlist_filtermodel.borrow() {
+                            for idx in 0..model.n_items() {
+                                let item = model.item(idx).unwrap();
+                                let song = item.downcast_ref::<Song>().unwrap();
+                                song.set_selected(true);
+                            }
+                        }
+                    } else if let Some(player) = win.player() {
+                        let queue = player.queue();
+                        for idx in 0..queue.n_songs() {
+                            let song = queue.song_at(idx).unwrap();
                             song.set_selected(true);
                         }
                     }
-                } else if let Some(player) = win.player() {
-                    let queue = player.queue();
-                    for idx in 0..queue.n_songs() {
-                        let song = queue.song_at(idx).unwrap();
-                        song.set_selected(true);
-                    }
                 }
-            }));
+            ));
 
         self.imp()
             .playlist_view
             .queue_remove_button()
-            .connect_clicked(clone!(@weak self as win => move |_| {
-                if let Some(player) = win.player() {
-                    let queue = player.queue();
-                    let mut remove_songs: Vec<Song> = Vec::new();
-                    // Collect all songs to be removed first, since we can't
-                    // remove objects from the model while we're iterating it
-                    for idx in 0..queue.n_songs() {
-                        let song = queue.song_at(idx).unwrap();
-                        if song.selected() {
-                            remove_songs.push(song);
+            .connect_clicked(clone!(
+                #[weak(rename_to = win)]
+                self,
+                move |_| {
+                    if let Some(player) = win.player() {
+                        let queue = player.queue();
+                        let mut remove_songs: Vec<Song> = Vec::new();
+                        // Collect all songs to be removed first, since we can't
+                        // remove objects from the model while we're iterating it
+                        for idx in 0..queue.n_songs() {
+                            let song = queue.song_at(idx).unwrap();
+                            if song.selected() {
+                                remove_songs.push(song);
+                            }
                         }
-                    }
 
-                    for song in remove_songs {
-                        win.remove_song(&song);
-                    }
+                        for song in remove_songs {
+                            win.remove_song(&song);
+                        }
 
-                    // Store the current state of the playlist
-                    utils::store_playlist(queue);
+                        // Store the current state of the playlist
+                        utils::store_playlist(queue);
+                    }
                 }
-            }));
+            ));
 
         self.imp()
             .playlist_view
             .playlist_searchbar()
             .connect_notify_local(
                 Some("search-mode-enabled"),
-                clone!(@weak self as win => move |searchbar, _| {
-                    win.set_playlist_search(searchbar.is_search_mode());
-                }),
+                clone!(
+                    #[weak(rename_to = win)]
+                    self,
+                    move |searchbar, _| {
+                        win.set_playlist_search(searchbar.is_search_mode());
+                    }
+                ),
             );
 
         self.imp().settings.connect_changed(
             Some("enable-recoloring"),
-            clone!(@weak self as this => move |settings, _| {
-                debug!("GSettings:enable-recoloring: {}", settings.boolean("enable-recoloring"));
-                if let Some(player) = this.player() {
-                    let state = player.state();
-                    this.update_style(state.current_song().as_ref());
+            clone!(
+                #[weak(rename_to = this)]
+                self,
+                move |settings, _| {
+                    debug!(
+                        "GSettings:enable-recoloring: {}",
+                        settings.boolean("enable-recoloring")
+                    );
+                    if let Some(player) = this.player() {
+                        let state = player.state();
+                        this.update_style(state.current_song().as_ref());
+                    }
                 }
-            }),
+            ),
         );
         let _dummy = self.imp().settings.boolean("enable-recoloring");
 
@@ -998,49 +1091,56 @@ impl Window {
         let imp = self.imp();
 
         let factory = gtk::SignalListItemFactory::new();
-        factory.connect_setup(clone!(@weak self as win => move |_, item| {
-            let row = QueueRow::default();
-            let list_item = item.downcast_ref::<gtk::ListItem>().unwrap();
-            list_item.set_child(Some(&row));
+        factory.connect_setup(clone!(
+            #[weak(rename_to = win)]
+            self,
+            move |_, item| {
+                let row = QueueRow::default();
+                let list_item = item.downcast_ref::<gtk::ListItem>().unwrap();
+                list_item.set_child(Some(&row));
 
-            row.connect_notify_local(
-                Some("selected"),
-                clone!(@weak win => move |_, _| {
-                    win.update_selected_count();
-                }),
-            );
+                row.connect_notify_local(
+                    Some("selected"),
+                    clone!(
+                        #[weak]
+                        win,
+                        move |_, _| {
+                            win.update_selected_count();
+                        }
+                    ),
+                );
 
-            win
-                .bind_property("playlist-selection", &row, "selection-mode")
-                .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
-                .build();
+                win.bind_property("playlist-selection", &row, "selection-mode")
+                    .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
+                    .build();
 
-            list_item
-                .bind_property("item", &row, "song")
-                .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
-                .build();
+                list_item
+                    .bind_property("item", &row, "song")
+                    .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
+                    .build();
 
-            list_item
-                .property_expression("item")
-                .chain_property::<Song>("artist")
-                .bind(&row, "song-artist", gtk::Widget::NONE);
-            list_item
-                .property_expression("item")
-                .chain_property::<Song>("title")
-                .bind(&row, "song-title", gtk::Widget::NONE);
-            list_item
-                .property_expression("item")
-                .chain_property::<Song>("cover")
-                .bind(&row, "song-cover", gtk::Widget::NONE);
-            list_item
-                .property_expression("item")
-                .chain_property::<Song>("playing")
-                .bind(&row, "playing", gtk::Widget::NONE);
-            list_item
-                .property_expression("item")
-                .chain_property::<Song>("selected")
-                .bind(&row, "selected", gtk::Widget::NONE);
-        }));
+                list_item
+                    .property_expression("item")
+                    .chain_property::<Song>("artist")
+                    .bind(&row, "song-artist", gtk::Widget::NONE);
+                list_item
+                    .property_expression("item")
+                    .chain_property::<Song>("title")
+                    .bind(&row, "song-title", gtk::Widget::NONE);
+                list_item
+                    .property_expression("item")
+                    .chain_property::<Song>("cover")
+                    .bind(&row, "song-cover", gtk::Widget::NONE);
+                list_item
+                    .property_expression("item")
+                    .chain_property::<Song>("playing")
+                    .bind(&row, "playing", gtk::Widget::NONE);
+                list_item
+                    .property_expression("item")
+                    .chain_property::<Song>("selected")
+                    .bind(&row, "selected", gtk::Widget::NONE);
+            }
+        ));
         imp.playlist_view
             .queue_view()
             .set_factory(Some(&factory.upcast::<gtk::ListItemFactory>()));
@@ -1057,8 +1157,12 @@ impl Window {
             imp.playlist_view
                 .queue_view()
                 .set_model(Some(selection.upcast_ref::<gtk::SelectionModel>()));
-            imp.playlist_view.queue_view().connect_activate(
-                clone!(@weak self as win, @weak selection => move |_, pos| {
+            imp.playlist_view.queue_view().connect_activate(clone!(
+                #[weak(rename_to = win)]
+                self,
+                #[weak]
+                selection,
+                move |_, pos| {
                     let song = selection
                         .upcast::<gio::ListModel>()
                         .item(pos)
@@ -1091,8 +1195,8 @@ impl Window {
                             }
                         }
                     }
-                }),
-            );
+                }
+            ));
 
             imp.playlist_filtermodel
                 .replace(Some(sorter_model.upcast::<gio::ListModel>()));
@@ -1109,11 +1213,16 @@ impl Window {
                 .build();
             imp.playlist_view
                 .playlist_searchentry()
-                .connect_search_changed(clone!(@weak self as win => move |_| {
-                    if let Some(adjustment) = win.imp().playlist_view.queue_view().vadjustment() {
-                        adjustment.set_value(0.0);
+                .connect_search_changed(clone!(
+                    #[weak(rename_to = win)]
+                    self,
+                    move |_| {
+                        if let Some(adjustment) = win.imp().playlist_view.queue_view().vadjustment()
+                        {
+                            adjustment.set_value(0.0);
+                        }
                     }
-                }));
+                ));
         }
     }
 
@@ -1124,8 +1233,12 @@ impl Window {
             .formats(&gdk::ContentFormats::for_type(gdk::FileList::static_type()))
             .build();
 
-        drop_target.connect_drop(
-            clone!(@weak self as win => @default-return false, move |_, value, _, _| {
+        drop_target.connect_drop(clone!(
+            #[weak(rename_to = win)]
+            self,
+            #[upgrade_or]
+            false,
+            move |_, value, _, _| {
                 if let Ok(file_list) = value.get::<gdk::FileList>() {
                     if file_list.files().is_empty() {
                         win.add_toast(i18n("Unable to access dropped files"));
@@ -1141,8 +1254,8 @@ impl Window {
                 }
 
                 false
-            }),
-        );
+            }
+        ));
 
         self.imp().drag_overlay.set_drop_target(&drop_target);
     }

@@ -270,9 +270,11 @@ async fn store_current_pls(queue: &Queue) {
 
 pub fn store_playlist(queue: &Queue) {
     let ctx = glib::MainContext::default();
-    ctx.spawn_local(clone!(@weak queue => async move {
-        store_current_pls(&queue).await
-    }));
+    ctx.spawn_local(clone!(
+        #[weak]
+        queue,
+        async move { store_current_pls(&queue).await }
+    ));
 }
 
 pub fn load_cached_songs() -> Option<Vec<gio::File>> {
