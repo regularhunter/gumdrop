@@ -20,6 +20,10 @@
       <li>MPRIS integration</li>
     </ul>
   </description>
+  <branding>
+    <color type="primary" scheme_preference="light">#90c0ff</color>
+    <color type="primary" scheme_preference="dark">#003681</color>
+  </branding>
   <screenshots>
     <screenshot>
       <image>https://www.bassi.io/~ebassi/amberol/screenshots/0.10/amberol-full.png</image>
