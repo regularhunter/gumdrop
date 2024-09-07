@@ -1404,7 +1404,7 @@ impl Window {
         let imp = self.imp();
 
         if !imp.settings.boolean("enable-recoloring") {
-            imp.provider.load_from_data("");
+            imp.provider.load_from_string("");
             imp.main_stack.remove_css_class("main-window");
             return;
         }
@@ -1426,7 +1426,7 @@ impl Window {
                     ));
                 }
 
-                imp.provider.load_from_data(&css);
+                imp.provider.load_from_string(&css);
                 if !imp.main_stack.has_css_class("main-window") {
                     imp.main_stack.add_css_class("main-window");
                 }
@@ -1437,7 +1437,7 @@ impl Window {
             }
         }
 
-        imp.provider.load_from_data("");
+        imp.provider.load_from_string("");
         imp.main_stack.remove_css_class("main-window");
         self.action_set_enabled("win.enable-recoloring", false);
     }
