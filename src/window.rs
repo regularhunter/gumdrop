@@ -704,15 +704,15 @@ impl Window {
             // Bind the song properties to the UI
             state
                 .bind_property("title", &imp.song_details.get().title_label(), "label")
-                .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
+                .sync_create()
                 .build();
             state
                 .bind_property("artist", &imp.song_details.get().artist_label(), "label")
-                .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
+                .sync_create()
                 .build();
             state
                 .bind_property("album", &imp.song_details.get().album_label(), "label")
-                .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
+                .sync_create()
                 .build();
             state
                 .bind_property(
@@ -720,7 +720,7 @@ impl Window {
                     &imp.playback_control.get().volume_control(),
                     "volume",
                 )
-                .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
+                .sync_create()
                 .build();
         }
     }
@@ -1089,12 +1089,12 @@ impl Window {
                 );
 
                 win.bind_property("playlist-selection", &row, "selection-mode")
-                    .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
+                    .sync_create()
                     .build();
 
                 list_item
                     .bind_property("item", &row, "song")
-                    .flags(glib::BindingFlags::DEFAULT | glib::BindingFlags::SYNC_CREATE)
+                    .sync_create()
                     .build();
 
                 list_item
@@ -1182,12 +1182,12 @@ impl Window {
             imp.playlist_view
                 .playlist_searchentry()
                 .bind_property("text", &filter, "search")
-                .flags(glib::BindingFlags::SYNC_CREATE)
+                .sync_create()
                 .build();
             imp.playlist_view
                 .playlist_searchentry()
                 .bind_property("text", &sorter, "search")
-                .flags(glib::BindingFlags::SYNC_CREATE)
+                .sync_create()
                 .build();
             imp.playlist_view
                 .playlist_searchentry()
