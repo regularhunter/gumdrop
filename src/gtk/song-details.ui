@@ -21,18 +21,16 @@
               </object>
             </child>
             <child>
-              <object class="GtkLabel" id="song_artist_label">
-                <property name="xalign">0.5</property>
-                <property name="ellipsize">end</property>
+              <object class="AmberolMarquee" id="song_artist_label">
+                <property name="width-chars">25</property>
                 <style>
                   <class name="song-artist"/>
                 </style>
               </object>
             </child>
             <child>
-              <object class="GtkLabel" id="song_album_label">
-                <property name="xalign">0.5</property>
-                <property name="ellipsize">end</property>
+              <object class="AmberolMarquee" id="song_album_label">
+                <property name="width-chars">25</property>
                 <style>
                   <class name="song-album"/>
                 </style>
