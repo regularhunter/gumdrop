@@ -1,5 +1,3 @@
-@define-color dimmed_color alpha(currentColor, .55);
-
 button.large {
   min-width: 48px;
   min-height: 48px;
@@ -99,8 +97,8 @@ dragoverlay {
 }
 
 .drag-overlay-status-page {
-  background-color: alpha(@accent_bg_color, 0.5);
-  color: @accent_fg_color;
+  background-color: color-mix(in srgb, @window_fg_color 50%, transparent);
+  color: var(--accent_fg_color);
   padding: 32px;
 }
 
@@ -109,9 +107,9 @@ dragoverlay {
 }
 
 .main-window {
-  background: linear-gradient(127deg, alpha(@background_color_0, .55), alpha(@background_color_0, 0) 70.71%),
-              linear-gradient(217deg, alpha(@background_color_1, .55), alpha(@background_color_1, 0) 70.71%),
-              linear-gradient(336deg, alpha(@background_color_2, .55), alpha(@background_color_2, 0) 70.71%);
+  background: linear-gradient(127deg, color-mix(in srgb, @background_color_0 55%, transparent), color-mix(in srgb, @background_color_0 0%, transparent) 70.71%),
+              linear-gradient(217deg, color-mix(in srgb, @background_color_1 55%, transparent), color-mix(in srgb, @background_color_1 0%, transparent) 70.71%),
+              linear-gradient(336deg, color-mix(in srgb, @background_color_2 55%, transparent), color-mix(in srgb, @background_color_2 0%, transparent) 70.71%);
   transition-property: background;
   transition-duration: 250ms;
   transition-timing-function: ease;
@@ -122,9 +120,9 @@ dragoverlay {
 }
 
 .main-window > overlay-split-view > widget.background > playlistview {
-  background: linear-gradient(127deg, alpha(@background_color_0, .55), alpha(@background_color_0, 0) 70.71%),
-              linear-gradient(217deg, alpha(@background_color_1, .55), alpha(@background_color_1, 0) 70.71%),
-              linear-gradient(336deg, alpha(@background_color_2, .55), alpha(@background_color_2, 0) 70.71%),
+  background: linear-gradient(127deg, color-mix(in srgb, @background_color_0 55%, transparent), color-mix(in srgb, @background_color_0 0%, transparent) 70.71%),
+              linear-gradient(217deg, color-mix(in srgb, @background_color_1 55%, transparent), color-mix(in srgb, @background_color_1 0%, transparent) 70.71%),
+              linear-gradient(336deg, color-mix(in srgb, @background_color_2 55%, transparent), color-mix(in srgb, @background_color_2 0%, transparent) 70.71%),
               @window_bg_color;
   transition-property: background;
   transition-duration: 250ms;
@@ -135,7 +133,7 @@ dragoverlay {
 .main-window row:focus:focus-visible,
 .main-window scale:focus:focus-visible > trough,
 .main-window searchbar entry.search {
-  outline-color: alpha(currentColor, .25);
+  outline-color: color-mix(in srgb, currentColor 25%, transparent);
 }
 
 .main-window scale highlight,
@@ -144,7 +142,7 @@ dragoverlay {
   color: inherit;
 }
 
-volume > scale { color: @dimmed_color; }
+volume > scale { color: color-mix(in srgb, currentColor 55%, transparent); }
 
 volume:hover > scale { color: inherit; }
 

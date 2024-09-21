@@ -11,7 +11,7 @@ edition = "2018"
 color-thief = "0.2.1"
 gdk-pixbuf = { version = "0.20", features = ["v2_42"] }
 gettext-rs = { version = "0.7", features = ["gettext-system"] }
-gtk = { version = "0.9", package = "gtk4", features = ["v4_10"] }
+gtk = { version = "0.9", package = "gtk4", features = ["v4_14"] }
 lofty = "0.21.0"
 log = "0.4"
 mpris-player = "0.6"
