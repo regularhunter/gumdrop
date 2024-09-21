@@ -91,7 +91,7 @@ mod imp {
                 widget,
                 move |_| {
                     glib::timeout_add_local_once(
-                        std::time::Duration::from_millis(600),
+                        std::time::Duration::from_millis(1500),
                         move || {
                             let imp = widget.imp();
                             if !imp.label_fits.get() {
@@ -139,14 +139,10 @@ mod imp {
 
             if self.child.width() > width {
                 self.label_fits.set(false);
-
-                if animation.state() != adw::AnimationState::Playing {
-                    animation.play();
-                }
+                self.start_animation();
             } else {
                 self.label_fits.set(true);
-
-                animation.pause();
+                self.stop_animation();
             }
         }
 
@@ -269,6 +265,29 @@ mod imp {
             let width = char_width * self.width_chars.get();
 
             width / gtk::pango::SCALE
+        }
+
+        fn start_animation(&self) {
+            let animation = self.animation.get().unwrap();
+            if animation.state() != adw::AnimationState::Playing {
+                glib::timeout_add_local_once(
+                    std::time::Duration::from_millis(1500),
+                    clone!(
+                        #[weak]
+                        animation,
+                        move || {
+                            if animation.state() != adw::AnimationState::Playing {
+                                animation.play();
+                            }
+                        },
+                    ),
+                );
+            }
+        }
+
+        fn stop_animation(&self) {
+            let animation = self.animation.get().unwrap();
+            animation.pause();
         }
     }
 }
