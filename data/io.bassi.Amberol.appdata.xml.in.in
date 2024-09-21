@@ -63,6 +63,18 @@
     <control>touch</control>
   </recommends>
   <releases>
+    <release version="2024.1" date="2024-09-21">
+      <description>
+        <p>New versioning scheme! Amberol has switched to a year/release version.</p>
+        <p>With the new GNOME release, we are now taking advantage of the new libadwaita UI elements and features.</p>
+        <p>If the song title, author, or album is too long, we now scroll their contents.</p>
+        <ul>
+          <li>Dependency updates for GTK, libadwaita, GStreamer, and lofty</li>
+          <li>Bug fixes</li>
+          <li>Translation updates</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.10.3" date="2023-05-23">
       <description>
         <p>Bug fixes and small UI improvements</p>
