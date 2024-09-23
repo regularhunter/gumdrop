@@ -27,7 +27,7 @@ songcover image.card {
 }
 
 .main-window songcover picture.cover {
-  background: linear-gradient(to bottom, @background_color_0, @background_color_1);
+  background: linear-gradient(to bottom, var(--background-color-0), var(--background-color-1));
 }
 
 songdetails {
@@ -97,8 +97,8 @@ dragoverlay {
 }
 
 .drag-overlay-status-page {
-  background-color: color-mix(in srgb, @window_fg_color 50%, transparent);
-  color: var(--accent_fg_color);
+  background-color: color-mix(in srgb, var(--accent-bg-color) 50%, transparent);
+  color: var(--accent-fg-color);
   padding: 32px;
 }
 
@@ -107,9 +107,9 @@ dragoverlay {
 }
 
 .main-window {
-  background: linear-gradient(127deg, color-mix(in srgb, @background_color_0 55%, transparent), color-mix(in srgb, @background_color_0 0%, transparent) 70.71%),
-              linear-gradient(217deg, color-mix(in srgb, @background_color_1 55%, transparent), color-mix(in srgb, @background_color_1 0%, transparent) 70.71%),
-              linear-gradient(336deg, color-mix(in srgb, @background_color_2 55%, transparent), color-mix(in srgb, @background_color_2 0%, transparent) 70.71%);
+  background: linear-gradient(127deg, color-mix(in srgb, var(--background-color-0) 55%, transparent), color-mix(in srgb, var(--background-color-0) 0%, transparent) 70.71%),
+              linear-gradient(217deg, color-mix(in srgb, var(--background-color-1) 55%, transparent), color-mix(in srgb, var(--background-color-1) 0%, transparent) 70.71%),
+              linear-gradient(336deg, color-mix(in srgb, var(--background-color-2) 55%, transparent), color-mix(in srgb, var(--background-color-2) 0%, transparent) 70.71%);
   transition-property: background;
   transition-duration: 250ms;
   transition-timing-function: ease;
@@ -120,10 +120,10 @@ dragoverlay {
 }
 
 .main-window > overlay-split-view > widget.background > playlistview {
-  background: linear-gradient(127deg, color-mix(in srgb, @background_color_0 55%, transparent), color-mix(in srgb, @background_color_0 0%, transparent) 70.71%),
-              linear-gradient(217deg, color-mix(in srgb, @background_color_1 55%, transparent), color-mix(in srgb, @background_color_1 0%, transparent) 70.71%),
-              linear-gradient(336deg, color-mix(in srgb, @background_color_2 55%, transparent), color-mix(in srgb, @background_color_2 0%, transparent) 70.71%),
-              @window_bg_color;
+  background: linear-gradient(127deg, color-mix(in srgb, var(--background-color-0) 55%, transparent), color-mix(in srgb, var(--background-color-0) 0%, transparent) 70.71%),
+              linear-gradient(217deg, color-mix(in srgb, var(--background-color-1) 55%, transparent), color-mix(in srgb, var(--background-color-1) 0%, transparent) 70.71%),
+              linear-gradient(336deg, color-mix(in srgb, var(--background-color-2) 55%, transparent), color-mix(in srgb, var(--background-color-2) 0%, transparent) 70.71%),
+              var(--window-bg-color);
   transition-property: background;
   transition-duration: 250ms;
   transition-timing-function: ease;
