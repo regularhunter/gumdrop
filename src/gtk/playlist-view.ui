@@ -85,6 +85,7 @@
           <object class="GtkSearchBar" id="playlist_searchbar">
             <property name="child">
               <object class="GtkSearchEntry" id="playlist_searchentry">
+                <property name="hexpand">True</property>
                 <accessibility>
                   <property name="label" translatable="yes" context="a11y">Search</property>
                   <property name="description" translatable="yes" context="a11y">Type to search songs</property>
