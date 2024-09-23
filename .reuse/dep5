@@ -82,3 +82,7 @@ License: GPL-3.0-or-later
 Files: src/gtk/style.css src/gtk/style-hc.css
 Copyright: 2022  Emmanuele Bassi
 License: GPL-3.0-or-later
+
+Files: src/gtk/style-dark.css
+Copyright: 2024  Alice Mikhaylenko
+License: GPL-3.0-or-later

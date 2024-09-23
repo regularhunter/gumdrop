@@ -22,10 +22,6 @@ songcover image.card {
   margin: 6px;
 }
 
-.main-window > overlay-split-view > .sidebar-pane {
-  background: transparent;
-}
-
 .main-window songcover picture.cover {
   background: linear-gradient(to bottom, var(--background-color-0), var(--background-color-1));
 }
@@ -107,16 +103,15 @@ dragoverlay {
 }
 
 .main-window {
+  --sidebar-bg-color: rgb(0 0 0 / 6%);
+  --sidebar-backdrop-color: rgb(0 0 0 / 3%);
+
   background: linear-gradient(127deg, color-mix(in srgb, var(--background-color-0) 55%, transparent), color-mix(in srgb, var(--background-color-0) 0%, transparent) 70.71%),
               linear-gradient(217deg, color-mix(in srgb, var(--background-color-1) 55%, transparent), color-mix(in srgb, var(--background-color-1) 0%, transparent) 70.71%),
               linear-gradient(336deg, color-mix(in srgb, var(--background-color-2) 55%, transparent), color-mix(in srgb, var(--background-color-2) 0%, transparent) 70.71%);
   transition-property: background;
   transition-duration: 250ms;
   transition-timing-function: ease;
-}
-
-.darken {
-  background-color: rgba(0, 0, 0, 0.08);
 }
 
 .main-window > overlay-split-view > widget.background > playlistview {
