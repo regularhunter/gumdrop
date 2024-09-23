@@ -106,6 +106,10 @@ dragoverlay {
   --sidebar-bg-color: rgb(0 0 0 / 6%);
   --sidebar-backdrop-color: rgb(0 0 0 / 3%);
 
+  --accent-bg-color: rgb(0 0 0 / 75%);
+  --accent-fg-color: white;
+  --accent-color: oklab(from var(--accent-bg-color) var(--standalone-color-oklab));
+
   background: linear-gradient(127deg, color-mix(in srgb, var(--background-color-0) 55%, transparent), color-mix(in srgb, var(--background-color-0) 0%, transparent) 70.71%),
               linear-gradient(217deg, color-mix(in srgb, var(--background-color-1) 55%, transparent), color-mix(in srgb, var(--background-color-1) 0%, transparent) 70.71%),
               linear-gradient(336deg, color-mix(in srgb, var(--background-color-2) 55%, transparent), color-mix(in srgb, var(--background-color-2) 0%, transparent) 70.71%);
@@ -124,20 +128,9 @@ dragoverlay {
   transition-timing-function: ease;
 }
 
-.main-window button:focus:focus-visible,
-.main-window row:focus:focus-visible,
-.main-window scale:focus:focus-visible > trough,
-.main-window searchbar entry.search {
-  outline-color: color-mix(in srgb, currentColor 25%, transparent);
+.main-window volume > scale trough highlight {
+  background: color-mix(in srgb, var(--accent-bg-color) var(--dim-opacity), transparent);
 }
-
-.main-window scale highlight,
-.main-window progressbar progress {
-  background: currentColor;
-  color: inherit;
-}
-
-volume > scale { color: color-mix(in srgb, currentColor 55%, transparent); }
 
 volume:hover > scale { color: inherit; }
 

@@ -1,4 +1,7 @@
 .main-window {
   --sidebar-bg-color: rgb(255 255 255 / 5.5%);
   --sidebar-backdrop-color: rgb(255 255 255 / 2.75%);
+
+  --accent-bg-color: rgb(255 255 255 / 75%);
+  --accent-fg-color: rgb(0 0 0 / 75%);
 }
