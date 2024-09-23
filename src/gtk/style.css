@@ -110,6 +110,8 @@ dragoverlay {
   --accent-fg-color: white;
   --accent-color: oklab(from var(--accent-bg-color) var(--standalone-color-oklab));
 
+  --scrollbar-outline-color: rgb(255 255 255 / 25%);
+
   background: linear-gradient(127deg, color-mix(in srgb, var(--background-color-0) 55%, transparent), color-mix(in srgb, var(--background-color-0) 0%, transparent) 70.71%),
               linear-gradient(217deg, color-mix(in srgb, var(--background-color-1) 55%, transparent), color-mix(in srgb, var(--background-color-1) 0%, transparent) 70.71%),
               linear-gradient(336deg, color-mix(in srgb, var(--background-color-2) 55%, transparent), color-mix(in srgb, var(--background-color-2) 0%, transparent) 70.71%);
