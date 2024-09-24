@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: amberol main\n"
 "Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/amberol/-/issues/\n"
-"POT-Creation-Date: 2024-09-21 18:08+0000\n"
-"PO-Revision-Date: 2024-09-21 20:10+0200\n"
+"POT-Creation-Date: 2024-09-24 12:08+0000\n"
+"PO-Revision-Date: 2024-09-24 15:34+0200\n"
 "Last-Translator: Martin Srebotnjak <miles@filmsi.net>\n"
 "Language-Team: Slovenian GNOME Translation Team <gnome-si@googlegroups.com>\n"
 "Language: sl_SI\n"
@@ -299,46 +299,50 @@ msgstr "_O programu"
 msgid "_Quit"
 msgstr "_Končaj"
 
-#: src/gtk/playlist-view.ui:18
+#: src/gtk/playlist-view.ui:17
+msgid "Search Songs in the Playlist"
+msgstr "Poišči posnetke v seznamu predvajanja"
+
+#: src/gtk/playlist-view.ui:28
 msgid "Playlist"
 msgstr "Seznam predvajanja"
 
 #: src/gtk/playlist-view.ui:49
-msgid "Search Songs in the Playlist"
-msgstr "Poišči posnetke v seznamu predvajanja"
-
-#: src/gtk/playlist-view.ui:61
 msgid "Select Songs in the Playlist"
 msgstr "Izberite posnetke na seznamu predvajanja"
 
-#: src/gtk/playlist-view.ui:74
+#: src/gtk/playlist-view.ui:58
 msgid "Close the Playlist"
 msgstr "Zapri seznam predvajanja"
 
-#: src/gtk/playlist-view.ui:89
+#: src/gtk/playlist-view.ui:67
+msgid "Search songs"
+msgstr "Iskanje posnetkov"
+
+#: src/gtk/playlist-view.ui:70
 msgctxt "a11y"
 msgid "Search"
 msgstr "Poišči"
 
-#: src/gtk/playlist-view.ui:90
+#: src/gtk/playlist-view.ui:71
 msgctxt "a11y"
 msgid "Type to search songs"
 msgstr "Tipkajte ali vnesite za iskanje pesmi"
 
-#: src/gtk/playlist-view.ui:136
+#: src/gtk/playlist-view.ui:117
 msgid "Select All Songs"
 msgstr "Izberi vse posnetke"
 
-#: src/gtk/playlist-view.ui:149
+#: src/gtk/playlist-view.ui:130
 msgid "Remove Selected Songs"
 msgstr "Odstrani izbrane posnetke"
 
-#: src/gtk/queue-row.ui:26
+#: src/gtk/queue-row.ui:27
 msgctxt "a11y"
 msgid "No cover available"
 msgstr "Naslovnica ni na voljo"
 
-#: src/gtk/queue-row.ui:83
+#: src/gtk/queue-row.ui:84
 msgctxt "a11y"
 msgid "Currently playing"
 msgstr "Trenutno se predvaja"
@@ -412,7 +416,7 @@ msgstr "Dodaj _posnetek"
 msgid "Open File"
 msgstr "Odpri datoteko"
 
-#: src/window.rs:158 src/window.rs:174 src/window.rs:1458
+#: src/window.rs:158 src/window.rs:174 src/window.rs:1462
 msgid "Unable to access files"
 msgstr "Dostop do datotek ni možen"
 
@@ -482,13 +486,13 @@ msgstr[1] "Preostali čas: {} minuta"
 msgstr[2] "Preostali čas: {} minuti"
 msgstr[3] "Preostali čas: {} minute"
 
-#: src/window.rs:1437
+#: src/window.rs:1441
 msgid "No song selected"
 msgstr "Ni izbranih posnetkov"
 
 #. Translators: The '{}' must be left unmodified, and
 #. it is expanded to the number of songs selected
-#: src/window.rs:1442
+#: src/window.rs:1446
 msgid "{} song selected"
 msgid_plural "{} songs selected"
 msgstr[0] "{} izbranih posnetkov"
@@ -499,6 +503,6 @@ msgstr[3] "{} izbrani posnetki"
 #. Translators: `{title}` and `{artist}` must be left
 #. untranslated; they will expand to the title and
 #. artist of the currently playing song, respectively
-#: src/window.rs:1498
+#: src/window.rs:1502
 msgid "Currently playing “{title}” by “{artist}”"
 msgstr "Trenutno predvaja »{title}« ({artist})"
