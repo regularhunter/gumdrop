@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: amberol\n"
 "Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/amberol/-/issues/\n"
-"POT-Creation-Date: 2024-09-21 18:08+0000\n"
-"PO-Revision-Date: 2024-09-23 17:56+0330\n"
+"POT-Creation-Date: 2024-09-24 12:08+0000\n"
+"PO-Revision-Date: 2024-09-24 16:13+0330\n"
 "Last-Translator: Danial Behzadi <dani.behzi@ubuntu.com>\n"
 "Language-Team: Farsi\n"
 "Language: fa\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n==0 || n==1);\n"
-"X-Generator: Poedit 3.4.4\n"
+"X-Generator: Poedit 3.5\n"
 
 #: data/io.bassi.Amberol.desktop.in.in:3 data/io.bassi.Amberol.appdata.xml.in.in:6
 msgid "Amberol"
@@ -294,46 +294,50 @@ msgstr "_دربارهٔ امبرول"
 msgid "_Quit"
 msgstr "_خروج"
 
-#: src/gtk/playlist-view.ui:18
+#: src/gtk/playlist-view.ui:17
+msgid "Search Songs in the Playlist"
+msgstr "جست‌وجوی آهنگ‌های سیاههٔ پخش"
+
+#: src/gtk/playlist-view.ui:28
 msgid "Playlist"
 msgstr "سیاههٔ پخش"
 
 #: src/gtk/playlist-view.ui:49
-msgid "Search Songs in the Playlist"
-msgstr "جست‌وجوی آهنگ‌های سیاههٔ پخش"
-
-#: src/gtk/playlist-view.ui:61
 msgid "Select Songs in the Playlist"
 msgstr "گزینش آهنگ‌های سیاههٔ پخش"
 
-#: src/gtk/playlist-view.ui:74
+#: src/gtk/playlist-view.ui:58
 msgid "Close the Playlist"
 msgstr "بستن سیاههٔ پخش"
 
-#: src/gtk/playlist-view.ui:89
+#: src/gtk/playlist-view.ui:67
+msgid "Search songs"
+msgstr "جست‌وجوی آهنگ‌ها"
+
+#: src/gtk/playlist-view.ui:70
 msgctxt "a11y"
 msgid "Search"
 msgstr "جست‌وجو"
 
-#: src/gtk/playlist-view.ui:90
+#: src/gtk/playlist-view.ui:71
 msgctxt "a11y"
 msgid "Type to search songs"
-msgstr "نوشتن برای جست‌وجوی آوازها"
+msgstr "نوشتن برای جست‌وجوی آهنگ‌ها"
 
-#: src/gtk/playlist-view.ui:136
+#: src/gtk/playlist-view.ui:117
 msgid "Select All Songs"
 msgstr "گزینش تمامی آهنگ‌ها"
 
-#: src/gtk/playlist-view.ui:149
+#: src/gtk/playlist-view.ui:130
 msgid "Remove Selected Songs"
 msgstr "برداشتن آهنگ‌های برگزیده"
 
-#: src/gtk/queue-row.ui:26
+#: src/gtk/queue-row.ui:27
 msgctxt "a11y"
 msgid "No cover available"
 msgstr "هیچ تصویر جلدی موجود نیست"
 
-#: src/gtk/queue-row.ui:83
+#: src/gtk/queue-row.ui:84
 msgctxt "a11y"
 msgid "Currently playing"
 msgstr "در حال پخش"
@@ -408,7 +412,7 @@ msgstr "_افزودن آهنگ"
 msgid "Open File"
 msgstr "گشودن پرونده"
 
-#: src/window.rs:158 src/window.rs:174 src/window.rs:1458
+#: src/window.rs:158 src/window.rs:174 src/window.rs:1462
 msgid "Unable to access files"
 msgstr "ناتوان در دسترسی به پرونده‌ها"
 
@@ -470,13 +474,13 @@ msgid_plural "{} minutes remaining"
 msgstr[0] "{} دقیقه مانده"
 msgstr[1] "۱ دقیقه مانده"
 
-#: src/window.rs:1437
+#: src/window.rs:1441
 msgid "No song selected"
 msgstr "هیچ آهنگی گزیده نشده"
 
 #. Translators: The '{}' must be left unmodified, and
 #. it is expanded to the number of songs selected
-#: src/window.rs:1442
+#: src/window.rs:1446
 msgid "{} song selected"
 msgid_plural "{} songs selected"
 msgstr[0] "{} آهنگ گزیده شده"
@@ -485,7 +489,7 @@ msgstr[1] "۱ آهنگ گزیده شده"
 #. Translators: `{title}` and `{artist}` must be left
 #. untranslated; they will expand to the title and
 #. artist of the currently playing song, respectively
-#: src/window.rs:1498
+#: src/window.rs:1502
 msgid "Currently playing “{title}” by “{artist}”"
 msgstr "در حال پخش «{title}» از «{artist}»"
 
