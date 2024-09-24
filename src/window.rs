@@ -1391,18 +1391,22 @@ impl Window {
             if let Some(bg_colors) = song.cover_palette() {
                 let mut css = String::new();
 
+                css.push_str(":root {");
+
                 let n_colors = bg_colors.len();
                 for (i, color) in bg_colors.iter().enumerate().take(n_colors) {
-                    let s = format!("@define-color background_color_{} {};", i, color);
+                    let s = format!("--background-color-{}: {};", i, color);
                     css.push_str(&s);
                 }
 
-                for i in n_colors - 1..5 {
+                for i in n_colors + 1 - 1..5 {
                     css.push_str(&format!(
-                        "@define-color background_color_{} @window_bg_color;",
+                        "--background-color-{}: var(--window-bg-color);",
                         i
                     ));
                 }
+
+                css.push_str("}");
 
                 imp.provider.load_from_string(&css);
                 if !imp.main_stack.has_css_class("main-window") {
