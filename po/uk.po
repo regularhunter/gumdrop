@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: amberol main\n"
 "Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/amberol/-/issues/\n"
-"POT-Creation-Date: 2024-09-21 18:08+0000\n"
-"PO-Revision-Date: 2024-09-23 19:02+0300\n"
+"POT-Creation-Date: 2024-09-24 12:08+0000\n"
+"PO-Revision-Date: 2024-09-24 17:18+0300\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <trans-uk@lists.fedoraproject.org>\n"
 "Language: uk\n"
@@ -298,46 +298,52 @@ msgstr "_Про «Амберол»"
 msgid "_Quit"
 msgstr "Ви_йти"
 
-#: src/gtk/playlist-view.ui:18
+#: src/gtk/playlist-view.ui:17
+msgid "Search Songs in the Playlist"
+msgstr "Шукати композиції у списку відтворення"
+
+#: src/gtk/playlist-view.ui:28
 msgid "Playlist"
 msgstr "Список відтворення"
 
 #: src/gtk/playlist-view.ui:49
-msgid "Search Songs in the Playlist"
-msgstr "Шукати композиції у списку відтворення"
-
-#: src/gtk/playlist-view.ui:61
 msgid "Select Songs in the Playlist"
 msgstr "Вибрати композиції у списку відтворення"
 
-#: src/gtk/playlist-view.ui:74
+#: src/gtk/playlist-view.ui:58
 msgid "Close the Playlist"
 msgstr "Закрити список відтворення"
 
-#: src/gtk/playlist-view.ui:89
+#: src/gtk/playlist-view.ui:67
+#| msgctxt "a11y"
+#| msgid "Type to search songs"
+msgid "Search songs"
+msgstr "Шукати композиції"
+
+#: src/gtk/playlist-view.ui:70
 msgctxt "a11y"
 msgid "Search"
 msgstr "Пошук"
 
-#: src/gtk/playlist-view.ui:90
+#: src/gtk/playlist-view.ui:71
 msgctxt "a11y"
 msgid "Type to search songs"
 msgstr "Введіть щось для пошуку композицій"
 
-#: src/gtk/playlist-view.ui:136
+#: src/gtk/playlist-view.ui:117
 msgid "Select All Songs"
 msgstr "Позначити усі композиції"
 
-#: src/gtk/playlist-view.ui:149
+#: src/gtk/playlist-view.ui:130
 msgid "Remove Selected Songs"
 msgstr "Вилучити позначені композиції"
 
-#: src/gtk/queue-row.ui:26
+#: src/gtk/queue-row.ui:27
 msgctxt "a11y"
 msgid "No cover available"
 msgstr "Немає доступних обкладинок"
 
-#: src/gtk/queue-row.ui:83
+#: src/gtk/queue-row.ui:84
 msgctxt "a11y"
 msgid "Currently playing"
 msgstr "Триває відтворення"
@@ -409,7 +415,7 @@ msgstr "_Додати композицію"
 msgid "Open File"
 msgstr "Відкрити файл"
 
-#: src/window.rs:158 src/window.rs:174 src/window.rs:1458
+#: src/window.rs:158 src/window.rs:174 src/window.rs:1462
 msgid "Unable to access files"
 msgstr "Не вдалося отримати доступ до файлів"
 
@@ -479,13 +485,13 @@ msgstr[1] "Лишилося {} хвилини"
 msgstr[2] "Лишилося {} хвилин"
 msgstr[3] "Лишилася хвилина"
 
-#: src/window.rs:1437
+#: src/window.rs:1441
 msgid "No song selected"
 msgstr "Не вибрано композиції"
 
 #. Translators: The '{}' must be left unmodified, and
 #. it is expanded to the number of songs selected
-#: src/window.rs:1442
+#: src/window.rs:1446
 msgid "{} song selected"
 msgid_plural "{} songs selected"
 msgstr[0] "Вибрано {} композицію"
@@ -496,7 +502,7 @@ msgstr[3] "Вибрано {} композицію"
 #. Translators: `{title}` and `{artist}` must be left
 #. untranslated; they will expand to the title and
 #. artist of the currently playing song, respectively
-#: src/window.rs:1498
+#: src/window.rs:1502
 msgid "Currently playing “{title}” by “{artist}”"
 msgstr "Зараз відтворюємо «{title}», «{artist}»"
 
