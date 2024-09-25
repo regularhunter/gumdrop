@@ -2,16 +2,16 @@
 # Copyright (C) 2022-2024 amberol's COPYRIGHT HOLDER
 # This file is distributed under the same license as the amberol package.
 #
-# Emin Tufan Çetin <etcetin@gmail.com>, 2022-2024.
 # Sabri Ünal <yakushabb@gmail.com>, 2022-2024.
+# Emin Tufan Çetin <etcetin@gmail.com>, 2022-2024.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: amberol main\n"
 "Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/amberol/-/issues/\n"
-"POT-Creation-Date: 2024-07-29 20:34+0000\n"
-"PO-Revision-Date: 2024-05-09 10:27+0300\n"
-"Last-Translator: Sabri Ünal <yakushabb@gmail.com>\n"
+"POT-Creation-Date: 2024-09-24 12:08+0000\n"
+"PO-Revision-Date: 2024-09-25 10:27+0300\n"
+"Last-Translator: Emin Tufan Çetin <etcetin@gmail.com>\n"
 "Language-Team: Turkish <takim@gnome.org.tr>\n"
 "Language: tr\n"
 "MIME-Version: 1.0\n"
@@ -75,7 +75,7 @@ msgid "MPRIS integration"
 msgstr "MPRIS tümleşimi"
 
 # Uygulamanın yazarının adı.
-#: data/io.bassi.Amberol.appdata.xml.in.in:44
+#: data/io.bassi.Amberol.appdata.xml.in.in:48
 msgid "Emmanuele Bassi"
 msgstr "Emmanuele Bassi"
 
@@ -302,29 +302,53 @@ msgstr "Amberol _Hakkında"
 msgid "_Quit"
 msgstr "_Çık"
 
-#: src/gtk/playlist-view.ui:18
+#: src/gtk/playlist-view.ui:17
+msgid "Search Songs in the Playlist"
+msgstr "Çalma Listesindeki Şarkıları Ara"
+
+#: src/gtk/playlist-view.ui:28
 msgid "Playlist"
 msgstr "Çalma Listesi"
 
 #: src/gtk/playlist-view.ui:49
-msgid "Search Songs in the Playlist"
-msgstr "Çalma Listesindeki Şarkıları Ara"
-
-#: src/gtk/playlist-view.ui:61
 msgid "Select Songs in the Playlist"
 msgstr "Çalma Listesindeki Şarkıları Seç"
 
-#: src/gtk/playlist-view.ui:74
+#: src/gtk/playlist-view.ui:58
 msgid "Close the Playlist"
 msgstr "Çalma Listesini Kapat"
 
-#: src/gtk/playlist-view.ui:133
+#: src/gtk/playlist-view.ui:67
+msgid "Search songs"
+msgstr "Şarkı ara"
+
+#: src/gtk/playlist-view.ui:70
+msgctxt "a11y"
+msgid "Search"
+msgstr "Ara"
+
+#: src/gtk/playlist-view.ui:71
+msgctxt "a11y"
+msgid "Type to search songs"
+msgstr "Şarkı aramak için yaz"
+
+#: src/gtk/playlist-view.ui:117
 msgid "Select All Songs"
 msgstr "Tüm Şarkıları Seç"
 
-#: src/gtk/playlist-view.ui:146
+#: src/gtk/playlist-view.ui:130
 msgid "Remove Selected Songs"
 msgstr "Seçili Şarkıları Kaldır"
+
+#: src/gtk/queue-row.ui:27
+msgctxt "a11y"
+msgid "No cover available"
+msgstr "Kapak yok"
+
+#: src/gtk/queue-row.ui:84
+msgctxt "a11y"
+msgid "Currently playing"
+msgstr "Şu anda çalıyor"
 
 #: src/gtk/window.ui:13
 msgid "Drop a song to add it to the playlist"
@@ -361,15 +385,19 @@ msgid "Remaining time"
 msgstr "Kalan süre"
 
 #. Translators: Replace "translator-credits" with your names, one name per line
-#: src/application.rs:235
+#: src/application.rs:243
 msgid "translator-credits"
 msgstr ""
 "Emin Tufan Çetin <etcetin@gmail.com>\n"
 "Sabri Ünal <yakushabb@gmail.com>"
 
-#: src/application.rs:247
+#: src/application.rs:255
 msgid "Amberol needs to run in the background to play music"
 msgstr "Amberol, müzik çalmak için arka planda çalışmalıdır"
+
+#: src/cover_picture.rs:75
+msgid "Cover image"
+msgstr "Kapak resmi"
 
 #: src/playback_control.rs:118
 msgid "Repeat All Songs"
@@ -379,64 +407,64 @@ msgstr "Tüm Şarkıları Yinele"
 msgid "Repeat the Current Song"
 msgstr "Geçerli Şarkıyı Yinele"
 
-#: src/window.rs:450
+#: src/window.rs:145
 msgid "Audio files"
 msgstr "Ses dosyaları"
 
-#: src/window.rs:455
+#: src/window.rs:150
 msgid "_Add Song"
 msgstr "Şarkı _Ekle"
 
-#: src/window.rs:458
+#: src/window.rs:153
 msgid "Open File"
 msgstr "Dosya Aç"
 
-#: src/window.rs:463 src/window.rs:482 src/window.rs:1367
+#: src/window.rs:158 src/window.rs:174 src/window.rs:1462
 msgid "Unable to access files"
 msgstr "Dosyalara erişilemiyor"
 
-#: src/window.rs:475
+#: src/window.rs:167
 msgid "_Add Folder"
 msgstr "_Klasör Ekle"
 
-#: src/window.rs:477
+#: src/window.rs:169
 msgid "Open Folder"
 msgstr "Klasör Aç"
 
-#: src/window.rs:498
+#: src/window.rs:488
 msgid "No available song found"
 msgstr "Kullanılabilir şarkı bulunamadı"
 
-#: src/window.rs:550
+#: src/window.rs:549
 msgid "No songs found"
 msgstr "Şarkı bulunamadı"
 
-#: src/window.rs:579
+#: src/window.rs:582
 msgid "Added a new song"
 msgstr "Yeni şarkı eklendi"
 
-#: src/window.rs:580
+#: src/window.rs:583
 msgid "Play"
 msgstr "Çal"
 
 #. Translators: the `{}` must be left unmodified;
 #. it will be expanded to the number of songs added
 #. to the playlist
-#: src/window.rs:589
+#: src/window.rs:592
 msgid "Added one song"
 msgid_plural "Added {} songs"
 msgstr[0] "{} şarkı eklendi"
 
-#: src/window.rs:1131
+#: src/window.rs:1222
 msgid "Unable to access dropped files"
 msgstr "Bırakılan dosyalara erişilemiyor"
 
-#: src/window.rs:1225
+#: src/window.rs:1316
 msgid "{} minute"
 msgid_plural "{} minutes"
 msgstr[0] "{} dakika"
 
-#: src/window.rs:1236
+#: src/window.rs:1327
 msgid "{hours} hour {minutes} remaining"
 msgid_plural "{hours} hours {minutes} remaining"
 msgstr[0] "{hours} saat {minutes} kaldı"
@@ -444,18 +472,18 @@ msgstr[0] "{hours} saat {minutes} kaldı"
 #. Translators: the '{}' must be left unmodified, and
 #. it will be replaced by the number of minutes remaining
 #. in the playlist
-#: src/window.rs:1246
+#: src/window.rs:1337
 msgid "{} minute remaining"
 msgid_plural "{} minutes remaining"
 msgstr[0] "{} dakika kaldı"
 
-#: src/window.rs:1346
+#: src/window.rs:1441
 msgid "No song selected"
 msgstr "Şarkı seçilmedi"
 
 #. Translators: The '{}' must be left unmodified, and
 #. it is expanded to the number of songs selected
-#: src/window.rs:1351
+#: src/window.rs:1446
 msgid "{} song selected"
 msgid_plural "{} songs selected"
 msgstr[0] "{} şarkı seçildi"
@@ -463,6 +491,6 @@ msgstr[0] "{} şarkı seçildi"
 #. Translators: `{title}` and `{artist}` must be left
 #. untranslated; they will expand to the title and
 #. artist of the currently playing song, respectively
-#: src/window.rs:1407
+#: src/window.rs:1502
 msgid "Currently playing “{title}” by “{artist}”"
 msgstr "“{artist}”, “{title}” çalıyor"
