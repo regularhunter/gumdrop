@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [unreleased]
+
+### Added
+
+### Changed
+
+- Replaced unmaintained mpris-player crate with mpris-server [!150]
+- Translation updates
+
+### Fixed
+
+- UI and CSS cleanups and improvements [!167]
+
+### Removed
+
 ## [2024.1] - 2024-09-21
 
 ### Added
