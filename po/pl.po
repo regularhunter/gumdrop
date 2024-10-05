@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: amberol\n"
 "Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/amberol/-/issues/\n"
-"POT-Creation-Date: 2024-09-12 15:34+0000\n"
-"PO-Revision-Date: 2024-09-12 17:37+0200\n"
+"POT-Creation-Date: 2024-09-24 12:08+0000\n"
+"PO-Revision-Date: 2024-10-05 12:17+0200\n"
 "Last-Translator: Piotr Drąg <piotrdrag@gmail.com>\n"
 "Language-Team: Polish <community-poland@mozilla.org>\n"
 "Language: pl\n"
@@ -296,29 +296,53 @@ msgstr "_O programie"
 msgid "_Quit"
 msgstr "Za_kończ"
 
-#: src/gtk/playlist-view.ui:18
+#: src/gtk/playlist-view.ui:17
+msgid "Search Songs in the Playlist"
+msgstr "Wyszukuje utwory na liście odtwarzania"
+
+#: src/gtk/playlist-view.ui:28
 msgid "Playlist"
 msgstr "Lista odtwarzania"
 
 #: src/gtk/playlist-view.ui:49
-msgid "Search Songs in the Playlist"
-msgstr "Wyszukuje utwory na liście odtwarzania"
-
-#: src/gtk/playlist-view.ui:61
 msgid "Select Songs in the Playlist"
 msgstr "Zaznacza utwory na liście odtwarzania"
 
-#: src/gtk/playlist-view.ui:74
+#: src/gtk/playlist-view.ui:58
 msgid "Close the Playlist"
 msgstr "Zamyka listę odtwarzania"
 
-#: src/gtk/playlist-view.ui:133
+#: src/gtk/playlist-view.ui:67
+msgid "Search songs"
+msgstr "Wyszukiwanie utworów"
+
+#: src/gtk/playlist-view.ui:70
+msgctxt "a11y"
+msgid "Search"
+msgstr "Wyszukaj"
+
+#: src/gtk/playlist-view.ui:71
+msgctxt "a11y"
+msgid "Type to search songs"
+msgstr "Wpisanie wyszukuje utwory"
+
+#: src/gtk/playlist-view.ui:117
 msgid "Select All Songs"
 msgstr "Zaznacza wszystkie utwory"
 
-#: src/gtk/playlist-view.ui:146
+#: src/gtk/playlist-view.ui:130
 msgid "Remove Selected Songs"
 msgstr "Usuwa zaznaczone utwory"
+
+#: src/gtk/queue-row.ui:27
+msgctxt "a11y"
+msgid "No cover available"
+msgstr "Brak dostępnej okładki"
+
+#: src/gtk/queue-row.ui:84
+msgctxt "a11y"
+msgid "Currently playing"
+msgstr "Obecnie odtwarzane"
 
 #: src/gtk/window.ui:13
 msgid "Drop a song to add it to the playlist"
@@ -365,6 +389,10 @@ msgstr ""
 msgid "Amberol needs to run in the background to play music"
 msgstr "Amberol musi działać w tle, aby odtwarzać muzykę"
 
+#: src/cover_picture.rs:75
+msgid "Cover image"
+msgstr "Okładka"
+
 #: src/playback_control.rs:118
 msgid "Repeat All Songs"
 msgstr "Powtarza wszystkie utwory"
@@ -373,68 +401,68 @@ msgstr "Powtarza wszystkie utwory"
 msgid "Repeat the Current Song"
 msgstr "Powtarza obecny utwór"
 
-#: src/window.rs:457
+#: src/window.rs:145
 msgid "Audio files"
 msgstr "Pliki dźwiękowe"
 
-#: src/window.rs:462
+#: src/window.rs:150
 msgid "_Add Song"
 msgstr "_Dodaj utwór"
 
-#: src/window.rs:465
+#: src/window.rs:153
 msgid "Open File"
 msgstr "Otwarcie pliku"
 
-#: src/window.rs:470 src/window.rs:493 src/window.rs:1480
+#: src/window.rs:158 src/window.rs:174 src/window.rs:1462
 msgid "Unable to access files"
 msgstr "Nie można otworzyć plików"
 
-#: src/window.rs:486
+#: src/window.rs:167
 msgid "_Add Folder"
 msgstr "_Dodaj katalog"
 
-#: src/window.rs:488
+#: src/window.rs:169
 msgid "Open Folder"
 msgstr "Otwarcie katalogu"
 
-#: src/window.rs:510
+#: src/window.rs:488
 msgid "No available song found"
 msgstr "Nie odnaleziono dostępnego utworu"
 
-#: src/window.rs:571
+#: src/window.rs:549
 msgid "No songs found"
 msgstr "Nie odnaleziono żadnych utworów"
 
-#: src/window.rs:604
+#: src/window.rs:582
 msgid "Added a new song"
 msgstr "Dodano nowy utwór"
 
-#: src/window.rs:605
+#: src/window.rs:583
 msgid "Play"
 msgstr "Odtwórz"
 
 #. Translators: the `{}` must be left unmodified;
 #. it will be expanded to the number of songs added
 #. to the playlist
-#: src/window.rs:614
+#: src/window.rs:592
 msgid "Added one song"
 msgid_plural "Added {} songs"
 msgstr[0] "Dodano jeden utwór"
 msgstr[1] "Dodano {} utwory"
 msgstr[2] "Dodano {} utworów"
 
-#: src/window.rs:1244
+#: src/window.rs:1222
 msgid "Unable to access dropped files"
 msgstr "Nie można otworzyć przeciągniętych plików"
 
-#: src/window.rs:1338
+#: src/window.rs:1316
 msgid "{} minute"
 msgid_plural "{} minutes"
 msgstr[0] "{} minuta"
 msgstr[1] "{} minuty"
 msgstr[2] "{} minut"
 
-#: src/window.rs:1349
+#: src/window.rs:1327
 msgid "{hours} hour {minutes} remaining"
 msgid_plural "{hours} hours {minutes} remaining"
 msgstr[0] "Pozostała {hours} godzina i {minutes}"
@@ -444,20 +472,20 @@ msgstr[2] "Pozostało {hours} godzin i {minutes}"
 #. Translators: the '{}' must be left unmodified, and
 #. it will be replaced by the number of minutes remaining
 #. in the playlist
-#: src/window.rs:1359
+#: src/window.rs:1337
 msgid "{} minute remaining"
 msgid_plural "{} minutes remaining"
 msgstr[0] "Pozostała {} minuta"
 msgstr[1] "Pozostały {} minuty"
 msgstr[2] "Pozostało {} minut"
 
-#: src/window.rs:1459
+#: src/window.rs:1441
 msgid "No song selected"
 msgstr "Nie zaznaczono żadnego utworu"
 
 #. Translators: The '{}' must be left unmodified, and
 #. it is expanded to the number of songs selected
-#: src/window.rs:1464
+#: src/window.rs:1446
 msgid "{} song selected"
 msgid_plural "{} songs selected"
 msgstr[0] "Zaznaczono {} utwór"
@@ -467,6 +495,6 @@ msgstr[2] "Zaznaczono {} utworów"
 #. Translators: `{title}` and `{artist}` must be left
 #. untranslated; they will expand to the title and
 #. artist of the currently playing song, respectively
-#: src/window.rs:1520
+#: src/window.rs:1502
 msgid "Currently playing “{title}” by “{artist}”"
 msgstr "Odtwarzanie utworu „{title}” — {artist}"
