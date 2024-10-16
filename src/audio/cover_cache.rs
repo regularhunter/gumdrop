@@ -92,7 +92,16 @@ impl CoverCache {
         // caches out of the water, which will slow down loading the song into the
         // playlist model
         if let Some(p) = path {
-            let ext_covers = vec!["Cover.jpg", "Cover.png", "cover.jpg", "cover.png"];
+            let ext_covers = vec![
+                "Cover.jpg",
+                "Cover.png",
+                "cover.jpg",
+                "cover.png",
+                "Folder.jpg",
+                "Folder.png",
+                "folder.jpg",
+                "folder.png",
+            ];
 
             for name in ext_covers {
                 let mut cover_file = PathBuf::from(p);
