@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Replaced unmaintained mpris-player crate with mpris-server [!150]
+- Replaced deprecated gsteamer-player with gstreamer-play [!152]
 - Translation updates
 
 ### Fixed
