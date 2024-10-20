@@ -61,6 +61,14 @@ if reuse.found()
   )
 endif
 
+test('lint',
+  find_program('build-aux/checks.sh'),
+  args: ['--tap'],
+  protocol: 'tap',
+  workdir: meson.project_source_root(),
+  suite: ['lint'],
+)
+
 meson.add_dist_script(
   'build-aux/dist-vendor.sh',
   meson.project_source_root(),
