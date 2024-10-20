@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- Use folder.* filenames for cover art [#395]
+
 ### Changed
 
 - Replaced unmaintained mpris-player crate with mpris-server [!150]
@@ -14,6 +16,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - UI and CSS cleanups and improvements [!167]
+- Rename the appdata file [#279]
 
 ### Removed
 
