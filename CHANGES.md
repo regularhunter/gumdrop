@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Use folder.* filenames for cover art [#395]
+- Use `XDG_MUSIC_DIR` as the initial folder when adding songs [#373]
 
 ### Changed
 
