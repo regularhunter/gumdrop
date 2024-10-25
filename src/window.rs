@@ -146,9 +146,15 @@ mod imp {
                 filter.add_mime_type("audio/*");
                 filters.append(&filter);
 
+                let xdg_music = match glib::user_special_dir(glib::UserDirectory::Music) {
+                    Some(p) => p,
+                    None => glib::current_dir(),
+                };
+
                 let dialog = gtk::FileDialog::builder()
                     .accept_label(&i18n("_Add Song"))
                     .filters(&filters)
+                    .initial_folder(&gio::File::for_path(&xdg_music))
                     .modal(true)
                     .title(&i18n("Open File"))
                     .build();
@@ -163,8 +169,14 @@ mod imp {
             });
             klass.install_action_async("queue.add-folder", None, |win, _, _| async move {
                 debug!("Window::win.add-folder()");
+                let xdg_music = match glib::user_special_dir(glib::UserDirectory::Music) {
+                    Some(p) => p,
+                    None => glib::current_dir(),
+                };
+
                 let dialog = gtk::FileDialog::builder()
                     .accept_label(&i18n("_Add Folder"))
+                    .initial_folder(&gio::File::for_path(&xdg_music))
                     .modal(true)
                     .title(&i18n("Open Folder"))
                     .build();

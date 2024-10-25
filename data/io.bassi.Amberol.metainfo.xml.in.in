@@ -63,6 +63,17 @@
     <control>touch</control>
   </recommends>
   <releases>
+    <release version="2024.2" date="2024-10-25">
+      <description>
+        <ul>
+          <li>Check for more file names for external album covers</li>
+          <li>Update the MPRIS implementation for better conformance</li>
+          <li>Set the Music folder as the initial location when adding songs</li>
+          <li>Various style improvements</li>
+          <li>Translation updates</li>
+        </ul>
+      </description>
+    </release>
     <release version="2024.1" date="2024-09-21">
       <description>
         <p>New versioning scheme! Amberol has switched to a year/release version.</p>
