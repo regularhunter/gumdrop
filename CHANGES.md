@@ -6,6 +6,16 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+## [2024.2] - 2024-10-25
+
+### Added
+
 - Use folder.* filenames for cover art [#395]
 - Use `XDG_MUSIC_DIR` as the initial folder when adding songs [#373]
 
@@ -19,8 +29,6 @@ All notable changes to this project will be documented in this file.
 
 - UI and CSS cleanups and improvements [!167]
 - Rename the appdata file [#279]
-
-### Removed
 
 ## [2024.1] - 2024-09-21
 
