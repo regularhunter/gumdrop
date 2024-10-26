@@ -8,9 +8,9 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: amberol main\n"
-"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/amberol/issues\n"
-"POT-Creation-Date: 2023-05-23 19:06+0000\n"
-"PO-Revision-Date: 2023-06-02 16:22+0200\n"
+"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/amberol/-/issues/\n"
+"POT-Creation-Date: 2024-09-24 12:08+0000\n"
+"PO-Revision-Date: 2024-10-26 13:20+0200\n"
 "Last-Translator: Daniel Rusek <mail@asciiwolf.com>\n"
 "Language-Team: \n"
 "Language: cs\n"
@@ -18,7 +18,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n>=2 && n<=4 ? 1 : 2);\n"
-"X-Generator: Poedit 3.3.1\n"
+"X-Generator: Poedit 3.5\n"
 
 #: data/io.bassi.Amberol.desktop.in.in:3
 #: data/io.bassi.Amberol.appdata.xml.in.in:6
@@ -62,7 +62,7 @@ msgstr "UI měnící barvu na základě obrázku alba"
 
 #: data/io.bassi.Amberol.appdata.xml.in.in:18
 msgid "drag and drop support to queue songs"
-msgstr "podpora přetahování písní do řady"
+msgstr "podpora přetahování skladeb do řady"
 
 #: data/io.bassi.Amberol.appdata.xml.in.in:19
 msgid "shuffle and repeat"
@@ -72,7 +72,7 @@ msgstr "náhodné a opakovat"
 msgid "MPRIS integration"
 msgstr "integrace MPRIS"
 
-#: data/io.bassi.Amberol.appdata.xml.in.in:42
+#: data/io.bassi.Amberol.appdata.xml.in.in:48
 msgid "Emmanuele Bassi"
 msgstr "Emmanuele Bassi"
 
@@ -80,15 +80,15 @@ msgstr "Emmanuele Bassi"
 msgid "Playback in progress"
 msgstr "Probíhá přehrávání"
 
-#: src/audio/song.rs:325
+#: src/audio/song.rs:317
 msgid "Unknown artist"
 msgstr "Neznámý umělec"
 
-#: src/audio/song.rs:332
+#: src/audio/song.rs:324
 msgid "Unknown title"
 msgstr "Neznámý název"
 
-#: src/audio/song.rs:339
+#: src/audio/song.rs:331
 msgid "Unknown album"
 msgstr "Neznámé album"
 
@@ -105,7 +105,7 @@ msgstr "Zobrazit/skrýt hlavní nabídku"
 #: src/gtk/help-overlay.ui:20
 msgctxt "shortcut window"
 msgid "Copy song details to the clipboard"
-msgstr "Zkopírovat detaily písně do schránky"
+msgstr "Zkopírovat detaily skladby do schránky"
 
 #: src/gtk/help-overlay.ui:26
 msgctxt "shortcut window"
@@ -295,35 +295,59 @@ msgstr "_O aplikaci Amberol"
 msgid "_Quit"
 msgstr "_Ukončit"
 
-#: src/gtk/playlist-view.ui:19
+#: src/gtk/playlist-view.ui:17
+msgid "Search Songs in the Playlist"
+msgstr "Hledat skladby v seznamu"
+
+#: src/gtk/playlist-view.ui:28
 msgid "Playlist"
 msgstr "Seznam skladeb"
 
 #: src/gtk/playlist-view.ui:49
-msgid "Search Songs in the Playlist"
-msgstr "Hledat skladby v seznamu"
-
-#: src/gtk/playlist-view.ui:61
 msgid "Select Songs in the Playlist"
 msgstr "Vybrat skladby v seznamu"
 
-#: src/gtk/playlist-view.ui:74
+#: src/gtk/playlist-view.ui:58
 msgid "Close the Playlist"
 msgstr "Zavřít seznam skladeb"
 
-#: src/gtk/playlist-view.ui:135
+#: src/gtk/playlist-view.ui:67
+msgid "Search songs"
+msgstr "Hledat skladby"
+
+#: src/gtk/playlist-view.ui:70
+msgctxt "a11y"
+msgid "Search"
+msgstr "Hledat"
+
+#: src/gtk/playlist-view.ui:71
+msgctxt "a11y"
+msgid "Type to search songs"
+msgstr "Zadáním vyhledáte skladby"
+
+#: src/gtk/playlist-view.ui:117
 msgid "Select All Songs"
 msgstr "Vybrat všechny skladby"
 
-#: src/gtk/playlist-view.ui:148
+#: src/gtk/playlist-view.ui:130
 msgid "Remove Selected Songs"
 msgstr "Odebrat vybrané skladby"
 
-#: src/gtk/window.ui:12
+#: src/gtk/queue-row.ui:27
+msgctxt "a11y"
+msgid "No cover available"
+msgstr "Žádný dostupný obrázek alba"
+
+#: src/gtk/queue-row.ui:84
+msgctxt "a11y"
+msgid "Currently playing"
+msgstr "Momentálně se přehrává"
+
+#: src/gtk/window.ui:13
 msgid "Drop a song to add it to the playlist"
 msgstr "Přetáhněte skladbu pro její přidání do seznamu skladeb"
 
-#: src/gtk/window.ui:49
+#: src/gtk/window.ui:43
 msgid ""
 "Select a file or a folder, or drag files from your file manager to the "
 "application window to add songs to the playlist"
@@ -331,36 +355,40 @@ msgstr ""
 "Vyberte soubor nebo složku, nebo přetáhněte soubory ze svého správce souborů "
 "do okna aplikace, abyste přidali skladby do seznamu"
 
-#: src/gtk/window.ui:58
+#: src/gtk/window.ui:52
 msgid "Restore Playlist"
 msgstr "Obnovit seznam skladeb"
 
-#: src/gtk/window.ui:68
+#: src/gtk/window.ui:62
 msgid "Add Folder"
 msgstr "Přidat složku"
 
-#: src/gtk/window.ui:77
+#: src/gtk/window.ui:71
 msgid "Add Song"
 msgstr "Přidat skladbu"
 
-#: src/gtk/window.ui:161
+#: src/gtk/window.ui:148
 msgctxt "a11y"
 msgid "Elapsed time"
 msgstr "Uběhnutý čas"
 
-#: src/gtk/window.ui:173
+#: src/gtk/window.ui:160
 msgctxt "a11y"
 msgid "Remaining time"
 msgstr "Zbývající čas"
 
 #. Translators: Replace "translator-credits" with your names, one name per line
-#: src/application.rs:229
+#: src/application.rs:243
 msgid "translator-credits"
 msgstr "Písek Pískovec <pisekpiskovec@gmail.com>"
 
-#: src/application.rs:241
+#: src/application.rs:255
 msgid "Amberol needs to run in the background to play music"
 msgstr "Amberol musí běžet na pozadí, aby hrál hudbu"
+
+#: src/cover_picture.rs:75
+msgid "Cover image"
+msgstr "Obrázek alba"
 
 #: src/playback_control.rs:118
 msgid "Repeat All Songs"
@@ -370,68 +398,68 @@ msgstr "Opakovat všechny skladby"
 msgid "Repeat the Current Song"
 msgstr "Opakovat současnou skladbu"
 
-#: src/window.rs:432
+#: src/window.rs:145
 msgid "Audio files"
 msgstr "Zvukové soubory"
 
-#: src/window.rs:437
+#: src/window.rs:150
 msgid "_Add Song"
 msgstr "_Přidat skladbu"
 
-#: src/window.rs:440
+#: src/window.rs:153
 msgid "Open File"
 msgstr "Otevřít soubor"
 
-#: src/window.rs:445 src/window.rs:465 src/window.rs:1365
+#: src/window.rs:158 src/window.rs:174 src/window.rs:1462
 msgid "Unable to access files"
 msgstr "Nelze získat přístup k souborům"
 
-#: src/window.rs:457
+#: src/window.rs:167
 msgid "_Add Folder"
 msgstr "_Přidat složku"
 
-#: src/window.rs:459
+#: src/window.rs:169
 msgid "Open Folder"
 msgstr "Otevřít složku"
 
-#: src/window.rs:482
+#: src/window.rs:488
 msgid "No available song found"
 msgstr "Nenalezeny dostupné skladby"
 
-#: src/window.rs:539
+#: src/window.rs:549
 msgid "No songs found"
 msgstr "Nalezeny žádné skladby"
 
-#: src/window.rs:569
+#: src/window.rs:582
 msgid "Added a new song"
 msgstr "Nová skladba přidána"
 
-#: src/window.rs:570
+#: src/window.rs:583
 msgid "Play"
 msgstr "Přehrát"
 
 #. Translators: the `{}` must be left unmodified;
 #. it will be expanded to the number of songs added
 #. to the playlist
-#: src/window.rs:579
+#: src/window.rs:592
 msgid "Added one song"
 msgid_plural "Added {} songs"
 msgstr[0] "Přidána jedna skladba"
 msgstr[1] "Přidány {} skladby"
 msgstr[2] "Přidáno {} skladeb"
 
-#: src/window.rs:1129
+#: src/window.rs:1222
 msgid "Unable to access dropped files"
 msgstr "Nelze získat přístup k vloženým souborům"
 
-#: src/window.rs:1223
+#: src/window.rs:1316
 msgid "{} minute"
 msgid_plural "{} minutes"
 msgstr[0] "{} minuta"
 msgstr[1] "{} minuty"
 msgstr[2] "{} minut"
 
-#: src/window.rs:1234
+#: src/window.rs:1327
 msgid "{hours} hour {minutes} remaining"
 msgid_plural "{hours} hours {minutes} remaining"
 msgstr[0] "Zbývá {hours} hodina {minutes}"
@@ -441,20 +469,20 @@ msgstr[2] "Zbývá {hours} hodin {minutes}"
 #. Translators: the '{}' must be left unmodified, and
 #. it will be replaced by the number of minutes remaining
 #. in the playlist
-#: src/window.rs:1244
+#: src/window.rs:1337
 msgid "{} minute remaining"
 msgid_plural "{} minutes remaining"
 msgstr[0] "Zbývá {} minuta"
 msgstr[1] "Zbývá {} minuty"
 msgstr[2] "Zbývá {} minut"
 
-#: src/window.rs:1344
+#: src/window.rs:1441
 msgid "No song selected"
 msgstr "Nevybrána žádná skladba"
 
 #. Translators: The '{}' must be left unmodified, and
 #. it is expanded to the number of songs selected
-#: src/window.rs:1349
+#: src/window.rs:1446
 msgid "{} song selected"
 msgid_plural "{} songs selected"
 msgstr[0] "Vybrána {} skladba"
@@ -464,7 +492,7 @@ msgstr[2] "Vybráno {} skladeb"
 #. Translators: `{title}` and `{artist}` must be left
 #. untranslated; they will expand to the title and
 #. artist of the currently playing song, respectively
-#: src/window.rs:1403
+#: src/window.rs:1502
 msgid "Currently playing “{title}” by “{artist}”"
 msgstr "Právě hraje “{title}” od “{artist}”"
 
