@@ -1,15 +1,15 @@
 # Dutch translation for amberol.
 # Copyright (C) 2022 amberol's COPYRIGHT HOLDER
 # This file is distributed under the same license as the amberol package.
-# Philip Goto <Philip.goto@gmail.com>, 2022.
-# Nathan Follens <nfollens@gnome.org>, 2022-2023.
+# Philip Goto <philip.goto@gmail.com>, 2022.
+# Nathan Follens <nfollens@gnome.org>, 2022-2024.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: amberol main\n"
-"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/amberol/issues\n"
-"POT-Creation-Date: 2023-05-23 19:06+0000\n"
-"PO-Revision-Date: 2023-08-27 14:24+0200\n"
+"Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/amberol/-/issues/\n"
+"POT-Creation-Date: 2024-09-24 12:08+0000\n"
+"PO-Revision-Date: 2024-10-30 18:42+0100\n"
 "Last-Translator: Nathan Follens <nfollens@gnome.org>\n"
 "Language-Team: GNOME-NL https://matrix.to/#/#nl:gnome.org\n"
 "Language: nl\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.3.2\n"
+"X-Generator: Poedit 3.4.4\n"
 
 #: data/io.bassi.Amberol.desktop.in.in:3
 #: data/io.bassi.Amberol.appdata.xml.in.in:6
@@ -72,7 +72,7 @@ msgstr "in willekeurige volgorde afspelen en herhalen"
 msgid "MPRIS integration"
 msgstr "MPRIS-integratie"
 
-#: data/io.bassi.Amberol.appdata.xml.in.in:42
+#: data/io.bassi.Amberol.appdata.xml.in.in:48
 msgid "Emmanuele Bassi"
 msgstr "Emmanuele Bassi"
 
@@ -80,15 +80,15 @@ msgstr "Emmanuele Bassi"
 msgid "Playback in progress"
 msgstr "Bezig met afspelen"
 
-#: src/audio/song.rs:325
+#: src/audio/song.rs:317
 msgid "Unknown artist"
 msgstr "Onbekende artiest"
 
-#: src/audio/song.rs:332
+#: src/audio/song.rs:324
 msgid "Unknown title"
 msgstr "Onbekende titel"
 
-#: src/audio/song.rs:339
+#: src/audio/song.rs:331
 msgid "Unknown album"
 msgstr "Onbekend album"
 
@@ -295,35 +295,59 @@ msgstr "_Over Amberol"
 msgid "_Quit"
 msgstr "_Afsluiten"
 
-#: src/gtk/playlist-view.ui:19
+#: src/gtk/playlist-view.ui:17
+msgid "Search Songs in the Playlist"
+msgstr "Nummers in de afspeellijst zoeken"
+
+#: src/gtk/playlist-view.ui:28
 msgid "Playlist"
 msgstr "Afspeellijst"
 
 #: src/gtk/playlist-view.ui:49
-msgid "Search Songs in the Playlist"
-msgstr "Nummers in de afspeellijst zoeken"
-
-#: src/gtk/playlist-view.ui:61
 msgid "Select Songs in the Playlist"
 msgstr "Nummers in de afspeellijst selecteren"
 
-#: src/gtk/playlist-view.ui:74
+#: src/gtk/playlist-view.ui:58
 msgid "Close the Playlist"
 msgstr "De afspeellijst sluiten"
 
-#: src/gtk/playlist-view.ui:135
+#: src/gtk/playlist-view.ui:67
+msgid "Search songs"
+msgstr "Zoek naar nummers"
+
+#: src/gtk/playlist-view.ui:70
+msgctxt "a11y"
+msgid "Search"
+msgstr "Zoeken"
+
+#: src/gtk/playlist-view.ui:71
+msgctxt "a11y"
+msgid "Type to search songs"
+msgstr "Typ om nummers te zoeken"
+
+#: src/gtk/playlist-view.ui:117
 msgid "Select All Songs"
 msgstr "Alle nummers selecteren"
 
-#: src/gtk/playlist-view.ui:148
+#: src/gtk/playlist-view.ui:130
 msgid "Remove Selected Songs"
 msgstr "Geselecteerde nummers verwijderen"
 
-#: src/gtk/window.ui:12
+#: src/gtk/queue-row.ui:27
+msgctxt "a11y"
+msgid "No cover available"
+msgstr "Geen hoes beschikbaar"
+
+#: src/gtk/queue-row.ui:84
+msgctxt "a11y"
+msgid "Currently playing"
+msgstr "U luistert naar"
+
+#: src/gtk/window.ui:13
 msgid "Drop a song to add it to the playlist"
 msgstr "Sleep een nummer hierheen om het aan de wachtrij toe te voegen"
 
-#: src/gtk/window.ui:49
+#: src/gtk/window.ui:43
 msgid ""
 "Select a file or a folder, or drag files from your file manager to the "
 "application window to add songs to the playlist"
@@ -331,40 +355,44 @@ msgstr ""
 "Selecteer een bestand of map of sleep bestanden van uw bestandsbeheerder "
 "naar het toepassingsvenster om nummers aan de afspeellijst toe te voegen"
 
-#: src/gtk/window.ui:58
+#: src/gtk/window.ui:52
 msgid "Restore Playlist"
 msgstr "Afspeellijst herstellen"
 
-#: src/gtk/window.ui:68
+#: src/gtk/window.ui:62
 msgid "Add Folder"
 msgstr "Map toevoegen"
 
-#: src/gtk/window.ui:77
+#: src/gtk/window.ui:71
 msgid "Add Song"
 msgstr "Nummer toevoegen"
 
-#: src/gtk/window.ui:161
+#: src/gtk/window.ui:148
 msgctxt "a11y"
 msgid "Elapsed time"
 msgstr "Verstreken tijd"
 
-#: src/gtk/window.ui:173
+#: src/gtk/window.ui:160
 msgctxt "a11y"
 msgid "Remaining time"
 msgstr "Resterende tijd"
 
 #. Translators: Replace "translator-credits" with your names, one name per line
-#: src/application.rs:229
+#: src/application.rs:243
 msgid "translator-credits"
 msgstr ""
-"Philip Goto\n"
+"Philip Goto <philip.goto@gmail.com>\n"
 "Nathan Follens <nfollens@gnome.org>\n"
 "Meer info over GNOME-NL https://nl.gnome.org"
 
-#: src/application.rs:241
+#: src/application.rs:255
 msgid "Amberol needs to run in the background to play music"
 msgstr ""
 "Amberol moet op de achtergrond uitgevoerd worden om muziek te kunnen afspelen"
+
+#: src/cover_picture.rs:75
+msgid "Cover image"
+msgstr "Albumhoes"
 
 #: src/playback_control.rs:118
 msgid "Repeat All Songs"
@@ -374,66 +402,66 @@ msgstr "Alle nummers herhalen"
 msgid "Repeat the Current Song"
 msgstr "Het huidige nummer herhalen"
 
-#: src/window.rs:432
+#: src/window.rs:145
 msgid "Audio files"
 msgstr "Audiobestanden"
 
-#: src/window.rs:437
+#: src/window.rs:150
 msgid "_Add Song"
 msgstr "Nummer _toevoegen"
 
-#: src/window.rs:440
+#: src/window.rs:153
 msgid "Open File"
 msgstr "Bestand openen"
 
-#: src/window.rs:445 src/window.rs:465 src/window.rs:1365
+#: src/window.rs:158 src/window.rs:174 src/window.rs:1462
 msgid "Unable to access files"
 msgstr "Geen toegang tot bestanden"
 
-#: src/window.rs:457
+#: src/window.rs:167
 msgid "_Add Folder"
 msgstr "Map _toevoegen"
 
-#: src/window.rs:459
+#: src/window.rs:169
 msgid "Open Folder"
 msgstr "Map openen"
 
-#: src/window.rs:482
+#: src/window.rs:488
 msgid "No available song found"
 msgstr "Geen beschikbaar nummer gevonden"
 
-#: src/window.rs:539
+#: src/window.rs:549
 msgid "No songs found"
 msgstr "Geen nummers gevonden"
 
-#: src/window.rs:569
+#: src/window.rs:582
 msgid "Added a new song"
 msgstr "Nieuw nummer toegevoegd"
 
-#: src/window.rs:570
+#: src/window.rs:583
 msgid "Play"
 msgstr "Afspelen"
 
 #. Translators: the `{}` must be left unmodified;
 #. it will be expanded to the number of songs added
 #. to the playlist
-#: src/window.rs:579
+#: src/window.rs:592
 msgid "Added one song"
 msgid_plural "Added {} songs"
 msgstr[0] "Eén nummer toegevoegd"
 msgstr[1] "{} nummers toegevoegd"
 
-#: src/window.rs:1129
+#: src/window.rs:1222
 msgid "Unable to access dropped files"
 msgstr "Geen toegang tot ingesleepte bestanden"
 
-#: src/window.rs:1223
+#: src/window.rs:1316
 msgid "{} minute"
 msgid_plural "{} minutes"
 msgstr[0] "{} minuut"
 msgstr[1] "{} minuten"
 
-#: src/window.rs:1234
+#: src/window.rs:1327
 msgid "{hours} hour {minutes} remaining"
 msgid_plural "{hours} hours {minutes} remaining"
 msgstr[0] "{hours} uur {minutes} resterend"
@@ -442,19 +470,19 @@ msgstr[1] "{hours} uur {minutes} resterend"
 #. Translators: the '{}' must be left unmodified, and
 #. it will be replaced by the number of minutes remaining
 #. in the playlist
-#: src/window.rs:1244
+#: src/window.rs:1337
 msgid "{} minute remaining"
 msgid_plural "{} minutes remaining"
 msgstr[0] "{} minuut resterend"
 msgstr[1] "{} minuten resterend"
 
-#: src/window.rs:1344
+#: src/window.rs:1441
 msgid "No song selected"
 msgstr "Geen nummers geselecteerd"
 
 #. Translators: The '{}' must be left unmodified, and
 #. it is expanded to the number of songs selected
-#: src/window.rs:1349
+#: src/window.rs:1446
 msgid "{} song selected"
 msgid_plural "{} songs selected"
 msgstr[0] "{} nummer geselecteerd"
@@ -463,7 +491,7 @@ msgstr[1] "{} nummers geselecteerd"
 #. Translators: `{title}` and `{artist}` must be left
 #. untranslated; they will expand to the title and
 #. artist of the currently playing song, respectively
-#: src/window.rs:1403
+#: src/window.rs:1502
 msgid "Currently playing “{title}” by “{artist}”"
 msgstr "‘{title}’ door ‘{artist}’ aan het afspelen"
 
