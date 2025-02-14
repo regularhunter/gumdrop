@@ -2,14 +2,14 @@
 # Copyright (C) 2024 amberol's COPYRIGHT HOLDER
 # This file is distributed under the same license as the amberol package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-# Emilio Sepúlveda <emism.translations@gmail.com>, 2024.
+# Emilio Sepúlveda <emism.translations@gmail.com>, 2024-2025.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: amberol main\n"
 "Report-Msgid-Bugs-To: https://gitlab.gnome.org/World/amberol/-/issues/\n"
-"POT-Creation-Date: 2024-10-03 16:59+0000\n"
-"PO-Revision-Date: 2024-10-06 15:30-0300\n"
+"POT-Creation-Date: 2024-10-12 00:23+0000\n"
+"PO-Revision-Date: 2025-02-14 11:07-0300\n"
 "Last-Translator: Emilio Sepúlveda <emism.translations@gmail.com>\n"
 "Language-Team: Interlingua\n"
 "Language: ia\n"
@@ -22,10 +22,10 @@ msgstr ""
 "X-DL-Branch: main\n"
 "X-DL-Domain: po\n"
 "X-DL-State: Translating\n"
-"X-Generator: Gtranslator 46.1\n"
+"X-Generator: Gtranslator 47.1\n"
 
 #: data/io.bassi.Amberol.desktop.in.in:3
-#: data/io.bassi.Amberol.appdata.xml.in.in:6
+#: data/io.bassi.Amberol.metainfo.xml.in.in:6
 msgid "Amberol"
 msgstr "Amberol"
 
@@ -38,42 +38,45 @@ msgstr "Reproductor de musica"
 msgid "music;player;media;audio;playlist;"
 msgstr "musica;reproductor;medios;audio;lista de reproduction;"
 
-#: data/io.bassi.Amberol.appdata.xml.in.in:7
+#: data/io.bassi.Amberol.metainfo.xml.in.in:7
 msgid "Plays music, and nothing else"
 msgstr "Reproduce musica e nihil plus"
 
-#: data/io.bassi.Amberol.appdata.xml.in.in:9
+#: data/io.bassi.Amberol.metainfo.xml.in.in:9
 msgid ""
 "Amberol is a music player with no delusions of grandeur. If you just want to "
 "play music available on your local system then Amberol is the music player "
 "you are looking for."
 msgstr ""
+"Amberol es un reproductor de musica sin delusion de grandiositate. Si tu "
+"solmente vole reproducer musica disponibile in tu systema local, alora "
+"Amberol es le reproductor que tu sta cercante."
 
-#: data/io.bassi.Amberol.appdata.xml.in.in:14
+#: data/io.bassi.Amberol.metainfo.xml.in.in:14
 msgid "Current features:"
 msgstr "Functionalitates actual:"
 
-#: data/io.bassi.Amberol.appdata.xml.in.in:16
+#: data/io.bassi.Amberol.metainfo.xml.in.in:16
 msgid "adaptive UI"
-msgstr ""
+msgstr "IU adaptative"
 
-#: data/io.bassi.Amberol.appdata.xml.in.in:17
+#: data/io.bassi.Amberol.metainfo.xml.in.in:17
 msgid "UI recoloring using the album art"
 msgstr "Recoloration de IU usante le copertura de album"
 
-#: data/io.bassi.Amberol.appdata.xml.in.in:18
+#: data/io.bassi.Amberol.metainfo.xml.in.in:18
 msgid "drag and drop support to queue songs"
 msgstr "supporto de traher e deponer pro adder cantos al cauda"
 
-#: data/io.bassi.Amberol.appdata.xml.in.in:19
+#: data/io.bassi.Amberol.metainfo.xml.in.in:19
 msgid "shuffle and repeat"
-msgstr ""
+msgstr "miscer e repeter"
 
-#: data/io.bassi.Amberol.appdata.xml.in.in:20
+#: data/io.bassi.Amberol.metainfo.xml.in.in:20
 msgid "MPRIS integration"
 msgstr "Integration de MPRIS"
 
-#: data/io.bassi.Amberol.appdata.xml.in.in:48
+#: data/io.bassi.Amberol.metainfo.xml.in.in:48
 msgid "Emmanuele Bassi"
 msgstr "Emmanuele Bassi"
 
@@ -83,15 +86,15 @@ msgstr "Reproduction in curso"
 
 #: src/audio/song.rs:317
 msgid "Unknown artist"
-msgstr "Artista incognite"
+msgstr "Artista non cognoscite"
 
 #: src/audio/song.rs:324
 msgid "Unknown title"
-msgstr "Titulo incognite"
+msgstr "Titulo non cognoscite"
 
 #: src/audio/song.rs:331
 msgid "Unknown album"
-msgstr "Album incognite"
+msgstr "Album non cognoscite"
 
 #: src/gtk/help-overlay.ui:11
 msgctxt "shortcut window"
@@ -101,7 +104,7 @@ msgstr "General"
 #: src/gtk/help-overlay.ui:14
 msgctxt "shortcut window"
 msgid "Toggle primary menu"
-msgstr "Commutar le menu primari"
+msgstr "Commutar menu primari"
 
 #: src/gtk/help-overlay.ui:20
 msgctxt "shortcut window"
@@ -111,7 +114,7 @@ msgstr "Copiar le detalios de canto al area de transferentia"
 #: src/gtk/help-overlay.ui:26
 msgctxt "shortcut window"
 msgid "Show shortcuts"
-msgstr "Monstrar le accessos directe"
+msgstr "Monstrar commandos curte"
 
 #: src/gtk/help-overlay.ui:32
 msgctxt "shortcut window"
@@ -126,7 +129,7 @@ msgstr "Lista de reproduction"
 #: src/gtk/help-overlay.ui:43
 msgctxt "shortcut window"
 msgid "Add a song to the playlist"
-msgstr "Adder un canto al lista de reproduction"
+msgstr "Adder un cantion al lista de reproduction"
 
 #: src/gtk/help-overlay.ui:49
 msgctxt "shortcut window"
@@ -136,17 +139,17 @@ msgstr "Adder un dossier al lista de reproduction"
 #: src/gtk/help-overlay.ui:55
 msgctxt "shortcut window"
 msgid "Clear the playlist"
-msgstr "Rader le lista de reproduction"
+msgstr "Nettar le lista de reproduction"
 
 #: src/gtk/help-overlay.ui:61
 msgctxt "shortcut window"
 msgid "Toggle the playlist pane"
-msgstr ""
+msgstr "Commutar le subfenestra de lista de reproduction"
 
 #: src/gtk/help-overlay.ui:67
 msgctxt "shortcut window"
 msgid "Toggle shuffling songs"
-msgstr ""
+msgstr "Commutar le miscimento de cantiones"
 
 #: src/gtk/help-overlay.ui:75
 msgctxt "shortcut window"
@@ -161,26 +164,26 @@ msgstr "Commutar reproducer/pausar"
 #: src/gtk/help-overlay.ui:84
 msgctxt "shortcut window"
 msgid "Previous song"
-msgstr "Canto previe"
+msgstr "Cantion precedente"
 
 #: src/gtk/help-overlay.ui:90
 msgctxt "shortcut window"
 msgid "Next song"
-msgstr "Canto sequente"
+msgstr "Cantion sequente"
 
 #: src/gtk/help-overlay.ui:96
 msgctxt "shortcut window"
 msgid "Seek backwards in the current song"
-msgstr "Cercar a retro in le canto actual"
+msgstr "Cercar a retro in le cantion actual"
 
 #: src/gtk/help-overlay.ui:102
 msgctxt "shortcut window"
 msgid "Seek forward in the current song"
-msgstr "Cercar avante in le canto actual"
+msgstr "Cercar avante in le cantion actual"
 
 #: src/gtk/playback-control.ui:21
 msgid "Play the Previous Song"
-msgstr "Reproducer le canto previe"
+msgstr "Reproducer le cantion precedente"
 
 #: src/gtk/playback-control.ui:26
 msgctxt "a11y"
@@ -189,16 +192,16 @@ msgstr "Saltar retro"
 
 #: src/gtk/playback-control.ui:35
 msgid "Toggle Play"
-msgstr ""
+msgstr "Commutar reproduction"
 
 #: src/gtk/playback-control.ui:41
 msgctxt "a11y"
 msgid "Toggle play"
-msgstr ""
+msgstr "Commutar reproduction"
 
 #: src/gtk/playback-control.ui:50
 msgid "Play the Next Song"
-msgstr "Reproducer le sequente canto"
+msgstr "Reproducer le sequente cantion"
 
 #: src/gtk/playback-control.ui:55
 msgctxt "a11y"
@@ -216,12 +219,12 @@ msgstr "Commutar le lista de reproduction"
 
 #: src/gtk/playback-control.ui:92
 msgid "Shuffle the Playlist"
-msgstr ""
+msgstr "Miscer le lista de reproduction"
 
 #: src/gtk/playback-control.ui:94
 msgctxt "a11y"
 msgid "Shuffle"
-msgstr "Aleatori"
+msgstr "Miscer"
 
 #: src/gtk/playback-control.ui:113 src/playback_control.rs:114
 msgid "Enable Repeat"
@@ -247,19 +250,19 @@ msgstr "Copiar"
 
 #: src/gtk/playback-control.ui:157
 msgid "Add _Song"
-msgstr "Adder un _canto"
+msgstr "Adder _cantion"
 
 #: src/gtk/playback-control.ui:161
 msgid "Add _Folder"
-msgstr "Adder un _dossier"
+msgstr "Adder _dossier"
 
 #: src/gtk/playback-control.ui:165
 msgid "Clear"
-msgstr "Rader"
+msgstr "Nettar"
 
 #: src/gtk/playback-control.ui:171
 msgid "_Match Cover Art"
-msgstr ""
+msgstr "_Coincider con le arte de copertura"
 
 #: src/gtk/playback-control.ui:175
 msgid "_Background Playback"
@@ -267,7 +270,7 @@ msgstr "Reproduction in _secunde plano"
 
 #: src/gtk/playback-control.ui:181
 msgid "_ReplayGain"
-msgstr ""
+msgstr "_ReplayGain"
 
 #: src/gtk/playback-control.ui:183
 msgctxt "replaygain-menu"
@@ -277,16 +280,16 @@ msgstr "_Album"
 #: src/gtk/playback-control.ui:188
 msgctxt "replaygain-menu"
 msgid "_Song"
-msgstr "_Canto"
+msgstr "_Cantion"
 
 #: src/gtk/playback-control.ui:193
 msgctxt "replaygain-menu"
 msgid "_Disabled"
-msgstr "_Disactivate"
+msgstr "Dishabilitate"
 
 #: src/gtk/playback-control.ui:201
 msgid "_Keyboard Shortcuts"
-msgstr "Accessos directe de _claviero"
+msgstr "_Commandos curte de claviero"
 
 #: src/gtk/playback-control.ui:205
 msgid "_About Amberol"
@@ -298,7 +301,7 @@ msgstr "_Quitar"
 
 #: src/gtk/playlist-view.ui:14
 msgid "Search Songs in the Playlist"
-msgstr "Cercar cantos in le lista de reproduction"
+msgstr "Cercar cantiones in le lista de reproduction"
 
 #: src/gtk/playlist-view.ui:24
 msgid "Playlist"
@@ -310,7 +313,7 @@ msgstr "Clauder le lista de reproduction"
 
 #: src/gtk/playlist-view.ui:54
 msgid "Select Songs in the Playlist"
-msgstr "Seliger cantos in le lista de reproduction"
+msgstr "Selectionar cantos in le lista de reproduction"
 
 #: src/gtk/playlist-view.ui:63
 msgid "Search songs"
@@ -328,11 +331,11 @@ msgstr "Scribe pro cercar cantos"
 
 #: src/gtk/playlist-view.ui:113
 msgid "Select All Songs"
-msgstr "Seliger tote le cantos"
+msgstr "Selectionar tote le cantos"
 
 #: src/gtk/playlist-view.ui:126
 msgid "Remove Selected Songs"
-msgstr "Remover le cantos seligite"
+msgstr "Remover le cantos selectionate"
 
 #: src/gtk/queue-row.ui:27
 msgctxt "a11y"
@@ -353,8 +356,8 @@ msgid ""
 "Select a file or a folder, or drag files from your file manager to the "
 "application window to add songs to the playlist"
 msgstr ""
-"Selige un file o dossier o depone files ab tu gestor de files al fenestra de "
-"application pro adder cantos al lista de reproduction"
+"Selectiona un file o dossier o depone files ab tu gestor de files al "
+"fenestra de application pro adder cantos al lista de reproduction"
 
 #: src/gtk/window.ui:52
 msgid "Restore Playlist"
@@ -362,11 +365,11 @@ msgstr "Restaurar le lista de reproduction"
 
 #: src/gtk/window.ui:62
 msgid "Add Folder"
-msgstr "Adder un dossier"
+msgstr "Adder dossier"
 
 #: src/gtk/window.ui:71
 msgid "Add Song"
-msgstr "Adder un canto"
+msgstr "Adder cantion"
 
 #: src/gtk/window.ui:148
 msgctxt "a11y"
@@ -381,11 +384,11 @@ msgstr "Tempore restante"
 #. Translators: Replace "translator-credits" with your names, one name per line
 #: src/application.rs:243
 msgid "translator-credits"
-msgstr ""
+msgstr "Emilio Sepúlveda <emism.translations@gmail.com>"
 
 #: src/application.rs:255
 msgid "Amberol needs to run in the background to play music"
-msgstr "Amberol besonia exequer se in le fundo pro reproducer musica"
+msgstr "Amberol necessita executar se in le fundo pro reproducer musica"
 
 #: src/cover_picture.rs:75
 msgid "Cover image"
@@ -397,7 +400,7 @@ msgstr "Repeter tote le cantos"
 
 #: src/playback_control.rs:122
 msgid "Repeat the Current Song"
-msgstr "Repeter le canto actual"
+msgstr "Repeter le cantion actual"
 
 #: src/window.rs:145
 msgid "Audio files"
@@ -405,11 +408,11 @@ msgstr "Files de audio"
 
 #: src/window.rs:150
 msgid "_Add Song"
-msgstr "_Adder un canto"
+msgstr "_Adder cantion"
 
 #: src/window.rs:153
 msgid "Open File"
-msgstr "Aperir un file"
+msgstr "Aperir file"
 
 #: src/window.rs:158 src/window.rs:174 src/window.rs:1462
 msgid "Unable to access files"
@@ -417,23 +420,23 @@ msgstr "Non poteva acceder al files"
 
 #: src/window.rs:167
 msgid "_Add Folder"
-msgstr "_Adder un dossier"
+msgstr "_Adder dossier"
 
 #: src/window.rs:169
 msgid "Open Folder"
-msgstr "Aperir le dossier"
+msgstr "Aperir dossier"
 
 #: src/window.rs:488
 msgid "No available song found"
-msgstr "Necun canto disponibile trovate"
+msgstr "Necun cantion disponibile trovate"
 
 #: src/window.rs:549
 msgid "No songs found"
-msgstr "Nulle cantos trovate"
+msgstr "Nulle cantiones trovate"
 
 #: src/window.rs:582
 msgid "Added a new song"
-msgstr "Addite un nove canto"
+msgstr "Addite un nove cantion"
 
 #: src/window.rs:583
 msgid "Play"
@@ -445,8 +448,8 @@ msgstr "Reproducer"
 #: src/window.rs:592
 msgid "Added one song"
 msgid_plural "Added {} songs"
-msgstr[0] "Addite un canto"
-msgstr[1] "Addite {} cantos"
+msgstr[0] "Addite un cantion"
+msgstr[1] "Addite {} cantiones"
 
 #: src/window.rs:1222
 msgid "Unable to access dropped files"
@@ -475,15 +478,15 @@ msgstr[1] "{} minutas restante"
 
 #: src/window.rs:1441
 msgid "No song selected"
-msgstr "Nulle canto seligite"
+msgstr "Nulle cantion selectionate"
 
 #. Translators: The '{}' must be left unmodified, and
 #. it is expanded to the number of songs selected
 #: src/window.rs:1446
 msgid "{} song selected"
 msgid_plural "{} songs selected"
-msgstr[0] "{} canto seligite"
-msgstr[1] "{} cantos seligite"
+msgstr[0] "{} canto selectionate"
+msgstr[1] "{} cantos selectionate"
 
 #. Translators: `{title}` and `{artist}` must be left
 #. untranslated; they will expand to the title and
