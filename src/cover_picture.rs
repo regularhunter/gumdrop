@@ -1,4 +1,5 @@
 // SPDX-FileCopyrightText: 2022  Emmanuele Bassi
+// SPDX-FileCopyrightText: 2025  Hunter Wardlaw
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use std::cell::{Cell, RefCell};
@@ -9,7 +10,7 @@ use gtk::{gdk, gio, glib, graphene, gsk, prelude::*, subclass::prelude::*};
 use crate::i18n::i18n;
 
 #[derive(Clone, Copy, Debug, glib::Enum, PartialEq, Default)]
-#[enum_type(name = "AmberolCoverSize")]
+#[enum_type(name = "GumdropCoverSize")]
 pub enum CoverSize {
     #[default]
     Large = 0,
@@ -42,7 +43,7 @@ mod imp {
 
     #[glib::object_subclass]
     impl ObjectSubclass for CoverPicture {
-        const NAME: &'static str = "AmberolCoverPicture";
+        const NAME: &'static str = "GumdropCoverPicture";
         type Type = super::CoverPicture;
         type ParentType = gtk::Widget;
 

@@ -1,4 +1,5 @@
 // SPDX-FileCopyrightText: 2022  Emmanuele Bassi
+// SPDX-FileCopyrightText: 2025  Hunter Wardlaw
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use std::{cell::RefCell, rc::Rc};
@@ -37,7 +38,7 @@ mod imp {
 
     #[glib::object_subclass]
     impl ObjectSubclass for Application {
-        const NAME: &'static str = "AmberolApplication";
+        const NAME: &'static str = "GumdropApplication";
         type Type = super::Application;
         type ParentType = adw::Application;
 
@@ -120,7 +121,7 @@ impl Default for Application {
         glib::Object::builder::<Application>()
             .property("application-id", APPLICATION_ID)
             .property("flags", gio::ApplicationFlags::HANDLES_OPEN)
-            .property("resource-base-path", "/io/bassi/Amberol")
+            .property("resource-base-path", "/org/gnome/Gumdrop")
             .build()
     }
 }
@@ -231,13 +232,13 @@ impl Application {
         let window = self.active_window().unwrap();
         let dialog = adw::AboutDialog::builder()
             .application_icon(APPLICATION_ID)
-            .application_name("Amberol")
-            .developer_name("Emmanuele Bassi")
+            .application_name("Gumdrop")
+            .developer_name("Hunter Wardlaw")
             .version(VERSION)
-            .developers(vec!["Emmanuele Bassi"])
-            .copyright("© 2022 Emmanuele Bassi")
-            .website("https://apps.gnome.org/Amberol/")
-            .issue_url("https://gitlab.gnome.org/World/amberol/-/issues/new")
+            .developers(vec!["Hunter Wardlaw"])
+            .copyright("© 2025 Hunter Wardlaw")
+            .website("https://github.com/regularhunter/gumdrop")
+            .issue_url("https://github.com/regularhunter/gumdrop/issues")
             .license_type(gtk::License::Gpl30)
             // Translators: Replace "translator-credits" with your names, one name per line
             .translator_credits(i18n("translator-credits"))
@@ -252,7 +253,7 @@ impl Application {
             let root = window.native().unwrap();
             let identifier = WindowIdentifier::from_native(&root).await;
             let request = Background::request().identifier(identifier).reason(&*i18n(
-                "Amberol needs to run in the background to play music",
+                "Gumdrop needs to run in the background to play music",
             ));
 
             match request.send().await.and_then(|r| r.response()) {

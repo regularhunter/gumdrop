@@ -1,8 +1,8 @@
 [Desktop Entry]
-Name=Amberol
+Name=Gumdrop
 GenericName=Music Player
-TryExec=amberol
-Exec=amberol %U
+TryExec=gumdrop
+Exec=gumdrop %U
 Icon=@APPLICATION_ID@
 Terminal=false
 Type=Application

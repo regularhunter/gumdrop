@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <requires lib="gtk" version="4.0"/>
-  <template class="AmberolWindow" parent="AdwApplicationWindow">
+  <template class="GumdropWindow" parent="AdwApplicationWindow">
     <property name="handle-menubar-accel">true</property>
     <property name="width-request">360</property>
     <property name="height-request">660</property>
@@ -39,7 +39,7 @@
                                   <object class="AdwStatusPage" id="status_page">
                                     <property name="margin-start">12</property>
                                     <property name="margin-end">12</property>
-                                    <property name="title">Amberol</property>
+                                    <property name="title">Gumdrop</property>
                                     <property name="description" translatable="yes">Select a file or a folder, or drag files from your file manager to the application window to add songs to the playlist</property>
                                     <property name="child">
                                       <object class="GtkBox">
@@ -116,7 +116,7 @@
 
                                     <!-- Song cover -->
                                     <child>
-                                      <object class="AmberolSongCover" id="song_cover">
+                                      <object class="GumdropSongCover" id="song_cover">
                                       </object>
                                     </child>
 
@@ -130,7 +130,7 @@
                                           <object class="GtkBox">
                                             <property name="halign">center</property>
                                             <child>
-                                              <object class="AmberolWaveformView" id="waveform_view">
+                                              <object class="GumdropWaveformView" id="waveform_view">
                                                 <property name="can-focus">true</property>
                                               </object>
                                             </child>
@@ -172,12 +172,12 @@
 
                                     <!-- Song details -->
                                     <child>
-                                      <object class="AmberolSongDetails" id="song_details"/>
+                                      <object class="GumdropSongDetails" id="song_details"/>
                                     </child>
 
                                     <!-- Playback and queue controls -->
                                     <child>
-                                      <object class="AmberolPlaybackControl" id="playback_control">
+                                      <object class="GumdropPlaybackControl" id="playback_control">
                                         <property name="halign">center</property>
                                         <property name="margin-top">0</property>
                                         <property name="margin-bottom">24</property>
@@ -191,7 +191,7 @@
 
                             <!-- Playlist view -->
                             <property name="sidebar">
-                              <object class="AmberolPlaylistView" id="playlist_view"/>
+                              <object class="GumdropPlaylistView" id="playlist_view"/>
                             </property>
                           </object>
                         </property>

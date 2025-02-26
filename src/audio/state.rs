@@ -1,4 +1,5 @@
 // SPDX-FileCopyrightText: 2022  Emmanuele Bassi
+// SPDX-FileCopyrightText: 2025  Hunter Wardlaw
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use std::cell::{Cell, RefCell};
@@ -26,7 +27,7 @@ mod imp {
 
     #[glib::object_subclass]
     impl ObjectSubclass for PlayerState {
-        const NAME: &'static str = "AmberolPlayerState";
+        const NAME: &'static str = "GumdropPlayerState";
         type Type = super::PlayerState;
 
         fn new() -> Self {

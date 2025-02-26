@@ -3,6 +3,7 @@
 # SPDX-FileCopyrightText: 2021  Alejandro Domínguez
 # SPDX-FileCopyrightText: 2022  Kévin Commaile
 # SPDX-FileCopyrightText: 2024  Emmanuele Bassi
+# SPDX-FileCopyrightText: 2025  Hunter Wardlaw
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 export LC_ALL=C
@@ -295,9 +296,9 @@ check_potfiles() {
     fi
 }
 
-# Check if files in src/amberol.gresource.xml are sorted alphabetically.
+# Check if files in src/gumdrop.gresource.xml are sorted alphabetically.
 check_resources() {
-    [ $tap -eq 0 ] && echo -e "$Checking src/amberol.gresource.xml…"
+    [ $tap -eq 0 ] && echo -e "$Checking src/gumdrop.gresource.xml…"
 
     local ret=0
 
@@ -307,15 +308,15 @@ check_resources() {
         if [[ $line =~ $regex ]]; then
             files+=("${BASH_REMATCH[1]}")
         fi
-    done < src/amberol.gresource.xml
+    done < src/gumdrop.gresource.xml
 
     # Check sorted alphabetically
     to_sort=("${files[@]}")
     sort
     for i in ${!files[@]}; do
         if [[ "${files[$i]}" != "${to_sort[$i]}" ]]; then
-            [ $tap -eq 0 ] && echo -e "$error Found file '${files[$i]#src/}' before '${to_sort[$i]#src/}' in amberol.gresource.xml"
-            [ $tap -eq 1 ] && echo "# Sorting error: '${files[$i]}' before '${to_sort[$i]}' in amberol.gresource.xml"
+            [ $tap -eq 0 ] && echo -e "$error Found file '${files[$i]#src/}' before '${to_sort[$i]#src/}' in gumdrop.gresource.xml"
+            [ $tap -eq 1 ] && echo "# Sorting error: '${files[$i]}' before '${to_sort[$i]}' in gumdrop.gresource.xml"
             ret=1
             break
         fi
@@ -324,17 +325,17 @@ check_resources() {
     if [[ ret -eq 1 ]]; then
         if [[ $tap -eq 0 ]]; then
             echo ""
-            echo -e "  Checking src/amberol.gresource.xml result: $fail"
+            echo -e "  Checking src/gumdrop.gresource.xml result: $fail"
             echo "Please fix the above issues"
             exit 1
         else
-            echo "not ok 4 - amberol.gresource.xml"
+            echo "not ok 4 - gumdrop.gresource.xml"
         fi
     else
         if [[ $tap -eq 0 ]]; then
-            echo -e "  Checking src/amberol.gresource.xml result: $ok"
+            echo -e "  Checking src/gumdrop.gresource.xml result: $ok"
         else
-            echo "ok 4 - amberol.gresource.xml"
+            echo "ok 4 - gumdrop.gresource.xml"
         fi
     fi
 }

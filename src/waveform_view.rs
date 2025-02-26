@@ -1,4 +1,5 @@
 // SPDX-FileCopyrightText: 2022  Emmanuele Bassi
+// SPDX-FileCopyrightText: 2025  Hunter Wardlaw
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // Based on gnome-sound-recorder/src/waveform.js:
@@ -57,7 +58,7 @@ mod imp {
 
     #[glib::object_subclass]
     impl ObjectSubclass for WaveformView {
-        const NAME: &'static str = "AmberolWaveformView";
+        const NAME: &'static str = "GumdropWaveformView";
         type Type = super::WaveformView;
         type ParentType = gtk::Widget;
 

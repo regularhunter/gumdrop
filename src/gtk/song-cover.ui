@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <requires lib="gtk" version="4.0"/>
-  <template class="AmberolSongCover" parent="GtkWidget">
+  <template class="GumdropSongCover" parent="GtkWidget">
     <child>
       <object class="GtkBox">
         <property name="halign">center</property>
@@ -28,7 +28,7 @@
               <object class="GtkStackPage">
                 <property name="name">cover-image</property>
                 <property name="child">
-                  <object class="AmberolCoverPicture" id="album_image"/>
+                  <object class="GumdropCoverPicture" id="album_image"/>
                 </property>
               </object>
             </child>

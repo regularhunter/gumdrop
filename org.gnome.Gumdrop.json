@@ -1,12 +1,12 @@
 {
-    "app-id" : "io.bassi.Amberol.Devel",
+    "app-id" : "org.gnome.Gumdrop",
     "runtime" : "org.gnome.Platform",
     "runtime-version" : "master",
     "sdk" : "org.gnome.Sdk",
     "sdk-extensions" : [
         "org.freedesktop.Sdk.Extension.rust-stable"
     ],
-    "command" : "amberol",
+    "command" : "gumdrop",
     "finish-args" : [
         "--share=ipc",
         "--socket=fallback-x11",
@@ -23,7 +23,7 @@
         "env" : {
             "G_MESSAGES_DEBUG" : "none",
             "RUST_BACKTRACE" : "1",
-            "RUST_LOG" : "amberol=debug,glib=debug"
+            "RUST_LOG" : "gumdrop=debug,glib=debug"
         }
     },
     "cleanup" : [
@@ -39,16 +39,16 @@
     ],
     "modules" : [
         {
-            "name" : "amberol",
+            "name" : "gumdrop",
             "builddir" : true,
             "buildsystem" : "meson",
             "config-opts": [
-                "-Dprofile=development"
+                "-Dprofile=default"
             ],
             "sources" : [
                 {
                     "type" : "git",
-                    "url" : "https://gitlab.gnome.org/ebassi/amberol.git"
+                    "url" : "https://github.com/regularhunter/gumdrop.git"
                 }
             ]
         }

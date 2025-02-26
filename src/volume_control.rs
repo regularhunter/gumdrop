@@ -1,4 +1,5 @@
 // SPDX-FileCopyrightText: 2022  Emmanuele Bassi
+// SPDX-FileCopyrightText: 2025  Hunter Wardlaw
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use std::cell::Cell;
@@ -15,7 +16,7 @@ mod imp {
     use super::*;
 
     #[derive(Debug, Default, CompositeTemplate)]
-    #[template(resource = "/io/bassi/Amberol/volume-control.ui")]
+    #[template(resource = "/org/gnome/Gumdrop/volume-control.ui")]
     pub struct VolumeControl {
         // Template widgets
         #[template_child]
@@ -31,7 +32,7 @@ mod imp {
 
     #[glib::object_subclass]
     impl ObjectSubclass for VolumeControl {
-        const NAME: &'static str = "AmberolVolumeControl";
+        const NAME: &'static str = "GumdropVolumeControl";
         type Type = super::VolumeControl;
         type ParentType = gtk::Widget;
 

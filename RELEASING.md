@@ -1,4 +1,4 @@
-Releasing Amberol
+Releasing Gumdrop
 =================
 
 QA Plan
@@ -31,22 +31,22 @@ Checklist for a release.
   - [ ] **Fixed**: bug fixes, with reference
   - [ ] **Removed**: Removed features, settings, UI; **IMPORTANT**: anything
     inside this list requires a version bump
-- [ ] Update the [appdata](./data/io.bassi.Amberol.appdata.xml.in.in)
+- [ ] Update the [appdata](./data/org.gnome.Gumdrop.metainfo.xml.in)
   - [ ] New `<release>` element
   - [ ] *Optional*: new screenshots
-- [ ] `git commit -m 'Release Amberol $VERSION'`
+- [ ] `git commit -m 'Release Gumdrop $VERSION'`
 - [ ] `meson dist`
 - [ ] `git tag -s $VERSION` (use the change log entry)
 - [ ] Bump up the project version in [`meson.build`](./meson.build)
 - [ ] `git push origin HEAD && git push origin $VERSION`
-- [ ] Create a new release on [GitLab](https://gitlab.gnome.org/World/amberol/-/releases)
+- [ ] Create a new release on [GitHub](https://github.com/regularhunter/gumdrop/releases/)
   - [ ] Copy the `CHANGES.md` entry
   - [ ] Attach the release tarball and the SHA256 checksum files
 
 Flathub
 -------
 
-- [ ] Update the `io.bassi.Amberol.json` manifest
+- [ ] Update the `org.gnome.Gumdrop.json` manifest
   - [ ] Change the archive URL
   - [ ] Change the SHA256 checksum
 - [ ] `git push origin HEAD`

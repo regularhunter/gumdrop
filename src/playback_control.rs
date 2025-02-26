@@ -1,4 +1,5 @@
 // SPDX-FileCopyrightText: 2022  Emmanuele Bassi
+// SPDX-FileCopyrightText: 2025  Hunter Wardlaw
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use adw::subclass::prelude::*;
@@ -10,7 +11,7 @@ mod imp {
     use super::*;
 
     #[derive(Debug, Default, CompositeTemplate)]
-    #[template(resource = "/io/bassi/Amberol/playback-control.ui")]
+    #[template(resource = "/org/gnome/Gumdrop/playback-control.ui")]
     pub struct PlaybackControl {
         // Template widgets
         #[template_child]
@@ -42,7 +43,7 @@ mod imp {
 
     #[glib::object_subclass]
     impl ObjectSubclass for PlaybackControl {
-        const NAME: &'static str = "AmberolPlaybackControl";
+        const NAME: &'static str = "GumdropPlaybackControl";
         type Type = super::PlaybackControl;
         type ParentType = gtk::Widget;
 

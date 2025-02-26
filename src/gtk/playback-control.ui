@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <requires lib="gtk" version="4.0"/>
-  <template class="AmberolPlaybackControl" parent="GtkWidget">
+  <template class="GumdropPlaybackControl" parent="GtkWidget">
     <child>
 
       <object class="GtkBox" id="center_box">
@@ -59,7 +59,7 @@
           </object>
         </child>
         <child>
-          <object class="AmberolVolumeControl" id="volume_control">
+          <object class="GumdropVolumeControl" id="volume_control">
             <property name="hexpand">true</property>
           </object>
         </child>
@@ -202,7 +202,7 @@
         <attribute name="action">win.show-help-overlay</attribute>
       </item>
       <item>
-        <attribute name="label" translatable="yes">_About Amberol</attribute>
+        <attribute name="label" translatable="yes">_About Gumdrop</attribute>
         <attribute name="action">app.about</attribute>
       </item>
       <item>

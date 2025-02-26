@@ -4,10 +4,10 @@
          xmlns:gnome="http://api.gnome.org/doap-extensions#"
          xmlns="http://usefulinc.com/ns/doap#">
 
-  <name xml:lang="en">Amberol</name>
-  <shortdesc xml:lang="en">Plays music, and nothing else</shortdesc>
-  <homepage rdf:resource="https://apps.gnome.org/Amberol/" />
-  <bug-database rdf:resource="https://gitlab.gnome.org/World/amberol/-/issues/"/>
+  <name xml:lang="en">Gumdrop</name>
+  <shortdesc xml:lang="en">Music player written in rust (proof of concept).</shortdesc>
+  <homepage rdf:resource="https://github.com/regularhunter/gumdrop" />
+  <bug-database rdf:resource="https://github.com/regularhunter/gumdrop/issues"/>
 
   <programming-language>Rust</programming-language>
   <platform>GTK 4</platform>
@@ -15,12 +15,12 @@
 
   <maintainer>
     <foaf:Person>
-      <foaf:name>Emmanuele Bassi</foaf:name>
-      <foaf:mbox rdf:resource="mailto:ebassi@gnome.org" />
+      <foaf:name>Hunter Wardlaw</foaf:name>
+      <foaf:mbox rdf:resource="mailto:wardlawhunter@gmail.com" />
       <foaf:account>
         <foaf:OnlineAccount>
-          <foaf:accountServiceHomepage rdf:resource="https://gitlab.gnome.org"/>
-          <foaf:accountName>ebassi</foaf:accountName>
+          <foaf:accountServiceHomepage rdf:resource="https://github.com"/>
+          <foaf:accountName>regularhunter</foaf:accountName>
         </foaf:OnlineAccount>
       </foaf:account>
     </foaf:Person>

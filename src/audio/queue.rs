@@ -1,4 +1,5 @@
 // SPDX-FileCopyrightText: 2022  Emmanuele Bassi
+// SPDX-FileCopyrightText: 2025  Hunter Wardlaw
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use std::cell::Cell;
@@ -24,7 +25,7 @@ mod imp {
 
     #[glib::object_subclass]
     impl ObjectSubclass for Queue {
-        const NAME: &'static str = "AmberolQueue";
+        const NAME: &'static str = "GumdropQueue";
         type Type = super::Queue;
 
         fn new() -> Self {

@@ -1,6 +1,6 @@
 # Contribution guidelines
 
-Thank you for considering contributing to the Amberol project!
+Thank you for considering contributing to the Gumdrop project!
 
 Following these guidelines helps to communicate that you respect the time of
 the developers managing and developing this free software project. In return,
@@ -9,23 +9,22 @@ changes, and helping you finalize your pull requests.
 
 There are many ways to contribute, from improving the documentation,
 submitting bug reports and feature requests, localizing the user interface, or
-writing code which can be incorporated into Amberol itself.
+writing code which can be incorporated into Gumdrop itself.
 
 The issue tracker is meant to be used for actionable issues only. Please,
-don't use the issue tracker for support questions. Feel free to use the
-[GNOME Discourse forum](https://discourse.gnome.org) to ask your questions.
+don't use the issue tracker for support questions.
 
 ## How to report bugs
 
-Issues should only be reported [on the project page](https://gitlab.gnome.org/World/Amberol/issues/).
+Issues should only be reported [on the project page](https://github.com/regularhunter/gumdrop/issues/).
 
 ### Bug reports
 
 If you're reporting a bug make sure to list:
 
- 0. which version of Amberol are you using?
+ 0. which version of Gumdrop are you using?
  0. which operating system are you using?
- 0. how did you install Amberol?
+ 0. how did you install Gumdrop?
  0. the necessary steps to reproduce the issue
  0. the expected outcome
  0. a description of the behavior; screenshots are also welcome
@@ -76,7 +75,7 @@ spending unnecessary effort.
 
 ### Prerequisites
 
-If you want to contribute to the Amberol project, you will need to have the
+If you want to contribute to the Gumdrop project, you will need to have the
 development tools appropriate for your operating system, including:
 
  - Python 3.x
@@ -87,34 +86,34 @@ development tools appropriate for your operating system, including:
 
 ### Dependencies
 
-You will also need the various dependencies needed to build Amberol from
+You will also need the various dependencies needed to build Gumdrop from
 source. You will find the compile time dependencies in the
 [`Cargo.toml`](./Cargo.toml) file, while the run time dependencies are listed
 in the [`meson.build`](./meson.build) file.
 
-You are strongly encouraged to use GNOME Builder to build and run Amberol,
+You are strongly encouraged to use GNOME Builder to build and run Gumdrop,
 as it knows how to download and build all the dependencies necessary.
 
 ### Getting started
 
-You should start by forking the Amberol repository from the GitLab web UI;
-then you can select *Clone Repository* from GNOME Builder and use your
-fork's URL as the repository URL.
+You should start by forking the Gumdrop repository then you can select
+*Clone Repository* from GNOME Builder and use your fork's URL as the repository
+URL.
 
 GNOME Builder will find all the dependencies and download them for you.
 
 ----
 
 If you want to use another development environment, you will need to clone
-the repository manually; make sure to have an account on GNOME's GitLab
-instance, and that you have an SSH key associated to that account:
+the repository manually; make sure to have an account on GitHub, and that you
+have an SSH key associated to that account:
 
 ```sh
-$ git clone git@ssh.gitlab.gnome.org:yourusername/amberol.git
-$ cd amberol
+$ git clone ggit@github.com:yourusername/gumdrop.git
+$ cd gumdrop
 ```
 
-To compile the Git version of Amberol on your system, you will need to
+To compile the Git version of Gumdrop on your system, you will need to
 configure your build using Meson:
 
 ```sh
@@ -125,40 +124,38 @@ $ meson compile -C _builddir
 Meson will search for all the required dependencies during the setup
 step, and will run Cargo in the compile step.
 
-You can run Amberol uninstalled by using the Meson devenv command:
+You can run Gumdrop uninstalled by using the Meson devenv command:
 
 ```sh
 $ meson devenv -C _builddir
-$ ./src/amberol
+$ ./src/gumdrop
 $ exit
 ```
 
 ----
 
-You can now switch to a new branch to work on Amberol:
+You can now switch to a new branch to work on Gumdrop:
 
 ```sh
 $ git switch -C your-branch
 ```
 
 Once you've finished working on the bug fix or feature, push the branch
-to your Git repository and open a new merge request, to let the Amberol
+to your Git repository and open a new merge request, to let the Gumdrop
 maintainers review your contribution.
 
-Remember that the Amberol is maintained by volunteers, so it might take a
-little while to get reviews or feedback. Don't be discouraged, and feel
-free to join the `#amberol:gnome.org` channel on Matrix for any issue you
-may find.
+Remember that the Gumdrop is maintained by volunteers, so it might take a
+little while to get reviews or feedback.
 
 ### Coding style
 
-Amberol uses the standard Rust coding style. You can use:
+Gumdrop uses the standard Rust coding style. You can use:
 
     cargo +nightly fmt --all
 
 To ensure that your contribution is following the expected format.
 
-Amberol has an additional set of checks available in the
+Gumdrop has an additional set of checks available in the
 [`checks.sh`](./build-aux/checks.sh) tool.
 
 ### Commit messages
@@ -194,18 +191,4 @@ Closes #1234
  - When committing code on behalf of others use the `--author` option, e.g.
  `git commit -a --author "Joe Coder <joe@coder.org>"` and `--signoff`.
 
- - If your commit is addressing an issue, use the
- [GitLab syntax](https://docs.gitlab.com/ce/user/project/issues/managing_issues.html#default-closing-pattern)
- to automatically close the issue when merging the commit with the upstream
- repository:
 
-```plain
-Closes #1234
-Fixes #1234
-Closes: https://gitlab.gnome.org/World/amberol/-/issues/123
-```
-
- - If you have a merge request with multiple commits and none of them
- completely fixes an issue, you should add a reference to the issue in
- the commit message, e.g. `Bug: #1234`, and use the automatic issue
- closing syntax in the description of the merge request.

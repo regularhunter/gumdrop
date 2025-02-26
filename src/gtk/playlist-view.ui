@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <requires lib="gtk" version="4.0"/>
-  <template class="AmberolPlaylistView" parent="GtkWidget">
+  <template class="GumdropPlaylistView" parent="GtkWidget">
     <child>
       <object class="AdwToolbarView">
         <child type="top">

@@ -1,4 +1,5 @@
 // SPDX-FileCopyrightText: 2023  Yuri Izmer
+// SPDX-FileCopyrightText: 2025  Hunter Wardlaw
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use adw::prelude::*;
@@ -38,7 +39,7 @@ mod imp {
 
     #[glib::object_subclass]
     impl ObjectSubclass for Marquee {
-        const NAME: &'static str = "AmberolMarquee";
+        const NAME: &'static str = "GumdropMarquee";
         type Type = super::Marquee;
         type ParentType = gtk::Widget;
 

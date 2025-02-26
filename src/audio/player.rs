@@ -1,4 +1,5 @@
 // SPDX-FileCopyrightText: 2022  Emmanuele Bassi
+// SPDX-FileCopyrightText: 2025  Hunter Wardlaw
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use std::{
@@ -46,7 +47,7 @@ pub enum PlaybackState {
 }
 
 #[derive(Clone, Copy, Debug, glib::Enum, PartialEq, Default)]
-#[enum_type(name = "AmberolRepeatMode")]
+#[enum_type(name = "GumdropRepeatMode")]
 pub enum RepeatMode {
     #[default]
     Consecutive,
@@ -65,7 +66,7 @@ impl Display for RepeatMode {
 }
 
 #[derive(Clone, Copy, Debug, glib::Enum, PartialEq)]
-#[enum_type(name = "AmberolReplayGainMode")]
+#[enum_type(name = "GumdropReplayGainMode")]
 pub enum ReplayGainMode {
     #[enum_value(name = "album")]
     Album,

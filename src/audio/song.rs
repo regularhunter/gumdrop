@@ -1,4 +1,5 @@
 // SPDX-FileCopyrightText: 2022  Emmanuele Bassi
+// SPDX-FileCopyrightText: 2025  Hunter Wardlaw
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use std::{
@@ -212,7 +213,7 @@ mod imp {
 
     #[glib::object_subclass]
     impl ObjectSubclass for Song {
-        const NAME: &'static str = "AmberolSong";
+        const NAME: &'static str = "GumdropSong";
         type Type = super::Song;
     }
 

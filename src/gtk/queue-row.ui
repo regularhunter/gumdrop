@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <requires lib="gtk" version="4.0"/>
-  <template class="AmberolQueueRow" parent="GtkWidget">
+  <template class="GumdropQueueRow" parent="GtkWidget">
     <child>
       <object class="GtkStack" id="row_stack">
         <child>
@@ -34,7 +34,7 @@
                       <object class="GtkStackPage">
                         <property name="name">cover</property>
                         <property name="child">
-                          <object class="AmberolCoverPicture" id="song_cover_image">
+                          <object class="GumdropCoverPicture" id="song_cover_image">
                             <property name="cover-size">1</property>
                             <property name="halign">center</property>
                             <property name="valign">center</property>

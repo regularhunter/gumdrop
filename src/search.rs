@@ -1,4 +1,5 @@
 // SPDX-FileCopyrightText: 2022  John Toohey <john_t@mailo.com>
+// SPDX-FileCopyrightText: 2025  Hunter Wardlaw
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use gtk::{glib, prelude::*, subclass::prelude::*};
@@ -24,7 +25,7 @@ mod imp {
 
     #[glib::object_subclass]
     impl ObjectSubclass for FuzzyFilter {
-        const NAME: &'static str = "AmberolFuzzyFilter";
+        const NAME: &'static str = "GumdropFuzzyFilter";
         type Type = super::FuzzyFilter;
         type ParentType = gtk::Filter;
     }

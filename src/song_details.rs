@@ -1,4 +1,5 @@
 // SPDX-FileCopyrightText: 2022  Emmanuele Bassi
+// SPDX-FileCopyrightText: 2025  Hunter Wardlaw
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use adw::subclass::prelude::*;
@@ -10,7 +11,7 @@ mod imp {
     use super::*;
 
     #[derive(Debug, Default, CompositeTemplate)]
-    #[template(resource = "/io/bassi/Amberol/song-details.ui")]
+    #[template(resource = "/org/gnome/Gumdrop/song-details.ui")]
     pub struct SongDetails {
         // Template widgets
         #[template_child]
@@ -23,7 +24,7 @@ mod imp {
 
     #[glib::object_subclass]
     impl ObjectSubclass for SongDetails {
-        const NAME: &'static str = "AmberolSongDetails";
+        const NAME: &'static str = "GumdropSongDetails";
         type Type = super::SongDetails;
         type ParentType = gtk::Widget;
 

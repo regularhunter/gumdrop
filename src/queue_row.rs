@@ -1,4 +1,5 @@
 // SPDX-FileCopyrightText: 2022  Emmanuele Bassi
+// SPDX-FileCopyrightText: 2025  Hunter Wardlaw
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use std::cell::{Cell, RefCell};
@@ -16,7 +17,7 @@ mod imp {
     use super::*;
 
     #[derive(Debug, Default, CompositeTemplate)]
-    #[template(resource = "/io/bassi/Amberol/queue-row.ui")]
+    #[template(resource = "/org/gnome/Gumdrop/queue-row.ui")]
     pub struct QueueRow {
         // Template widgets
         #[template_child]
@@ -47,7 +48,7 @@ mod imp {
 
     #[glib::object_subclass]
     impl ObjectSubclass for QueueRow {
-        const NAME: &'static str = "AmberolQueueRow";
+        const NAME: &'static str = "GumdropQueueRow";
         type Type = super::QueueRow;
         type ParentType = gtk::Widget;
 

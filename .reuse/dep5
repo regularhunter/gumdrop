@@ -1,88 +1,84 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: amberol
-Upstream-Contact: Emmanuele Bassi
-Source: https://gitlab.gnome.org/ebassi/amberol
+Upstream-Name: gumdrop
+Upstream-Contact: Hunter Wardlaw
+Source: https://github.com/regularhunter/gumdrop
 
 Files: .gitignore
-Copyright: 2022  Emmanuele Bassi
+Copyright: 2025 Hunter Wardlaw
 License: CC0-1.0
 
-Files: .gitlab-ci.yml
-Copyright: 2022  Emmanuele Bassi
-License: CC0-1.0
-
-Files: amberol.doap
-Copyright: 2022  Sophie Herold
+Files: gumdrop.doap
+Copyright: 2025 Hunter Wardlaw
 License: CC0-1.0
 
 Files: Cargo.lock
-Copyright: 2022  Emmanuele Bassi
+Copyright: 2025 Hunter Wardlaw
 License: GPL-3.0-or-later
 
 Files: README.md CONTRIBUTING.md CHANGES.md RELEASING.md
-Copyright: 2022  Emmanuele Bassi
+Copyright: 2025 Hunter Wardlaw
 License: CC0-1.0
 
-Files: io.bassi.Amberol.json
-Copyright: 2022  Emmanuele Bassi
+Files: org.gnome.Gumdrop.json
+Copyright: 2025 Hunter Wardlaw
 License: CC0-1.0
 
-Files: io.bassi.Amberol.Devel.json
-Copyright: 2022  Emmanuele Bassi
+Files: org.gnome.Gumdrop.Devel.json
+Copyright: 2025 Hunter Wardlaw
 License: CC0-1.0
 
-Files: data/io.bassi.Amberol.metainfo.xml.in.in
-Copyright: 2022  Emmanuele Bassi
+Files: data/org.gnome.Gumdrop.metainfo.xml.in.in
+Copyright: 2025 Hunter Wardlaw
 License: CC0-1.0
 
-Files: data/io.bassi.Amberol.desktop.in.in
-Copyright: 2022  Emmanuele Bassi
+Files: data/org.gnome.Gumdrop.desktop.in.in
+Copyright: 2025 Hunter Wardlaw
 License: CC0-1.0
 
-Files: data/io.bassi.Amberol.gschema.xml
-Copyright: 2022  Emmanuele Bassi
+Files: data/org.gnome.Gumdrop.gschema.xml
+Copyright: 2025 Hunter Wardlaw
 License: CC0-1.0
 
-Files: data/io.bassi.Amberol.service.in
-Copyright: 2022  Emmanuele Bassi
+Files: data/org.gnome.Gumdrop.service.in
+Copyright: 2025 Hunter Wardlaw
 License: CC0-1.0
 
 Files: data/screenshots/*.png
-Copyright: 2022  Emmanuele Bassi
+Copyright: 2025 Hunter Wardlaw
 License: CC0-1.0
 
-Files: data/icons/hicolor/scalable/apps/io.bassi.Amberol.*
-Copyright: 2022  Jakub Steiner
+Files: data/icons/hicolor/scalable/apps/org.gnome.Gumdrop.*
+Copyright: 2025 Hunter Wardlaw
 License: CC-BY-SA-3.0
 
-Files: data/icons/hicolor/symbolic/apps/io.bassi.Amberol.*
-Copyright: 2022  Jakub Steiner
+Files: data/icons/hicolor/symbolic/apps/org.gnome.Gumdrop.*
+Copyright: 2025 Hunter Wardlaw
 License: CC-BY-SA-3.0
 
 Files: *.svg
-Copyright: 2022  Emmanuele Bassi
+Copyright: 2025 Hunter Wardlaw
 License: CC-BY-SA-3.0
 
 Files: po/POTFILES.in po/LINGUAS
-Copyright: 2022  Emmanuele Bassi
+Copyright: 2025 Hunter Wardlaw
 License: CC0-1.0
 
 Files: po/*.po
 Copyright: 2022  Translation authors
 License: GPL-3.0-or-later
 
-Files: src/amberol.gresource.xml
-Copyright: 2022  Emmanuele Bassi
+Files: src/gumdrop.gresource.xml
+Copyright: 2025 Hunter Wardlaw
 License: GPL-3.0-or-later
 
 Files: src/gtk/*.ui
-Copyright: 2022  Emmanuele Bassi
+Copyright: 2025 Hunter Wardlaw
 License: GPL-3.0-or-later
 
 Files: src/gtk/style.css src/gtk/style-hc.css
-Copyright: 2022  Emmanuele Bassi
+Copyright: 2025 Hunter Wardlaw
 License: GPL-3.0-or-later
 
 Files: src/gtk/style-dark.css
-Copyright: 2024  Alice Mikhaylenko
+Copyright: 2025 Hunter Wardlaw
 License: GPL-3.0-or-later

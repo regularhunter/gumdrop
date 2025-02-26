@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<schemalist gettext-domain="amberol">
-  <enum id="io.bassi.Amberol.ReplayGainMode">
+<schemalist gettext-domain="gumdrop">
+  <enum id="org.gnome.Gumdrop.ReplayGainMode">
     <value nick="album" value="0"/>
     <value nick="track" value="1"/>
     <value nick="off" value="2"/>
   </enum>
-	<schema id="io.bassi.Amberol" path="/io/bassi/Amberol/">
+	<schema id="org.gnome.Gumdrop" path="/org/gnome/Gumdrop/">
 	  <key name="window-width" type="i">
 	    <default>600</default>
 	  </key>
@@ -15,7 +15,7 @@
 	  <key name="enable-recoloring" type="b">
 	    <default>true</default>
 	  </key>
-    <key name="replay-gain" enum="io.bassi.Amberol.ReplayGainMode">
+    <key name="replay-gain" enum="org.gnome.Gumdrop.ReplayGainMode">
       <default>'off'</default>
     </key>
 	  <key name="background-play" type="b">

@@ -1,6 +1,8 @@
-data/io.bassi.Amberol.desktop.in.in
-data/io.bassi.Amberol.gschema.xml
-data/io.bassi.Amberol.metainfo.xml.in.in
+# List of source files containing translatable strings.
+# Please keep this file sorted alphabetically.
+data/org.gnome.Gumdrop.desktop.in.in
+data/org.gnome.Gumdrop.gschema.xml
+data/org.gnome.Gumdrop.metainfo.xml.in.in
 src/audio/inhibit_controller.rs
 src/audio/song.rs
 src/gtk/help-overlay.ui

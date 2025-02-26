@@ -1,4 +1,5 @@
 // SPDX-FileCopyrightText: 2022  Emmanuele Bassi
+// SPDX-FileCopyrightText: 2025  Hunter Wardlaw
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 use std::{
@@ -26,7 +27,7 @@ pub struct MprisController {
 impl MprisController {
     pub fn new(sender: Sender<PlaybackAction>) -> Self {
         let builder = Player::builder(APPLICATION_ID)
-            .identity("Amberol")
+            .identity("Gumdrop")
             .desktop_entry(APPLICATION_ID)
             .can_raise(true)
             .can_play(false)

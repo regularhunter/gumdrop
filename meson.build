@@ -1,8 +1,8 @@
-# SPDX-FileCopyrightText: 2022  Emmanuele Bassi
+# SPDX-FileCopyrightText: 2025 Hunter Wardlaw
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-project('amberol', 'rust',
-  version: '2024.3',
+project('gumdrop', 'rust',
+  version: '0.1.0',
   license: ['GPL-3.0'],
   meson_version: '>= 0.59.0',
   default_options: [ 'warning_level=2', ],
@@ -45,7 +45,7 @@ else
   version_suffix = ''
 endif
 
-application_id = 'io.bassi.Amberol@0@'.format(profile)
+application_id = 'org.gnome.Gumdrop@0@'.format(profile)
 
 subdir('data')
 subdir('src')

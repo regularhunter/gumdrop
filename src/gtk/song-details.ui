@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <requires lib="gtk" version="4.0"/>
-  <template class="AmberolSongDetails" parent="GtkWidget">
+  <template class="GumdropSongDetails" parent="GtkWidget">
     <child>
       <object class="GtkBox">
         <property name="orientation">vertical</property>
@@ -13,7 +13,7 @@
             <property name="margin-start">6</property>
             <property name="margin-end">6</property>
             <child>
-              <object class="AmberolMarquee" id="song_title_label">
+              <object class="GumdropMarquee" id="song_title_label">
                 <property name="width-chars">20</property>
                 <style>
                   <class name="song-title"/>
@@ -21,7 +21,7 @@
               </object>
             </child>
             <child>
-              <object class="AmberolMarquee" id="song_artist_label">
+              <object class="GumdropMarquee" id="song_artist_label">
                 <property name="width-chars">25</property>
                 <style>
                   <class name="song-artist"/>
@@ -29,7 +29,7 @@
               </object>
             </child>
             <child>
-              <object class="AmberolMarquee" id="song_album_label">
+              <object class="GumdropMarquee" id="song_album_label">
                 <property name="width-chars">25</property>
                 <style>
                   <class name="song-album"/>
