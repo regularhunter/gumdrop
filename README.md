@@ -1,9 +1,11 @@
 Gumdrop
 =======
 
-<img src="https://raw.githubusercontent.com/regularhunter/gumdrop/304b07872c81d686119a56a60a095de7d71ddc8e/data/icons/hicolor/scalable/apps/com.github.regularhunter.Gumdrop.svg">
+<img src="data/icons/hicolor/scalable/apps/com.github.regularhunter.Gumdrop.svg">
 
 Gtk4 music player written in rust. Forked from [Amberol](https://gitlab.gnome.org/World/amberol).
+
+![Application screenshot](data/screenshots/gumdrop.png)
 
 
 Why fork Amberol?
