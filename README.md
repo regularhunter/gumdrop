@@ -30,7 +30,6 @@ Dependencies
 - glib2
 - libadwaita-devel
 - gstreamer-1.0
-- pango-devel
 ```
 
 Recommended

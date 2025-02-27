@@ -1,8 +1,8 @@
 {
     "app-id" : "com.github.regularhunter.Gumdrop",
-    "runtime" : "com.github.regularhunter.Platform",
+    "runtime" : "org.gnome.Platform",
     "runtime-version" : "master",
-    "sdk" : "com.github.regularhunter.Sdk",
+    "sdk" : "org.gnome.Sdk",
     "sdk-extensions" : [
         "org.freedesktop.Sdk.Extension.rust-stable"
     ],
@@ -42,8 +42,9 @@
             "name" : "gumdrop",
             "builddir" : true,
             "buildsystem" : "meson",
-            "config-opts": [
-                "-Dprofile=default"
+            "config-opts" : [
+                "-Dprofile=default",
+                "--libdir=lib"
             ],
             "sources" : [
                 {
