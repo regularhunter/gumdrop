@@ -45,7 +45,7 @@ else
   version_suffix = ''
 endif
 
-application_id = 'org.gnome.Gumdrop@0@'.format(profile)
+application_id = 'com.github.regularhunter.Gumdrop@0@'.format(profile)
 
 subdir('data')
 subdir('src')

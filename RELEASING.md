@@ -31,7 +31,7 @@ Checklist for a release.
   - [ ] **Fixed**: bug fixes, with reference
   - [ ] **Removed**: Removed features, settings, UI; **IMPORTANT**: anything
     inside this list requires a version bump
-- [ ] Update the [appdata](./data/org.gnome.Gumdrop.metainfo.xml.in)
+- [ ] Update the [appdata](./data/com.github.regularhunter.Gumdrop.metainfo.xml.in)
   - [ ] New `<release>` element
   - [ ] *Optional*: new screenshots
 - [ ] `git commit -m 'Release Gumdrop $VERSION'`
@@ -46,7 +46,7 @@ Checklist for a release.
 Flathub
 -------
 
-- [ ] Update the `org.gnome.Gumdrop.json` manifest
+- [ ] Update the `com.github.regularhunter.Gumdrop.json` manifest
   - [ ] Change the archive URL
   - [ ] Change the SHA256 checksum
 - [ ] `git push origin HEAD`

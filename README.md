@@ -1,7 +1,7 @@
 Gumdrop
 =======
 
-<img src="https://raw.githubusercontent.com/regularhunter/gumdrop/304b07872c81d686119a56a60a095de7d71ddc8e/data/icons/hicolor/scalable/apps/org.gnome.Gumdrop.svg">
+<img src="https://raw.githubusercontent.com/regularhunter/gumdrop/304b07872c81d686119a56a60a095de7d71ddc8e/data/icons/hicolor/scalable/apps/com.github.regularhunter.Gumdrop.svg">
 
 Gtk4 music player written in rust. Forked from [Amberol](https://gitlab.gnome.org/World/amberol).
 
@@ -24,13 +24,13 @@ Building
 Dependencies
 ```
 - meson
-- ninja
-- rust
+- rustc
 - cargo
 - gtk4
-- libadwaita-1
+- glib2
 - libadwaita-devel
 - gstreamer-1.0
+- pango-devel
 ```
 
 Recommended
@@ -43,7 +43,7 @@ How to obtain debugging information
 
 Run Gumdrop from your terminal using:
 
-    RUST_BACKTRACE=1 RUST_LOG=gumdrop=debug flatpak run org.gnome.Gumdrop
+    RUST_BACKTRACE=1 RUST_LOG=gumdrop=debug flatpak run com.github.regularhunter.Gumdrop
 
 to obtain a full debug log.
 

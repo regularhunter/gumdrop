@@ -29,7 +29,7 @@
   <url type="bugtracker">https://github.com/regularhunter/gumdrop/issues</url>
   <url type="donation">https://ko-fi.com/rhunter</url>
   <developer_name>Hunter Wardlaw</developer_name>
-  <developer id="org.gnome">
+  <developer id="com.github.regularhunter">
     <name>Hunter Wardlaw</name>
   </developer>
   <translation type="gettext">gumdrop</translation>

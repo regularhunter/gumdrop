@@ -19,27 +19,27 @@ Files: README.md CONTRIBUTING.md CHANGES.md RELEASING.md
 Copyright: 2025 Hunter Wardlaw
 License: CC0-1.0
 
-Files: org.gnome.Gumdrop.json
+Files: com.github.regularhunter.Gumdrop.json
 Copyright: 2025 Hunter Wardlaw
 License: CC0-1.0
 
-Files: org.gnome.Gumdrop.Devel.json
+Files: com.github.regularhunter.Gumdrop.Devel.json
 Copyright: 2025 Hunter Wardlaw
 License: CC0-1.0
 
-Files: data/org.gnome.Gumdrop.metainfo.xml.in.in
+Files: data/com.github.regularhunter.Gumdrop.metainfo.xml.in.in
 Copyright: 2025 Hunter Wardlaw
 License: CC0-1.0
 
-Files: data/org.gnome.Gumdrop.desktop.in.in
+Files: data/com.github.regularhunter.Gumdrop.desktop.in.in
 Copyright: 2025 Hunter Wardlaw
 License: CC0-1.0
 
-Files: data/org.gnome.Gumdrop.gschema.xml
+Files: data/com.github.regularhunter.Gumdrop.gschema.xml
 Copyright: 2025 Hunter Wardlaw
 License: CC0-1.0
 
-Files: data/org.gnome.Gumdrop.service.in
+Files: data/com.github.regularhunter.Gumdrop.service.in
 Copyright: 2025 Hunter Wardlaw
 License: CC0-1.0
 
@@ -47,11 +47,11 @@ Files: data/screenshots/*.png
 Copyright: 2025 Hunter Wardlaw
 License: CC0-1.0
 
-Files: data/icons/hicolor/scalable/apps/org.gnome.Gumdrop.*
+Files: data/icons/hicolor/scalable/apps/com.github.regularhunter.Gumdrop.*
 Copyright: 2025 Hunter Wardlaw
 License: CC-BY-SA-3.0
 
-Files: data/icons/hicolor/symbolic/apps/org.gnome.Gumdrop.*
+Files: data/icons/hicolor/symbolic/apps/com.github.regularhunter.Gumdrop.*
 Copyright: 2025 Hunter Wardlaw
 License: CC-BY-SA-3.0
 

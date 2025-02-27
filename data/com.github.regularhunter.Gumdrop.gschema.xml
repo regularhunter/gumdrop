@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="gumdrop">
-  <enum id="org.gnome.Gumdrop.ReplayGainMode">
+  <enum id="com.github.regularhunter.Gumdrop.ReplayGainMode">
     <value nick="album" value="0"/>
     <value nick="track" value="1"/>
     <value nick="off" value="2"/>
   </enum>
-	<schema id="org.gnome.Gumdrop" path="/org/gnome/Gumdrop/">
+	<schema id="com.github.regularhunter.Gumdrop" path="/org/gnome/Gumdrop/">
 	  <key name="window-width" type="i">
 	    <default>600</default>
 	  </key>
@@ -15,7 +15,7 @@
 	  <key name="enable-recoloring" type="b">
 	    <default>true</default>
 	  </key>
-    <key name="replay-gain" enum="org.gnome.Gumdrop.ReplayGainMode">
+    <key name="replay-gain" enum="com.github.regularhunter.Gumdrop.ReplayGainMode">
       <default>'off'</default>
     </key>
 	  <key name="background-play" type="b">

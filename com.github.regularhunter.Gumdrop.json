@@ -1,8 +1,8 @@
 {
-    "app-id" : "org.gnome.Gumdrop",
-    "runtime" : "org.gnome.Platform",
+    "app-id" : "com.github.regularhunter.Gumdrop",
+    "runtime" : "com.github.regularhunter.Platform",
     "runtime-version" : "master",
-    "sdk" : "org.gnome.Sdk",
+    "sdk" : "com.github.regularhunter.Sdk",
     "sdk-extensions" : [
         "org.freedesktop.Sdk.Extension.rust-stable"
     ],
