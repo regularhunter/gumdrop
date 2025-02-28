@@ -25,6 +25,8 @@ sha2 = "0.10.2"
 fuzzy-matcher = "0.3.7"
 async-channel = "2.2.0"
 futures = "0.3"
+rusqlite = "0.33.0"
+rustfm-scrobble = "1.1.1"
 
 [target.'cfg(any(target_os = "linux", target_os = "freebsd"))'.dependencies]
 ashpd = {version = "0.9.1", features = ["gtk4"]}
