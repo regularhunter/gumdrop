@@ -28,10 +28,11 @@ Dependencies
 - meson
 - rustc
 - cargo
-- gtk4
+- gtk4 >= 4.16.0
 - glib2
-- libadwaita-devel
-- gstreamer-1.0
+- libadwaita-1 >= 1.5
+- libpng
+- gstreamer-1.0 >= 1.20
 ```
 
 Recommended
