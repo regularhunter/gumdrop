@@ -235,7 +235,7 @@ impl Application {
             .application_name("Gumdrop")
             .developer_name("Hunter Wardlaw")
             .version(VERSION)
-            .developers(vec!["Hunter Wardlaw"])
+            .developers(vec!["Hunter Wardlaw",  "Emmanuele Bassi"])
             .copyright("© 2025 Hunter Wardlaw")
             .website("https://github.com/regularhunter/gumdrop")
             .issue_url("https://github.com/regularhunter/gumdrop/issues")
