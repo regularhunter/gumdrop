@@ -139,7 +139,7 @@ impl ShuffleListModel {
     pub fn reshuffle(&self, anchor: u32) {
         if let Some(ref model) = *self.imp().model.borrow() {
             let n_songs = model.n_items();
-            let mut rng = thread_rng();
+            let mut rng = rand::rng();
 
             let positions: Vec<u32> = if anchor == 0 {
                 let mut before: Vec<u32> = vec![0];
