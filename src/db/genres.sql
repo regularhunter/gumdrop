@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS genres(
+    name TEXT NOT NULL,
+    path TEXT NOT NULL,
+    PRIMARY KEY (name, path) ON CONFLICT REPLACE,
+    FOREIGN KEY (path) REFERENCES tracks(path) ON DELETE CASCADE
+);

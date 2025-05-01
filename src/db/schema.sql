@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS tracks(
 
 CREATE TABLE IF NOT EXISTS artists(
     name TEXT NOT NULL,
+    sort TEXT,
     path TEXT NOT NULL,
     PRIMARY KEY (path, name) ON CONFLICT REPLACE,
     FOREIGN KEY (path) REFERENCES tracks(path) ON DELETE CASCADE
@@ -34,9 +35,9 @@ SELECT DISTINCT album as title, albumartist, SUM(duration) as duration, year
 FROM tracks GROUP BY album, albumartist;
 
 CREATE VIEW IF NOT EXISTS [Album Artists] AS
-SELECT DISTINCT albumartist, COUNT(DISTINCT album)
+SELECT DISTINCT albumartist, sort, COUNT(DISTINCT album)
 FROM tracks NATURAL JOIN artists WHERE albumartist IS NOT NULL GROUP BY albumartist;
 
 CREATE VIEW IF NOT EXISTS [All Artists] AS
-SELECT DISTINCT name, COUNT(DISTINCT album)
+SELECT DISTINCT name, sort, COUNT(DISTINCT album)
 FROM tracks GROUP BY name;
