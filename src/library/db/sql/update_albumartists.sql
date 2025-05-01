@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2025  Hunter Wardlaw
+-- SPDX-FileCopyrightText: 2023  Emmett de St. Croix
+-- SPDX-License-Identifier: GPL-3.0-or-later
+
 -- This query updates the albumartist column for all tracks in the tracks table
 -- where albumartist is NULL. It sets the albumartist to the name of a single artist
 -- that is present on all tracks in the album, or to '[Various Artists]' if there isn't one.

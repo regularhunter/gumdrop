@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2025  Hunter Wardlaw
+-- SPDX-FileCopyrightText: 2023  Emmett de St. Croix
+-- SPDX-License-Identifier: GPL-3.0-or-later
+
 -- Querying tracks based on their albumartist and album values is significantly sped
 -- up with the addition of this index, and querying the tracks table directly instead of
 -- using the [Full Tracks] view greatly speeds up query times as well, so that view is

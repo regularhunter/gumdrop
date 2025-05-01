@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2025  Hunter Wardlaw
+-- SPDX-FileCopyrightText: 2023  Emmett de St. Croix
+-- SPDX-License-Identifier: GPL-3.0-or-later
+
 CREATE TABLE IF NOT EXISTS tracks(
     title TEXT,
     track TEXT,
@@ -7,6 +11,7 @@ CREATE TABLE IF NOT EXISTS tracks(
     albumartist TEXT,
     year TEXT,
     duration REAL NOT NULL,
+    thumb TEXT,
     filetype TEXT,
     genre TEXT,
     cover TEXT,
@@ -25,7 +30,7 @@ CREATE TABLE IF NOT EXISTS artists(
 
 CREATE VIEW IF NOT EXISTS [Full Tracks] AS
 SELECT track, title, discnumber as disc, discsubtitle, albumartist,
-    duration, path, cover, album, GROUP_CONCAT(
+    duration, path, thumb, cover, album, GROUP_CONCAT(
         CASE WHEN name = albumartist THEN NULL ELSE name END, ", "
     ) AS artists
 FROM tracks NATURAL JOIN artists GROUP BY path ORDER BY disc, track;

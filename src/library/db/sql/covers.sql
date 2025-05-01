@@ -1,3 +1,7 @@
+-- SPDX-FileCopyrightText: 2025  Hunter Wardlaw
+-- SPDX-FileCopyrightText: 2023  Emmett de St. Croix
+-- SPDX-License-Identifier: GPL-3.0-or-later
+
 CREATE TABLE IF NOT EXISTS covers(
     album TEXT NOT NULL,
     albumartist TEXT NOT NULL,
@@ -17,6 +21,7 @@ CREATE TABLE tracks(
     albumartist TEXT,
     year TEXT,
     duration REAL NOT NULL,
+    thumb TEXT,
     cover TEXT,
     path TEXT NOT NULL,
     PRIMARY KEY (path)
