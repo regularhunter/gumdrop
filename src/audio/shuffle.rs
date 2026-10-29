@@ -172,6 +172,36 @@ impl ShuffleListModel {
         }
     }
 
+    // Moves the last 'count' items of the underlying model to 'pos' in the
+    // shuffled order after they were appended to it. Does nothing unless
+    // the model is shuffled
+    pub fn move_appended(&self, pos: u32, count: u32) {
+        let n_items = match *self.imp().model.borrow() {
+            Some(ref model) => model.n_items(),
+            None => return,
+        };
+        let n_old = n_items.saturating_sub(count);
+
+        {
+            let mut shuffle = self.imp().shuffle.borrow_mut();
+            let shuffle = match shuffle.as_mut() {
+                Some(shuffle) => shuffle,
+                None => return,
+            };
+
+            // Drop stale entries and keep items appended since the last shuffle in order added
+            let mut seen = vec![false; n_old as usize];
+            shuffle.retain(|&i| i < n_old && !std::mem::replace(&mut seen[i as usize], true));
+            shuffle.extend((0..n_old).filter(|&i| !seen[i as usize]));
+
+            let pos = (pos as usize).min(shuffle.len());
+            shuffle.splice(pos..pos, n_old..n_items);
+        }
+
+        let pos = pos.min(n_old);
+        self.items_changed(pos, n_items - pos, n_items - pos);
+    }
+
     pub fn unshuffle(&self) {
         if let Some(ref model) = *self.imp().model.borrow() {
             self.imp().shuffle.replace(None);

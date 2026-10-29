@@ -141,9 +141,34 @@ impl Queue {
     }
 
     pub fn add_songs(&self, songs: &[impl IsA<glib::Object>]) {
-        self.imp()
-            .store
-            .splice(self.imp().model.n_items(), 0, songs);
+        self.insert_songs(self.n_songs(), songs);
+    }
+
+    // Inserts songs at 'pos' in playing order whether shuffled or not
+    pub fn insert_songs(&self, pos: u32, songs: &[impl IsA<glib::Object>]) {
+        let imp = self.imp();
+        let n_songs = self.n_songs();
+        let pos = pos.min(n_songs);
+        let count = songs.len() as u32;
+        if count == 0 {
+            return;
+        }
+
+        if imp.model.shuffled() {
+            // The shuffle order refers to positions in the store so append
+            // there and move the new songs into place in the shuffle order
+            imp.store.splice(n_songs, 0, songs);
+            imp.model.move_appended(pos, count);
+        } else {
+            imp.store.splice(pos, 0, songs);
+        }
+
+        if let Some(current) = imp.current_pos.get() {
+            if current >= pos {
+                imp.current_pos.replace(Some(current + count));
+            }
+        }
+
         self.notify("n-songs");
     }
 
