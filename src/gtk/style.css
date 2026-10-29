@@ -58,6 +58,15 @@ playbackcontrol {
   padding-bottom: 12px;
 }
 
+libraryview image.album-cover {
+  border-radius: 6px;
+}
+
+libraryview image.album-cover.missing {
+  background-color: alpha(currentColor, 0.08);
+  color: alpha(currentColor, 0.5);
+}
+
 queuerow .currently-playing {
   padding-left: 6px;
   font-weight: 700;
@@ -123,7 +132,7 @@ dragoverlay {
   transition-timing-function: ease;
 }
 
-.main-window > overlay-split-view > widget.background > playlistview {
+.main-window > overlay-split-view > widget.background > box.sidebar-pane {
   background: linear-gradient(127deg, color-mix(in srgb, var(--background-color-0) 55%, transparent), color-mix(in srgb, var(--background-color-0) 0%, transparent) 70.71%),
               linear-gradient(217deg, color-mix(in srgb, var(--background-color-1) 55%, transparent), color-mix(in srgb, var(--background-color-1) 0%, transparent) 70.71%),
               linear-gradient(336deg, color-mix(in srgb, var(--background-color-2) 55%, transparent), color-mix(in srgb, var(--background-color-2) 0%, transparent) 70.71%),

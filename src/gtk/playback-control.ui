@@ -75,12 +75,12 @@
                     <property name="icon-name">view-queue-symbolic</property>
                     <property name="action-name">queue.toggle</property>
                     <property name="valign">center</property>
-                    <property name="tooltip-text" translatable="yes">Toggle Playlist</property>
+                    <property name="tooltip-text" translatable="yes">Toggle Library and Queue</property>
                     <style>
                       <class name="circular"/>
                     </style>
                     <accessibility>
-                      <property name="label" translatable="yes" context="a11y">Toggle playlist</property>
+                      <property name="label" translatable="yes" context="a11y">Toggle library and queue</property>
                     </accessibility>
                   </object>
                 </child>

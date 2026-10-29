@@ -189,9 +189,45 @@
                               </object>
                             </property>
 
-                            <!-- Playlist view -->
+                            <!-- Library and queue -->
                             <property name="sidebar">
-                              <object class="GumdropPlaylistView" id="playlist_view"/>
+                              <object class="GtkBox">
+                                <property name="orientation">vertical</property>
+                                <style>
+                                  <class name="sidebar-pane"/>
+                                </style>
+                                <child>
+                                  <object class="AdwViewStack" id="sidebar_stack">
+                                    <property name="vexpand">true</property>
+                                    <child>
+                                      <object class="AdwViewStackPage">
+                                        <property name="name">library</property>
+                                        <property name="title" translatable="yes">Library</property>
+                                        <property name="icon-name">folder-music-symbolic</property>
+                                        <property name="child">
+                                          <object class="GumdropLibraryView" id="library_view"/>
+                                        </property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="AdwViewStackPage">
+                                        <property name="name">queue</property>
+                                        <property name="title" translatable="yes">Queue</property>
+                                        <property name="icon-name">view-queue-symbolic</property>
+                                        <property name="child">
+                                          <object class="GumdropPlaylistView" id="playlist_view"/>
+                                        </property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="AdwViewSwitcherBar">
+                                    <property name="stack">sidebar_stack</property>
+                                    <property name="reveal">true</property>
+                                  </object>
+                                </child>
+                              </object>
                             </property>
                           </object>
                         </property>

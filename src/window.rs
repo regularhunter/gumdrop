@@ -4,6 +4,7 @@
 
 use std::{
     cell::{Cell, RefCell},
+    path::PathBuf,
     rc::Rc,
     time::Instant,
 };
@@ -11,13 +12,16 @@ use std::{
 use adw::subclass::prelude::*;
 use glib::{clone, closure_local};
 use gtk::{gdk, gio, glib, prelude::*, CompositeTemplate};
-use log::debug;
+use log::{debug, warn};
 
 use crate::{
+    application::ApplicationAction,
     audio::{AudioPlayer, RepeatMode, ReplayGainMode, Song},
     config::APPLICATION_ID,
     drag_overlay::DragOverlay,
     i18n::{i18n, i18n_k, ni18n_f, ni18n_k},
+    library::{scanner, LibraryDB},
+    library_view::{LibraryView, QueueAction},
     playback_control::PlaybackControl,
     playlist_view::PlaylistView,
     queue_row::QueueRow,
@@ -33,6 +37,16 @@ use crate::{
 pub enum WindowMode {
     InitialView,
     MainView,
+}
+
+// Where queue_songs() puts the new songs
+enum QueueMode {
+    // At the end of the queue
+    Append,
+    // Right after the current song
+    PlayNext,
+    // At the end of the queue then play this file
+    PlayFrom(gio::File),
 }
 
 mod imp {
@@ -70,6 +84,10 @@ mod imp {
         #[template_child]
         pub playlist_view: TemplateChild<PlaylistView>,
         #[template_child]
+        pub sidebar_stack: TemplateChild<adw::ViewStack>,
+        #[template_child]
+        pub library_view: TemplateChild<LibraryView>,
+        #[template_child]
         pub add_folder_button: TemplateChild<gtk::Button>,
         #[template_child]
         pub restore_playlist_button: TemplateChild<gtk::Button>,
@@ -82,6 +100,8 @@ mod imp {
         pub playlist_selection: Cell<bool>,
         pub playlist_search: Cell<bool>,
         pub replaygain_mode: Cell<ReplayGainMode>,
+        /// Whether queue_songs() is still turning files into songs
+        pub loading_songs: Cell<bool>,
 
         pub playlist_filtermodel: RefCell<Option<gio::ListModel>>,
 
@@ -242,6 +262,9 @@ mod imp {
                 add_folder_button: TemplateChild::default(),
                 restore_playlist_button: TemplateChild::default(),
                 playlist_view: TemplateChild::default(),
+                sidebar_stack: TemplateChild::default(),
+                library_view: TemplateChild::default(),
+                loading_songs: Cell::new(false),
                 playlist_shuffled: Cell::new(false),
                 playlist_visible: Cell::new(true),
                 playlist_selection: Cell::new(false),
@@ -334,10 +357,118 @@ impl Window {
         win.bind_state();
         win.bind_queue();
         win.connect_signals();
+        win.setup_library();
         win.restore_window_state();
         win.set_initial_state();
 
         win
+    }
+
+    fn app(&self) -> Option<crate::application::Application> {
+        self.application()
+            .and_then(|app| app.downcast::<crate::application::Application>().ok())
+    }
+
+    fn library(&self) -> Option<LibraryDB> {
+        self.app().and_then(|app| app.library())
+    }
+
+    fn library_has_tracks(&self) -> bool {
+        self.library()
+            .and_then(|db| db.track_count().ok())
+            .is_some_and(|n| n > 0)
+    }
+
+    fn sidebar_shows_library(&self) -> bool {
+        self.imp().sidebar_stack.visible_child_name().as_deref() == Some("library")
+    }
+
+    fn setup_library(&self) {
+        let imp = self.imp();
+
+        imp.library_view.set_library(self.library());
+        imp.library_view.set_queue_handler(clone!(
+            #[weak(rename_to = win)]
+            self,
+            move |paths, action| win.queue_tracks(paths, action)
+        ));
+
+        imp.library_view.searchbar().connect_notify_local(
+            Some("search-mode-enabled"),
+            clone!(
+                #[weak(rename_to = win)]
+                self,
+                move |searchbar, _| {
+                    win.set_playlist_search(searchbar.is_search_mode());
+                }
+            ),
+        );
+
+        imp.sidebar_stack.connect_visible_child_name_notify(clone!(
+            #[weak(rename_to = win)]
+            self,
+            move |_| win.sidebar_page_changed()
+        ));
+        self.sidebar_page_changed();
+    }
+
+    /// Only the visible sidebar page gets to search and to capture typing
+    fn sidebar_page_changed(&self) {
+        let imp = self.imp();
+
+        imp.playlist_view.set_search(false);
+        imp.library_view.set_search(false);
+        if imp.playlist_search.replace(false) {
+            self.notify("playlist-search");
+        }
+
+        let library_searchbar = imp.library_view.searchbar();
+        let queue_searchbar = imp.playlist_view.playlist_searchbar();
+        if self.sidebar_shows_library() {
+            queue_searchbar.set_key_capture_widget(gtk::Widget::NONE);
+            library_searchbar.set_key_capture_widget(Some(self.upcast_ref::<gtk::Widget>()));
+        } else {
+            library_searchbar.set_key_capture_widget(gtk::Widget::NONE);
+            queue_searchbar.set_key_capture_widget(Some(self.upcast_ref::<gtk::Widget>()));
+        }
+    }
+
+    /// Reloads the library view after the database changed
+    pub fn reload_library(&self) {
+        self.imp().library_view.reload();
+
+        // The library may have gained its first songs
+        if self.imp().main_stack.visible_child_name().as_deref() == Some("initial-view") {
+            self.set_initial_state();
+        }
+    }
+
+    /// Handles songs picked in the library
+    fn queue_tracks(&self, paths: Vec<PathBuf>, action: QueueAction) {
+        if self.imp().loading_songs.get() {
+            self.add_toast(i18n("Please wait until the songs finish loading"));
+            return;
+        }
+
+        let files: Vec<gio::File> = paths.iter().map(gio::File::for_path).collect();
+        match action {
+            QueueAction::Play(index) => {
+                // Replace the queue and play from the chosen song
+                let mode = match files.get(index) {
+                    Some(file) => QueueMode::PlayFrom(file.clone()),
+                    None => QueueMode::Append,
+                };
+                self.clear_queue();
+                self.queue_songs(files, mode);
+
+                // Get out of the way when the sidebar covers the player
+                if self.imp().split_view.is_collapsed() {
+                    self.set_playlist_visible(false);
+                }
+            }
+            QueueAction::PlayNext => self.queue_songs(files, QueueMode::PlayNext),
+            QueueAction::Append => self.queue_songs(files, QueueMode::Append),
+        }
     }
 
     fn player(&self) -> Option<Rc<AudioPlayer>> {
@@ -406,7 +537,9 @@ impl Window {
     }
 
     fn reset_queue(&self) {
-        self.set_playlist_visible(false);
+        if !self.library_has_tracks() {
+            self.set_playlist_visible(false);
+        }
         self.set_playlist_shuffled(false);
         self.set_playlist_selection(false);
         self.update_style(None);
@@ -485,26 +618,32 @@ impl Window {
         let imp = self.imp();
 
         if search != imp.playlist_search.replace(search) {
-            imp.playlist_view.set_search(search);
+            if self.sidebar_shows_library() {
+                imp.library_view.set_search(search);
+            } else {
+                imp.playlist_view.set_search(search);
+            }
             self.notify("playlist-search");
         }
     }
 
     fn restore_playlist(&self) {
         if let Some(songs) = utils::load_cached_songs() {
-            self.queue_songs(songs);
+            self.queue_songs(songs, QueueMode::Append);
         }
     }
 
-    fn queue_songs(&self, queue: Vec<gio::File>) {
+    /// Adds files to the queue and skipping songs that are already queued
+    fn queue_songs(&self, queue: Vec<gio::File>, mode: QueueMode) {
         if queue.is_empty() {
             self.add_toast(i18n("No available song found"));
             return;
         }
 
         self.switch_mode(WindowMode::MainView);
+        self.imp().loading_songs.set(true);
 
-        // Disable actions on the queue; loading is "atomic"
+        // Disable actions on the queue (loading is atomic)
         self.action_set_enabled("queue.add-song", false);
         self.action_set_enabled("queue.add-folder", false);
         self.action_set_enabled("queue.clear", false);
@@ -552,23 +691,35 @@ impl Window {
                             now.elapsed().as_millis()
                         );
 
-                        // Re-enable the actions
+                        // Reenable the actions
                         win.action_set_enabled("queue.add-song", true);
                         win.action_set_enabled("queue.add-folder", true);
                         win.action_set_enabled("queue.clear", true);
+                        win.imp().loading_songs.set(false);
+                        win.imp().playlist_view.end_loading();
 
                         if songs.is_empty() {
                             if duplicates == 0 {
                                 win.add_toast(i18n("No songs found"));
+                            } else if duplicates == 1 {
+                                win.add_toast(i18n("The song is already in the queue"));
+                            } else {
+                                win.add_toast(i18n("The songs are already in the queue"));
                             }
                         } else if let Some(player) = win.player() {
                             let queue = player.queue();
                             let was_empty = queue.is_empty();
-
-                            win.imp().playlist_view.end_loading();
+                            let pos = match mode {
+                                QueueMode::PlayNext => queue
+                                    .current_song_index()
+                                    .map_or(queue.n_songs(), |current| current + 1),
+                                _ => queue.n_songs(),
+                            };
 
                             // Bulk add to avoid hammering the UI with list model updates
-                            queue.add_songs(&songs);
+                            queue.insert_songs(pos, &songs);
+
+                            win.add_songs_to_library(&songs);
 
                             // Store the current state of the playlist
                             utils::store_playlist(queue);
@@ -578,35 +729,61 @@ impl Window {
                                 was_empty,
                                 queue.n_songs()
                             );
-                            if was_empty {
+                            if let QueueMode::PlayFrom(ref play_file) = mode {
+                                // Started from the library: play the chosen song
+                                let uri = play_file.uri();
+                                let model = queue.model();
+                                let pos = (0..model.n_items()).find(|&i| {
+                                    model
+                                        .item(i)
+                                        .and_downcast::<Song>()
+                                        .is_some_and(|s| s.uri() == uri.as_str())
+                                });
+                                player.skip_to(pos.unwrap_or(0));
+                                player.play();
+                            } else if was_empty {
                                 player.skip_to(0);
                             }
 
-                            // Allow jumping to the song we just added
-                            if songs.len() == 1 {
-                                // If we added a single song, and the queue was empty, we
-                                // dispense with the pleasantries and we start playing
-                                // immediately; otherwise, we let the user choose whether
+                            // Allow jumping to the song that was just added
+                            let play_next = matches!(mode, QueueMode::PlayNext);
+                            if let QueueMode::PlayFrom(_) = mode {
+                                // Nothing to announce, the song is already playing
+                            } else if songs.len() == 1 {
+                                // If a single song is added and the queue was empty then
+                                // start playing immediately. Otherwise, let the user choose whether
                                 // to jump to the newly added song
                                 if was_empty {
                                     player.play();
                                 } else {
-                                    win.add_skip_to_toast(
-                                        i18n("Added a new song"),
-                                        i18n("Play"),
-                                        queue.n_songs() - 1,
-                                    );
+                                    let msg = if play_next {
+                                        i18n("The song will play next")
+                                    } else {
+                                        i18n("Added a new song")
+                                    };
+                                    win.add_skip_to_toast(msg, i18n("Play"), pos);
                                 }
                             } else {
-                                let msg = ni18n_f(
-                                    // Translators: the `{}` must be left unmodified;
-                                    // it will be expanded to the number of songs added
-                                    // to the playlist
-                                    "Added one song",
-                                    "Added {} songs",
-                                    songs.len() as u32,
-                                    &[&songs.len().to_string()],
-                                );
+                                let msg = if play_next {
+                                    ni18n_f(
+                                        // Translators: the `{}` must be left unmodified;
+                                        // it will be expanded to the number of songs
+                                        "One song will play next",
+                                        "{} songs will play next",
+                                        songs.len() as u32,
+                                        &[&songs.len().to_string()],
+                                    )
+                                } else {
+                                    ni18n_f(
+                                        // Translators: the `{}` must be left unmodified;
+                                        // it will be expanded to the number of songs added
+                                        // to the playlist
+                                        "Added one song",
+                                        "Added {} songs",
+                                        songs.len() as u32,
+                                        &[&songs.len().to_string()],
+                                    )
+                                };
 
                                 win.add_toast(msg);
                             }
@@ -616,6 +793,35 @@ impl Window {
                     })
             }
         ));
+    }
+
+    // Records the songs in the persistent library in a worker thread
+    // Songs that are already indexed and unchanged are skipped
+    fn add_songs_to_library(&self, songs: &[Song]) {
+        let app = match self.app() {
+            Some(app) => app,
+            None => return,
+        };
+        let db = match app.library() {
+            Some(db) => db,
+            None => return,
+        };
+        let sender = app.sender();
+
+        let paths: Vec<PathBuf> = songs.iter().filter_map(|s| s.file().path()).collect();
+        let res = std::thread::Builder::new()
+            .name("library-index".to_string())
+            .spawn(move || match scanner::index_files(&db, paths) {
+                Ok(0) => (),
+                Ok(n) => {
+                    debug!("Added {} songs to the library", n);
+                    let _ = sender.send_blocking(ApplicationAction::LibraryChanged);
+                }
+                Err(e) => warn!("Unable to add songs to the library: {}", e),
+            });
+        if let Err(e) = res {
+            warn!("Unable to start the library indexing thread: {}", e);
+        }
     }
 
     fn add_files_to_queue(&self, model: &gio::ListModel) {
@@ -648,7 +854,7 @@ impl Window {
             }
         }
 
-        self.queue_songs(queue);
+        self.queue_songs(queue, QueueMode::Append);
     }
 
     // Bind the PlayerState to the UI
@@ -700,7 +906,7 @@ impl Window {
             );
             imp.notify_song_id.replace(Some(notify_song_id));
 
-            // Update the cover, if any is available
+            // Update the cover if any is available
             self.update_cover();
             let notify_cover_id = state.connect_notify_local(
                 Some("cover"),
@@ -857,6 +1063,10 @@ impl Window {
                         .playlist_view
                         .back_button()
                         .set_visible(split_view.is_collapsed());
+                    win.imp()
+                        .library_view
+                        .close_button()
+                        .set_visible(split_view.is_collapsed());
                 }
             ),
         );
@@ -944,8 +1154,8 @@ impl Window {
                     if let Some(player) = win.player() {
                         let queue = player.queue();
                         let mut remove_songs: Vec<Song> = Vec::new();
-                        // Collect all songs to be removed first, since we can't
-                        // remove objects from the model while we're iterating it
+                        // Collect all songs to be removed first since objects can't be removed from 
+                        // the model while iterating it
                         for idx in 0..queue.n_songs() {
                             let song = queue.song_at(idx).unwrap();
                             if song.selected() {
@@ -1030,15 +1240,16 @@ impl Window {
             self.action_set_enabled("win.previous", !queue.is_empty());
             self.action_set_enabled("win.next", !queue.is_last_song());
 
-            self.action_set_enabled("queue.toggle", !queue.is_empty());
+            let has_library = self.library_has_tracks();
+            self.action_set_enabled("queue.toggle", !queue.is_empty() || has_library);
             self.action_set_enabled("queue.shuffle", queue.n_songs() > 1);
             self.action_set_enabled("win.replaygain", player.replaygain_available());
 
             let replaygain = self.imp().settings.enum_("replay-gain").into();
             self.set_replaygain(replaygain);
 
-            // Manually set player state, because set_replaygain
-            // only updates player state when the value changes.
+            // Manually set player state because set_replaygain
+            // only updates player state when the value changes
             player.set_replaygain(replaygain);
 
             self.imp()
@@ -1070,7 +1281,7 @@ impl Window {
             }
 
             let state = player.state();
-            if state.playing() || !queue.is_empty() {
+            if state.playing() || !queue.is_empty() || has_library {
                 self.switch_mode(WindowMode::MainView);
             } else {
                 self.switch_mode(WindowMode::InitialView);
