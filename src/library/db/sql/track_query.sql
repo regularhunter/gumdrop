@@ -3,22 +3,23 @@
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
 SELECT
-    track,
-    title,
-    discnumber AS disc,
-    discsubtitle,
-    albumartist,
-    duration,
-    path,
-    album,
-    GROUP_CONCAT(
-        CASE WHEN name = albumartist THEN NULL ELSE name END, ", "
-    ) AS artists
+    t.path,
+    t.title,
+    t.track,
+    t.discnumber AS disc,
+    t.discsubtitle,
+    t.album,
+    t.albumartist,
+    t.year,
+    t.duration,
+    t.modified,
+    -- Keep the order the artists and genres were inserted in so the main artist comes first
+    (SELECT json_group_array(name) FROM
+        (SELECT a.name FROM artists a WHERE a.path = t.path ORDER BY a.rowid)) AS artists,
+    (SELECT json_group_array(name) FROM
+        (SELECT g.name FROM genres g WHERE g.path = t.path ORDER BY g.rowid)) AS genres
 FROM
     tracks t
-    NATURAL JOIN artists
-{} -- WHERE clause must filled by format! macro
-GROUP BY
-    path
+{} -- WHERE clause must be filled by format! macro
 ORDER BY
-    disc, track
+    {} -- ORDER BY terms are filled in by the format! macro

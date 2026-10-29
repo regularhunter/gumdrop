@@ -2,47 +2,64 @@
 -- SPDX-FileCopyrightText: 2023  Emmett de St. Croix
 -- SPDX-License-Identifier: GPL-3.0-or-later
 
-CREATE TABLE IF NOT EXISTS tracks(
-    title TEXT,
-    track TEXT,
-    discnumber TEXT,
+-- Initial library schema version 1
+-- Later schema changes must be added as new migrations in librarydb.rs
+-- instead of editing this file so existing databases can be upgraded
+
+CREATE TABLE tracks(
+    path TEXT NOT NULL,
+    title TEXT NOT NULL,
+    track INTEGER,
+    discnumber INTEGER,
     discsubtitle TEXT,
-    album TEXT,
+    album TEXT NOT NULL DEFAULT '',
     albumartist TEXT,
+    derived_albumartist INTEGER NOT NULL DEFAULT 0,
     year TEXT,
     duration REAL NOT NULL,
-    thumb TEXT,
-    filetype TEXT,
-    genre TEXT,
-    cover TEXT,
-    liked INTEGER NOT NULL,
-    path TEXT NOT NULL,
+    modified REAL NOT NULL DEFAULT 0,
     PRIMARY KEY (path)
 );
 
-CREATE TABLE IF NOT EXISTS artists(
+CREATE INDEX album_index ON tracks(albumartist, album);
+CREATE INDEX album_title_index ON tracks(album);
+
+CREATE TABLE artists(
     name TEXT NOT NULL,
     sort TEXT,
     path TEXT NOT NULL,
     PRIMARY KEY (path, name) ON CONFLICT REPLACE,
     FOREIGN KEY (path) REFERENCES tracks(path) ON DELETE CASCADE
 );
+CREATE INDEX artist_name_index ON artists(name);
 
-CREATE VIEW IF NOT EXISTS [Full Tracks] AS
-SELECT track, title, discnumber as disc, discsubtitle, albumartist,
-    duration, path, thumb, cover, album, GROUP_CONCAT(
-        CASE WHEN name = albumartist THEN NULL ELSE name END, ", "
-    ) AS artists
-FROM tracks NATURAL JOIN artists GROUP BY path ORDER BY disc, track;
+CREATE TABLE genres(
+    name TEXT NOT NULL,
+    path TEXT NOT NULL,
+    PRIMARY KEY (name, path) ON CONFLICT REPLACE,
+    FOREIGN KEY (path) REFERENCES tracks(path) ON DELETE CASCADE
+);
+CREATE INDEX genre_path_index ON genres(path);
 
-CREATE VIEW IF NOT EXISTS [Albums] AS
-SELECT DISTINCT album as title, albumartist, SUM(duration) as duration, year
-FROM tracks GROUP BY album, albumartist;
+CREATE TABLE covers(
+    path TEXT NOT NULL,
+    PRIMARY KEY (path) ON CONFLICT REPLACE
+);
 
-CREATE VIEW IF NOT EXISTS [Album Artists] AS
-SELECT DISTINCT albumartist, sort, COUNT(DISTINCT album)
-FROM tracks NATURAL JOIN artists WHERE albumartist IS NOT NULL GROUP BY albumartist;
+CREATE VIEW [Album Artists] AS
+SELECT
+    t.albumartist AS name,
+    (SELECT a.sort FROM artists a
+        WHERE a.name = t.albumartist AND a.sort IS NOT NULL LIMIT 1) AS sort,
+    COUNT(DISTINCT t.album) AS num_albums
+FROM tracks t
+WHERE t.albumartist IS NOT NULL
+GROUP BY t.albumartist;
 
-CREATE VIEW IF NOT EXISTS [All Artists] AS
-SELECT DISTINCT name, sort, COUNT(DISTINCT album)
-FROM tracks GROUP BY name;
+CREATE VIEW [All Artists] AS
+SELECT
+    a.name AS name,
+    MAX(a.sort) AS sort,
+    COUNT(DISTINCT t.album) AS num_albums
+FROM artists a JOIN tracks t ON a.path = t.path
+GROUP BY a.name;

@@ -3,4 +3,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 mod librarydb;
-pub use librarydb::LibraryDB;
+mod models;
+
+#[allow(unused_imports)]
+pub use librarydb::{Error, LibraryDB, Result};
+#[allow(unused_imports)]
+pub use models::{Album, Artist, Track};
