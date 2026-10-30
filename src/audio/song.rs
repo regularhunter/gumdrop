@@ -11,9 +11,12 @@ use std::{
 
 use glib::{ParamSpec, ParamSpecBoolean, ParamSpecObject, ParamSpecString, ParamSpecUInt, Value};
 use gtk::{gdk, gio, glib, prelude::*, subclass::prelude::*};
+use itertools::Itertools;
+
 use lofty::{
     prelude::{Accessor, TaggedFileExt},
     probe::Probe,
+    tag::ItemKey,
 };
 use log::{debug, warn};
 use once_cell::sync::Lazy;
@@ -127,7 +130,7 @@ impl SongData {
         let mut cover_uuid = None;
         if let Some(tag) = tagged_file.primary_tag() {
             debug!("Found primary tag");
-            artist = tag.artist().map(|s| s.to_string());
+            artist = Some(tag.get_strings(ItemKey::TrackArtist).join(", "));
             title = tag.title().map(|s| s.to_string());
             album = tag.album().map(|s| s.to_string());
             if let Some(res) = cover_cache.cover_art(&path, tag) {
@@ -138,7 +141,7 @@ impl SongData {
             warn!("Unable to load primary tag for: {}", uri);
             for tag in tagged_file.tags() {
                 debug!("Found tag: {:?}", tag.tag_type());
-                artist = tag.artist().map(|s| s.to_string());
+                artist = Some(tag.get_strings(ItemKey::TrackArtist).join(", "));
                 title = tag.title().map(|s| s.to_string());
                 album = tag.album().map(|s| s.to_string());
                 if let Some(res) = cover_cache.cover_art(&path, tag) {

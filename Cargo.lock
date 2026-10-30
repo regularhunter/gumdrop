@@ -1217,6 +1217,7 @@ dependencies = [
  "gstreamer-audio",
  "gstreamer-play",
  "gtk4",
+ "itertools",
  "libadwaita",
  "lofty",
  "log",
