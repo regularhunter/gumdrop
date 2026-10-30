@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-SPDX-FileCopyrightText: 2025  Hunter Wardlaw
-SPDX-License-Identifier: GPL-3.0-or-later
--->
 <interface>
   <requires lib="gtk" version="4.0"/>
   <requires lib="Adw" version="1.4"/>
@@ -10,7 +6,7 @@ SPDX-License-Identifier: GPL-3.0-or-later
     <child>
       <object class="AdwNavigationView" id="navigation_view">
 
-        <!-- Artists, and search results -->
+        <!-- Artists and search results -->
         <child>
           <object class="AdwNavigationPage">
             <property name="tag">artists</property>
