@@ -113,7 +113,7 @@ impl PlaybackControl {
         match repeat_mode {
             RepeatMode::Consecutive => {
                 repeat_button.set_icon_name("media-playlist-consecutive-symbolic");
-                repeat_button.set_tooltip_text(Some(&i18n("Enable Repeat")));
+                repeat_button.set_tooltip_text(Some(&i18n("Do Not Repeat")));
             }
             RepeatMode::RepeatAll => {
                 repeat_button.set_icon_name("media-playlist-repeat-symbolic");
