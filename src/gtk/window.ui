@@ -40,7 +40,7 @@
                                     <property name="margin-start">12</property>
                                     <property name="margin-end">12</property>
                                     <property name="title">Gumdrop</property>
-                                    <property name="description" translatable="yes">Select a file or a folder, or drag files from your file manager to the application window to add songs to the playlist</property>
+                                    <property name="description" translatable="yes">Select a file or a folder, or drag files from your file manager to the application window to add songs to your library.</property>
                                     <property name="child">
                                       <object class="GtkBox">
                                         <property name="orientation">vertical</property>
@@ -48,29 +48,11 @@
                                         <property name="homogeneous">true</property>
                                         <property name="spacing">12</property>
                                         <child>
-                                          <object class="GtkButton" id="restore_playlist_button">
-                                            <property name="label" translatable="yes">Restore Playlist</property>
-                                            <property name="action-name">queue.restore-playlist</property>
-                                            <style>
-                                              <class name="suggested-action"/>
-                                              <class name="pill"/>
-                                            </style>
-                                          </object>
-                                        </child>
-                                        <child>
                                           <object class="GtkButton" id="add_folder_button">
                                             <property name="label" translatable="yes">Add Folder</property>
                                             <property name="action-name">queue.add-folder</property>
                                             <style>
-                                              <class name="pill"/>
-                                            </style>
-                                          </object>
-                                        </child>
-                                        <child>
-                                          <object class="GtkButton">
-                                            <property name="label" translatable="yes">Add Song</property>
-                                            <property name="action-name">queue.add-song</property>
-                                            <style>
+                                              <class name="suggested-action"/>
                                               <class name="pill"/>
                                             </style>
                                           </object>

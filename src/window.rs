@@ -89,8 +89,6 @@ mod imp {
         pub library_view: TemplateChild<LibraryView>,
         #[template_child]
         pub add_folder_button: TemplateChild<gtk::Button>,
-        #[template_child]
-        pub restore_playlist_button: TemplateChild<gtk::Button>,
 
         pub provider: gtk::CssProvider,
         pub settings: gio::Settings,
@@ -210,10 +208,6 @@ mod imp {
                     }
                 }
             });
-            klass.install_action("queue.restore-playlist", None, move |win, _, _| {
-                debug!("Window::queue.restore-playlist()");
-                win.restore_playlist();
-            });
             klass.install_action("win.copy", None, move |win, _, _| {
                 debug!("Window::win.copy()");
                 win.copy_song();
@@ -260,7 +254,6 @@ mod imp {
                 main_stack: TemplateChild::default(),
                 status_page: TemplateChild::default(),
                 add_folder_button: TemplateChild::default(),
-                restore_playlist_button: TemplateChild::default(),
                 playlist_view: TemplateChild::default(),
                 sidebar_stack: TemplateChild::default(),
                 library_view: TemplateChild::default(),
@@ -624,12 +617,6 @@ impl Window {
                 imp.playlist_view.set_search(search);
             }
             self.notify("playlist-search");
-        }
-    }
-
-    fn restore_playlist(&self) {
-        if let Some(songs) = utils::load_cached_songs() {
-            self.queue_songs(songs, QueueMode::Append);
         }
     }
 
@@ -1261,24 +1248,6 @@ impl Window {
             // to avoid generating the UI definition file at build
             // time
             self.imp().status_page.set_icon_name(Some(APPLICATION_ID));
-
-            if utils::has_cached_playlist() {
-                self.imp().restore_playlist_button.set_visible(true);
-                self.imp()
-                    .restore_playlist_button
-                    .add_css_class("suggested-action");
-                self.imp()
-                    .add_folder_button
-                    .remove_css_class("suggested-action");
-            } else {
-                self.imp().restore_playlist_button.set_visible(false);
-                self.imp()
-                    .restore_playlist_button
-                    .remove_css_class("suggested-action");
-                self.imp()
-                    .add_folder_button
-                    .add_css_class("suggested-action");
-            }
 
             let state = player.state();
             if state.playing() || !queue.is_empty() || has_library {
