@@ -14,7 +14,7 @@ gdk-pixbuf = { version = "0.21", features = ["v2_42"] }
 gettext-rs = { version = "0.7", features = ["gettext-system"] }
 gtk = { version = "0.10", package = "gtk4", features = ["v4_16"] }
 itertools = "0.14"
-lofty = "0.23.3"
+lofty = "0.24"
 log = "0.4"
 mpris-server = "0.8"
 once_cell = "1.10"

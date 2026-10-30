@@ -47,7 +47,7 @@ fn non_empty(s: Option<&str>) -> Option<String> {
 }
 
 /// Collects the non-empty, unique values of a tag item, in order.
-fn tag_strings(tag: &Tag, key: &ItemKey) -> Vec<String> {
+fn tag_strings(tag: &Tag, key: ItemKey) -> Vec<String> {
     let mut values: Vec<String> = Vec::new();
     for value in tag.get_strings(key).filter_map(|s| non_empty(Some(s))) {
         if !values.contains(&value) {
@@ -88,14 +88,14 @@ pub fn read_track(path: &Path) -> Option<Track> {
         track.track = tag.track();
         track.disc = tag.disk();
         track.disc_subtitle = non_empty(tag.get_string(ItemKey::SetSubtitle));
-        track.year = tag.year().map(|y| y.to_string());
-        track.genres = tag_strings(tag, &ItemKey::Genre);
+        track.year = tag.date().map(|d| d.year.to_string());
+        track.genres = tag_strings(tag, ItemKey::Genre);
 
         // Prefer the multi-valued ARTISTS tag when present, since ARTIST is
         // often a single display string like "A feat. B".
-        track.artists = tag_strings(tag, &ItemKey::TrackArtists);
+        track.artists = tag_strings(tag, ItemKey::TrackArtists);
         if track.artists.is_empty() {
-            track.artists = tag_strings(tag, &ItemKey::TrackArtist);
+            track.artists = tag_strings(tag, ItemKey::TrackArtist);
         }
         track.artist_sort = non_empty(tag.get_string(ItemKey::TrackArtistSortOrder));
     } else {
