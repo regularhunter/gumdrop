@@ -153,7 +153,8 @@ mod imp {
 glib::wrapper! {
     pub struct QueueRow(ObjectSubclass<imp::QueueRow>)
         @extends gtk::Widget,
-        @implements gio::ActionGroup, gio::ActionMap;
+        @implements gio::ActionGroup, gio::ActionMap, gtk::Accessible,
+                    gtk::Buildable, gtk::ConstraintTarget;
 }
 
 impl Default for QueueRow {

@@ -11,7 +11,10 @@ use std::{
 
 use glib::{ParamSpec, ParamSpecBoolean, ParamSpecObject, ParamSpecString, ParamSpecUInt, Value};
 use gtk::{gdk, gio, glib, prelude::*, subclass::prelude::*};
-use lofty::prelude::{Accessor, TaggedFileExt};
+use lofty::{
+    prelude::{Accessor, TaggedFileExt},
+    probe::Probe,
+};
 use log::{debug, warn};
 use once_cell::sync::Lazy;
 use sha2::{Digest, Sha256};
@@ -88,10 +91,24 @@ impl SongData {
         let file = gio::File::for_uri(uri);
         let path = file.path().expect("Unable to find file");
 
-        let tagged_file = match lofty::read_from_path(&path) {
-            Ok(f) => f,
+        let file_probe = match Probe::open(&path) {
+            Ok(p) => p,
             Err(e) => {
                 warn!("Unable to open file {:?}: {}", path, e);
+                return SongData::default();
+            }
+        };
+
+        let tagged_file = match file_probe.guess_file_type() {
+            Ok(t) => match t.read() {
+                Ok(f) => f,
+                Err(e) => {
+                    warn!("Unable to read parsed file {:?}: {}", path, e);
+                    return SongData::default();
+                }
+            },
+            Err(e) => {
+                warn!("Unable to parse file type {:?}: {}", path, e);
                 return SongData::default();
             }
         };

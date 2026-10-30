@@ -84,10 +84,10 @@ pub fn read_track(path: &Path) -> Option<Track> {
     {
         track.title = non_empty(tag.title().as_deref()).unwrap_or_default();
         track.album = non_empty(tag.album().as_deref()).unwrap_or_default();
-        track.album_artist = non_empty(tag.get_string(&ItemKey::AlbumArtist));
+        track.album_artist = non_empty(tag.get_string(ItemKey::AlbumArtist));
         track.track = tag.track();
         track.disc = tag.disk();
-        track.disc_subtitle = non_empty(tag.get_string(&ItemKey::SetSubtitle));
+        track.disc_subtitle = non_empty(tag.get_string(ItemKey::SetSubtitle));
         track.year = tag.year().map(|y| y.to_string());
         track.genres = tag_strings(tag, &ItemKey::Genre);
 
@@ -97,7 +97,7 @@ pub fn read_track(path: &Path) -> Option<Track> {
         if track.artists.is_empty() {
             track.artists = tag_strings(tag, &ItemKey::TrackArtist);
         }
-        track.artist_sort = non_empty(tag.get_string(&ItemKey::TrackArtistSortOrder));
+        track.artist_sort = non_empty(tag.get_string(ItemKey::TrackArtistSortOrder));
     } else {
         debug!("No tags found in {:?}", path);
     }

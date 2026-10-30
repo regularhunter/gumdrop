@@ -101,33 +101,32 @@ impl GstBackend {
                 };
 
                 match play_msg {
-                    gst_play::PlayMessage::Error { error, .. } => {
-                        error!("GStreamer error: {}", error);
+                    gst_play::PlayMessage::Error(message) => {
+                        error!("GStreamer error: {}", message.error());
                     }
-                    gst_play::PlayMessage::Warning { error, .. } => {
-                        warn!("GStreamer warning: {}", error);
+                    gst_play::PlayMessage::Warning(message) => {
+                        warn!("GStreamer warning: {}", message.error());
                     }
-                    gst_play::PlayMessage::EndOfStream => {
+                    gst_play::PlayMessage::EndOfStream(_) => {
                         if let Err(e) = sender.send_blocking(PlaybackAction::PlayNext) {
                             error!("Failed to send PlayNext: {e}");
                         }
                     }
-                    gst_play::PlayMessage::PositionUpdated { position } => {
-                        if let Some(position) = position {
+                    gst_play::PlayMessage::PositionUpdated(message) => {
+                        if let Some(position) = message.position() {
                             send_update_position(&sender, position, false);
                         }
                     }
-                    gst_play::PlayMessage::SeekDone => {
-                        // FIXME: https://gitlab.freedesktop.org/gstreamer/gstreamer/-/merge_requests/7754
-                        if let Some(position) = msg.structure().unwrap().get("position").unwrap() {
+                    gst_play::PlayMessage::SeekDone(message) => {
+                        if let Some(position) = message.position() {
                             send_update_position(&sender, position, true);
                         }
                     }
-                    gst_play::PlayMessage::VolumeChanged { volume } => {
+                    gst_play::PlayMessage::VolumeChanged(message) => {
                         let volume = gst_audio::StreamVolume::convert_volume(
                             gst_audio::StreamVolumeFormat::Linear,
                             gst_audio::StreamVolumeFormat::Cubic,
-                            volume,
+                            message.volume(),
                         );
                         if let Err(e) = sender.send_blocking(PlaybackAction::VolumeChanged(volume))
                         {
@@ -136,10 +135,12 @@ impl GstBackend {
                     }
                     _ => {}
                 }
+
                 gst::BusSyncReply::Drop
             }
         ));
     }
+
 
     pub fn set_song_uri(&self, uri: Option<&str>) {
         self.gst_player.set_uri(uri);

@@ -295,7 +295,8 @@ mod imp {
 
 glib::wrapper! {
     pub struct Marquee(ObjectSubclass<imp::Marquee>)
-        @extends gtk::Widget;
+        @extends gtk::Widget,
+        @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
 }
 
 impl Default for Marquee {
