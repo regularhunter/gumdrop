@@ -142,13 +142,17 @@ fn load_files_from_folder_internal(
     folder: &gio::File,
     recursive: bool,
 ) -> Vec<gio::File> {
-    let mut enumerator = folder
-        .enumerate_children(
-            "standard::name,standard::type",
-            gio::FileQueryInfoFlags::NOFOLLOW_SYMLINKS,
-            None::<&gio::Cancellable>,
-        )
-        .expect("Unable to enumerate");
+    let mut enumerator = if let Ok(enumerator) = folder.enumerate_children(
+        "standard::name,standard::type",
+        gio::FileQueryInfoFlags::NOFOLLOW_SYMLINKS,
+        None::<&gio::Cancellable>,
+    ) {
+        enumerator
+    } else {
+        warn!("Unable to enumerate {}", folder.uri());
+        return Vec::new();
+    };
+
 
     let mut files = Vec::new();
     while let Some(info) = enumerator.next().and_then(|s| s.ok()) {
