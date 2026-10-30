@@ -79,11 +79,11 @@ queuerow box.song-details {
 
 queuerow label.song-title {
   font-weight: 700;
-  font-size: 85%;
+  font-size: 80%;
 }
 
 queuerow label.song-artist {
-  font-size: 85%;
+  font-size: 80%;
 }
 
 queuerow picture.cover,
@@ -151,3 +151,4 @@ volume:hover > scale { color: inherit; }
 volume > scale trough highlight { min-height: 12px; min-width: 12px; }
 
 volume > scale trough slider { opacity: 0; }
+
