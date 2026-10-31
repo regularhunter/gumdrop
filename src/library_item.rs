@@ -186,6 +186,13 @@ impl LibraryItem {
     pub fn data(&self) -> LibraryItemData {
         self.imp().data.borrow().clone()
     }
+
+    /// Sets the cover of an album once it has been loaded
+    pub fn set_cover(&self, cover: Option<gdk::Texture>) {
+        self.imp().cover.replace(cover);
+        self.notify("cover");
+    }
+
 }
 
 pub fn artist_display_name(artist: Option<&str>) -> String {

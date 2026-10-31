@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 // Browses the music library: artists, then an artist's albums, then an
-// album's songs, plus a search across all three.
+// album's songs, plus a search across all three. In albums mode, browsing
+// starts from a list of every album instead.
 //
 // Each list is a GtkListView of LibraryItems shown by LibraryRows, the same
 // way the queue shows Songs with QueueRows, so both can be styled with CSS:
@@ -57,6 +58,17 @@ pub enum QueueAction {
 /// Called with the paths of the songs to queue, and what to do with them.
 type QueueHandler = Rc<dyn Fn(Vec<PathBuf>, QueueAction)>;
 
+/// What the root page of a library view lists
+#[derive(Clone, Copy, Debug, glib::Enum, PartialEq, Default)]
+#[enum_type(name = "GumdropLibraryMode")]
+pub enum LibraryMode {
+    #[default]
+    #[enum_value(name = "artists")]
+    Artists,
+    #[enum_value(name = "albums")]
+    Albums,
+}
+
 /// What the context menu acts on.
 #[derive(Clone)]
 enum MenuTarget {
@@ -67,14 +79,15 @@ enum MenuTarget {
 
 #[derive(Clone, Copy)]
 enum Query {
-    Artists,
+    Root,
+    Covers,
     Albums,
     Tracks,
     Search,
     Play,
 }
 
-const N_QUERIES: usize = 5;
+const N_QUERIES: usize = 6;
 
 struct SearchResults {
     artists: Vec<Artist>,
@@ -83,6 +96,9 @@ struct SearchResults {
 }
 
 mod imp {
+    use glib::{ParamSpec, ParamSpecEnum, Value};
+    use once_cell::sync::Lazy;
+
     use super::*;
 
     #[derive(Default, CompositeTemplate)]
@@ -99,13 +115,17 @@ mod imp {
         #[template_child]
         pub library_searchentry: TemplateChild<gtk::SearchEntry>,
         #[template_child]
+        pub root_page: TemplateChild<adw::NavigationPage>,
+        #[template_child]
         pub root_stack: TemplateChild<gtk::Stack>,
         #[template_child]
-        pub artists_count_label: TemplateChild<gtk::Label>,
+        pub root_title_label: TemplateChild<gtk::Label>,
         #[template_child]
-        pub artists_view: TemplateChild<gtk::ListView>,
+        pub root_subtitle_label: TemplateChild<gtk::Label>,
         #[template_child]
-        pub artists_model: TemplateChild<gio::ListStore>,
+        pub root_view: TemplateChild<gtk::ListView>,
+        #[template_child]
+        pub root_model: TemplateChild<gio::ListStore>,
         #[template_child]
         pub search_view: TemplateChild<gtk::ListView>,
         #[template_child]
@@ -143,8 +163,9 @@ mod imp {
         #[template_child]
         pub context_menu: TemplateChild<gtk::PopoverMenu>,
 
+        pub mode: Cell<LibraryMode>,
         pub db: RefCell<Option<LibraryDB>>,
-        /// None until the artists have been loaded once
+        /// None until the root page has been loaded once
         pub has_tracks: Cell<Option<bool>>,
         /// The artist whose albums are shown in albums_page
         pub current_artist: RefCell<Option<ArtistKey>>,
@@ -197,7 +218,36 @@ mod imp {
 
             self.obj().setup_searchbar();
             self.obj().setup_views();
+            self.obj().setup_mode();
             self.obj().update_root_page();
+        }
+
+        fn properties() -> &'static [ParamSpec] {
+            static PROPERTIES: Lazy<Vec<ParamSpec>> = Lazy::new(|| {
+                vec![ParamSpecEnum::builder::<LibraryMode>("mode")
+                    .construct_only()
+                    .build()]
+            });
+            PROPERTIES.as_ref()
+        }
+
+        fn set_property(&self, _id: usize, value: &Value, pspec: &ParamSpec) {
+            match pspec.name() {
+                "mode" => {
+                    let p = value
+                        .get::<LibraryMode>()
+                        .expect("The value needs to be a LibraryMode");
+                    self.mode.set(p);
+                }
+                _ => unimplemented!(),
+            }
+        }
+
+        fn property(&self, _id: usize, pspec: &ParamSpec) -> Value {
+            match pspec.name() {
+                "mode" => self.mode.get().to_value(),
+                _ => unimplemented!(),
+            }
         }
     }
 
@@ -220,6 +270,22 @@ impl Default for LibraryView {
 impl LibraryView {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    fn setup_mode(&self) {
+        let imp = self.imp();
+        let title = match imp.mode.get() {
+            LibraryMode::Artists => i18n("Artists"),
+            LibraryMode::Albums => i18n("Albums"),
+        };
+        imp.root_page.set_title(&title);
+        imp.root_title_label.set_label(&title);
+        imp.root_view
+            .update_property(&[gtk::accessible::Property::Label(&title)]);
+    }
+
+    pub fn mode(&self) -> LibraryMode {
+        self.imp().mode.get()
     }
 
     fn setup_searchbar(&self) {
@@ -263,7 +329,7 @@ impl LibraryView {
             .set_header_factory(Some(&self.section_header_factory()));
 
         for view in [
-            imp.artists_view.get(),
+            imp.root_view.get(),
             imp.albums_view.get(),
             imp.search_view.get(),
         ] {
@@ -280,7 +346,7 @@ impl LibraryView {
             self.add_menu_shortcut(&view, false);
         }
 
-        // Mouse clicks are handled by the rows (for the keyboard)
+        // Mouse clicks are handled by the rows (this is for the keyboard)
         imp.tracks_view.set_factory(Some(&self.row_factory(true)));
         imp.tracks_view.connect_activate(clone!(
             #[weak(rename_to = this)]
@@ -296,7 +362,7 @@ impl LibraryView {
         ));
     }
 
-    /// album_track` is set for the list of an album's songs whose rows can be selected together
+    /// 'album_tracks' is set for the list of an album's songs whose rows
     fn row_factory(&self, album_tracks: bool) -> gtk::ListItemFactory {
         let factory = gtk::SignalListItemFactory::new();
         factory.connect_setup(clone!(
@@ -385,7 +451,7 @@ impl LibraryView {
 
     /// A plain click on a song plays its album from there. Ctrl+Click and
     /// Shift+Click are left to the list which selects songs for the context
-    /// menu, so do Shift with the arrow keys and Ctrl+Space.
+    /// menu; so do Shift with the arrow keys and Ctrl+Space
     fn add_track_clicks(&self, row: &LibraryRow) {
         let gesture = gtk::GestureClick::builder()
             .button(gdk::BUTTON_PRIMARY)
@@ -470,7 +536,7 @@ impl LibraryView {
         view.add_controller(shortcuts);
     }
 
-    /// Shows the context menu for 'row' at 'point', in row coordinates, or
+    /// Shows the context menu for 'row' at 'point' in row coordinates or
     /// below the row if there is no point
     fn popup_menu(&self, row: &LibraryRow, album_tracks: bool, point: Option<(f64, f64)>) {
         let target = match row
@@ -573,7 +639,7 @@ impl LibraryView {
     pub fn reload(&self) {
         let imp = self.imp();
 
-        self.load_artists();
+        self.load_root();
         self.update_search();
 
         let artist = imp.current_artist.borrow().clone();
@@ -603,7 +669,7 @@ impl LibraryView {
         let imp = self.imp();
         if search {
             // Searching only makes sense from the root page
-            imp.navigation_view.pop_to_tag("artists");
+            imp.navigation_view.pop_to_tag("root");
         }
         imp.library_searchbar.set_search_mode(search);
     }
@@ -704,11 +770,29 @@ impl LibraryView {
         );
     }
 
+    fn load_root(&self) {
+        match self.imp().mode.get() {
+            LibraryMode::Artists => self.load_artists(),
+            LibraryMode::Albums => self.load_all_albums(),
+        }
+    }
+
+    /// Shows the items of the root page and whether the library has songs
+    fn show_root_items(&self, items: &[LibraryItem], subtitle: &str) {
+        let imp = self.imp();
+
+        imp.root_model.splice(0, imp.root_model.n_items(), items);
+        imp.root_subtitle_label.set_label(subtitle);
+        imp.has_tracks.set(Some(!items.is_empty()));
+
+        self.update_root_page();
+    }
+
     // ---- Artists ----
 
     fn load_artists(&self) {
         self.query(
-            Query::Artists,
+            Query::Root,
             |db| {
                 let mut artists: Vec<(ArtistKey, u32)> = Vec::new();
                 let mut various = None;
@@ -736,19 +820,11 @@ impl LibraryView {
     }
 
     fn show_artists(&self, artists: Vec<(ArtistKey, u32)>) {
-        let imp = self.imp();
-
         let items: Vec<LibraryItem> = artists
             .into_iter()
             .map(|(artist, num_albums)| LibraryItem::artist(artist, num_albums))
             .collect();
-        imp.artists_model
-            .splice(0, imp.artists_model.n_items(), &items);
-        imp.artists_count_label
-            .set_label(&artists_label(items.len() as u32));
-        imp.has_tracks.set(Some(!items.is_empty()));
-
-        self.update_root_page();
+        self.show_root_items(&items, &artists_label(items.len() as u32));
     }
 
     fn show_artist(&self, artist: ArtistKey) {
@@ -762,11 +838,50 @@ impl LibraryView {
         imp.current_artist.replace(Some(artist.clone()));
         self.load_albums(artist);
 
-        imp.navigation_view
-            .replace_with_tags(&["artists", "albums"]);
+        imp.navigation_view.replace_with_tags(&["root", "albums"]);
     }
 
     // ---- Albums ----
+
+    /// Lists every album for albums mode. The covers are loaded afterwards
+    fn load_all_albums(&self) {
+        self.query(
+            Query::Root,
+            |db| {
+                let mut albums = db.albums()?;
+                // Albums without a title go at the end
+                albums.sort_by_cached_key(|a| {
+                    (
+                        a.title.is_empty(),
+                        a.title.to_lowercase(),
+                        a.album_artist.as_deref().map(str::to_lowercase),
+                    )
+                });
+                Ok(albums)
+            },
+            |this, albums| this.show_all_albums(albums),
+        );
+    }
+
+    fn show_all_albums(&self, albums: Vec<Album>) {
+        let items: Vec<LibraryItem> = albums
+            .iter()
+            .map(|album| LibraryItem::album(album.clone(), None, None))
+            .collect();
+        self.show_root_items(&items, &albums_label(items.len() as u32));
+
+        self.query(
+            Query::Covers,
+            move |_| Ok(albums.iter().map(load_album_cover).collect::<Vec<_>>()),
+            move |_, covers| {
+                for (item, cover) in items.iter().zip(covers) {
+                    if cover.is_some() {
+                        item.set_cover(cover);
+                    }
+                }
+            },
+        );
+    }
 
     fn load_albums(&self, artist: ArtistKey) {
         self.query(
@@ -815,8 +930,7 @@ impl LibraryView {
         if visible_tag.as_deref() == Some("albums") {
             imp.navigation_view.push_by_tag("tracks");
         } else {
-            imp.navigation_view
-                .replace_with_tags(&["artists", "tracks"]);
+            imp.navigation_view.replace_with_tags(&["root", "tracks"]);
         }
     }
 
@@ -916,7 +1030,7 @@ impl LibraryView {
         imp.root_stack.set_visible_child_name("search");
     }
 
-    /// Shows the artists, or an empty state, unless search results are shown.
+    /// Shows the artists, or an empty state unless search results are shown
     fn update_root_page(&self) {
         if self.is_searching() {
             return;
@@ -927,7 +1041,7 @@ impl LibraryView {
         if imp.has_tracks.get() == Some(false) {
             imp.root_stack.set_visible_child_name("empty");
         } else {
-            imp.root_stack.set_visible_child_name("artists");
+            imp.root_stack.set_visible_child_name("list");
         }
     }
 }

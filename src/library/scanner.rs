@@ -91,7 +91,6 @@ pub fn read_track(path: &Path) -> Option<Track> {
         track.year = tag.date().map(|d| d.year.to_string());
         track.genres = tag_strings(tag, ItemKey::Genre);
 
-
         // Prefer the multi-valued ARTISTS tag when present, since ARTIST is
         // often a single display string like "A feat. B".
         track.artists = tag_strings(tag, ItemKey::TrackArtists);
