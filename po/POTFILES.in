@@ -6,6 +6,7 @@ data/org.gnome.Gumdrop.metainfo.xml.in.in
 src/audio/inhibit_controller.rs
 src/audio/song.rs
 src/gtk/help-overlay.ui
+src/gtk/library-row.ui
 src/gtk/library-view.ui
 src/gtk/playback-control.ui
 src/gtk/playlist-view.ui
@@ -13,6 +14,7 @@ src/gtk/queue-row.ui
 src/gtk/window.ui
 src/application.rs
 src/cover_picture.rs
+src/library_item.rs
 src/library_view.rs
 src/playback_control.rs
 src/window.rs

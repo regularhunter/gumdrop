@@ -390,7 +390,7 @@ impl Window {
             move |paths, action| win.queue_tracks(paths, action)
         ));
 
-        imp.library_view.searchbar().connect_notify_local(
+        imp.library_view.library_searchbar().connect_notify_local(
             Some("search-mode-enabled"),
             clone!(
                 #[weak(rename_to = win)]
@@ -419,7 +419,7 @@ impl Window {
             self.notify("playlist-search");
         }
 
-        let library_searchbar = imp.library_view.searchbar();
+        let library_searchbar = imp.library_view.library_searchbar();
         let queue_searchbar = imp.playlist_view.playlist_searchbar();
         if self.sidebar_shows_library() {
             queue_searchbar.set_key_capture_widget(gtk::Widget::NONE);

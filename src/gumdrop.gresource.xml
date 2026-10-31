@@ -21,6 +21,7 @@
   </gresource>
   <gresource prefix="/org/gnome/Gumdrop">
     <file preprocess="xml-stripblanks">gtk/help-overlay.ui</file>
+    <file alias="library-row.ui" preprocess="xml-stripblanks">gtk/library-row.ui</file>
     <file alias="library-view.ui" preprocess="xml-stripblanks">gtk/library-view.ui</file>
     <file alias="playback-control.ui" preprocess="xml-stripblanks">gtk/playback-control.ui</file>
     <file alias="playlist-view.ui" preprocess="xml-stripblanks">gtk/playlist-view.ui</file>
