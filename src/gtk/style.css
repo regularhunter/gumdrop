@@ -160,6 +160,19 @@ dragoverlay {
   transition-timing-function: ease;
 }
 
+box.sidebar-pane > viewswitcherbar > actionbar > revealer > box {
+  background-color: var(--sidebar-bg-color);
+  box-shadow: inset 0 1px var(--sidebar-shade-color);
+  transition-property: background-color;
+  transition-duration: 250ms;
+  transition-timing-function: ease;
+}
+
+box.sidebar-pane > viewswitcherbar > actionbar > revealer > box:backdrop {
+  background-color: var(--sidebar-backdrop-color);
+}
+
+
 .main-window volume > scale trough highlight {
   background: color-mix(in srgb, var(--accent-bg-color) var(--dim-opacity), transparent);
 }
