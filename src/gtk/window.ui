@@ -209,7 +209,7 @@
                                       <object class="AdwViewStackPage">
                                         <property name="name">queue</property>
                                         <property name="title" translatable="yes">Queue</property>
-                                        <property name="icon-name">view-queue-symbolic</property>
+                                        <property name="icon-name">folder-music-symbolic</property>
                                         <property name="child">
                                           <object class="GumdropPlaylistView" id="playlist_view"/>
                                         </property>
