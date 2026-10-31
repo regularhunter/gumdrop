@@ -104,6 +104,7 @@ mod imp {
         pub playlist_search: Cell<bool>,
         pub replaygain_mode: Cell<ReplayGainMode>,
         pub loading_songs: Cell<bool>,
+        pub scanning_library: Cell<bool>,
 
         pub playlist_filtermodel: RefCell<Option<gio::ListModel>>,
 
@@ -220,6 +221,10 @@ mod imp {
                 debug!("Window::queue.clear()");
                 win.clear_queue();
             });
+            klass.install_action_async("library.add-folder", None, |win, _, _| async move {
+                debug!("Window::library.add-folder()");
+                win.add_folders_to_library().await;
+            });
             klass.install_action_async("library.clear", None, |win, _, _| async move {
                 debug!("Window::library.clear()");
                 win.clear_library().await;
@@ -268,6 +273,7 @@ mod imp {
                 library_view: TemplateChild::default(),
                 album_view: TemplateChild::default(),
                 loading_songs: Cell::new(false),
+                scanning_library: Cell::new(false),
                 playlist_shuffled: Cell::new(false),
                 playlist_visible: Cell::new(true),
                 playlist_selection: Cell::new(false),
@@ -446,6 +452,84 @@ impl Window {
                 .set_key_capture_widget(Some(self.upcast_ref::<gtk::Widget>()));
         } else {
             queue_searchbar.set_key_capture_widget(Some(self.upcast_ref::<gtk::Widget>()));
+        }
+    }
+
+    fn update_library_actions(&self) {
+        let imp = self.imp();
+        let scanning = imp.scanning_library.get();
+        let loading = imp.loading_songs.get();
+
+        self.action_set_enabled("library.add-folder", !scanning);
+        self.action_set_enabled("library.clear", !scanning && !loading);
+    }
+
+    async fn add_folders_to_library(&self) {
+        let db = match self.library() {
+            Some(db) => db,
+            None => return,
+        };
+
+        let xdg_music = match glib::user_special_dir(glib::UserDirectory::Music) {
+            Some(p) => p,
+            None => glib::current_dir(),
+        };
+
+        let dialog = gtk::FileDialog::builder()
+            .accept_label(&i18n("_Add Folder"))
+            .initial_folder(&gio::File::for_path(&xdg_music))
+            .modal(true)
+            .title(&i18n("Add Folder to Library"))
+            .build();
+
+        let files = match dialog.select_multiple_folders_future(Some(self)).await {
+            Ok(files) => files,
+            Err(_) => return,
+        };
+        let folders: Vec<PathBuf> = (0..files.n_items())
+            .filter_map(|i| files.item(i).and_downcast::<gio::File>())
+            .filter_map(|f| f.path())
+            .collect();
+        if folders.is_empty() {
+            self.add_toast(i18n("Unable to access files"));
+            return;
+        }
+
+        // Scanning can take a while so only one scan runs at a time and the library isn't
+        // cleared halfway through
+        self.imp().scanning_library.set(true);
+        self.update_library_actions();
+        self.add_toast(i18n("Adding songs to the library…"));
+
+        let res = gio::spawn_blocking(move || {
+            folders.iter().try_fold(0, |n, folder| {
+                scanner::scan_folder(&db, folder).map(|added| n + added)
+            })
+        })
+        .await;
+
+        self.imp().scanning_library.set(false);
+        self.update_library_actions();
+
+        match res {
+            Ok(Ok(0)) => self.add_toast(i18n("No new songs found")),
+            Ok(Ok(n)) => {
+                debug!("Added {} songs to the library", n);
+                self.reload_library();
+                self.add_toast(ni18n_f(
+                    // Translators: the `{}` must be left unmodified;
+                    // it will be expanded to the number of songs added
+                    "Added one song to the library",
+                    "Added {} songs to the library",
+                    n as u32,
+                    &[&n.to_string()],
+                ));
+            }
+            Ok(Err(e)) => {
+                warn!("Unable to add the folder to the library: {}", e);
+                self.add_toast(i18n("Unable to add the folder to the library"));
+            }
+            Err(_) => warn!("Scanning the folder panicked"),
         }
     }
 
@@ -696,7 +780,7 @@ impl Window {
         self.action_set_enabled("queue.add-song", false);
         self.action_set_enabled("queue.add-folder", false);
         self.action_set_enabled("queue.clear", false);
-        self.action_set_enabled("library.clear", false);
+        self.update_library_actions();
 
         self.imp().playlist_view.begin_loading();
 
@@ -741,12 +825,13 @@ impl Window {
                             now.elapsed().as_millis()
                         );
 
-                        // Reenable the actions
+                        // Re-enable the actions
                         win.action_set_enabled("queue.add-song", true);
                         win.action_set_enabled("queue.add-folder", true);
                         win.action_set_enabled("queue.clear", true);
                         win.action_set_enabled("library.clear", true);
                         win.imp().loading_songs.set(false);
+                        win.update_library_actions();
                         win.imp().playlist_view.end_loading();
 
                         if songs.is_empty() {
