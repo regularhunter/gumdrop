@@ -9,7 +9,7 @@ project('gumdrop', 'rust',
 )
 
 dependency('gtk4', version: '>= 4.16.0')
-dependency('libadwaita-1', version: '>= 1.5')
+dependency('libadwaita-1', version: '>= 1.7')
 dependency('gstreamer-1.0', version: '>= 1.20')
 dependency('gstreamer-audio-1.0', version: '>= 1.20')
 dependency('gstreamer-play-1.0', version: '>= 1.20')

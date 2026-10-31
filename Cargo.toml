@@ -37,7 +37,7 @@ ashpd = {version = "0.12", default-features = false, features = ["gtk4", "async-
 [dependencies.adw]
 package = "libadwaita"
 version = "0.8"
-features = ["v1_5"]
+features = ["v1_7"]
 
 [dependencies.gst]
 package = "gstreamer"

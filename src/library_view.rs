@@ -893,8 +893,7 @@ impl LibraryView {
         imp.current_album.replace(Some(album.clone()));
         self.load_tracks(album);
 
-        let visible_tag = imp.navigation_view.visible_page().and_then(|p| p.tag());
-        if visible_tag.as_deref() == Some("albums") {
+        if imp.navigation_view.visible_page_tag().as_deref() == Some("albums") {
             imp.navigation_view.push_by_tag("tracks");
         } else {
             imp.navigation_view.replace_with_tags(&["root", "tracks"]);
