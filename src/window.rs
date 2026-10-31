@@ -103,7 +103,6 @@ mod imp {
         pub playlist_selection: Cell<bool>,
         pub playlist_search: Cell<bool>,
         pub replaygain_mode: Cell<ReplayGainMode>,
-        /// Whether queue_songs() is still turning files into songs
         pub loading_songs: Cell<bool>,
 
         pub playlist_filtermodel: RefCell<Option<gio::ListModel>>,
@@ -379,13 +378,11 @@ impl Window {
             .is_some_and(|n| n > 0)
     }
 
-    /// The library views in the sidebar by artist and album
     fn library_views(&self) -> [LibraryView; 2] {
         let imp = self.imp();
         [imp.library_view.get(), imp.album_view.get()]
     }
 
-    /// The library view shown in the sidebar if the queue is not
     fn visible_library_view(&self) -> Option<LibraryView> {
         self.imp()
             .sidebar_stack
@@ -424,7 +421,6 @@ impl Window {
         self.sidebar_page_changed();
     }
 
-    /// Only the visible sidebar page gets to search and to capture typing
     fn sidebar_page_changed(&self) {
         let imp = self.imp();
 
@@ -448,19 +444,16 @@ impl Window {
         }
     }
 
-    /// Reloads the library view after the database changed
     pub fn reload_library(&self) {
         for view in self.library_views() {
             view.reload();
         }
 
-        // The library may have gained its first songs
         if self.imp().main_stack.visible_child_name().as_deref() == Some("initial-view") {
             self.set_initial_state();
         }
     }
 
-    /// Handles songs picked in the library
     fn queue_tracks(&self, paths: Vec<PathBuf>, action: QueueAction) {
         if self.imp().loading_songs.get() {
             self.add_toast(i18n("Please wait until the songs finish loading"));
@@ -644,7 +637,6 @@ impl Window {
         }
     }
 
-    /// Adds files to the queue and skipping songs that are already queued
     fn queue_songs(&self, queue: Vec<gio::File>, mode: QueueMode) {
         if queue.is_empty() {
             self.add_toast(i18n("No available song found"));
