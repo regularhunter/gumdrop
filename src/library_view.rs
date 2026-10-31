@@ -4,6 +4,10 @@
 // Browses the music library: artists, then an artist's albums, then an
 // album's songs, plus a search across all three.
 //
+// Each list is a GtkListView of LibraryItems shown by LibraryRows, the same
+// way the queue shows Songs with QueueRows, so both can be styled with CSS:
+// see 'libraryrow' in style.css.
+//
 // Database queries and cover art decoding run on the gio thread pool; the
 // results are applied back on the main thread. Each kind of query has a
 // generation counter so that a slow, outdated result never replaces a newer
@@ -23,15 +27,17 @@ use lofty::{file::TaggedFileExt, picture::PictureType};
 use log::warn;
 
 use crate::{
-    i18n::{i18n, ni18n_f},
+    i18n::i18n,
     library::{db, Album, Artist, LibraryDB, Track},
-    utils,
+    library_item::{
+        album_details, album_display_title, albums_label, artist_display_name, artists_label,
+        ArtistKey, LibraryItem, LibraryItemData, LibraryItemKind,
+    },
+    library_row::LibraryRow,
 };
 
-/// Size of album covers in lists, in logical pixels
-const COVER_SIZE: i32 = 48;
-/// Covers are decoded at twice their size, for HiDPI displays
-const COVER_DECODE_SIZE: i32 = COVER_SIZE * 2;
+/// Covers are decoded at twice the size of a small CoverPicture for HiDPI displays
+const COVER_DECODE_SIZE: i32 = 96;
 
 const MAX_ARTIST_RESULTS: usize = 10;
 const MAX_ALBUM_RESULTS: usize = 20;
@@ -50,9 +56,6 @@ pub enum QueueAction {
 
 /// Called with the paths of the songs to queue, and what to do with them.
 type QueueHandler = Rc<dyn Fn(Vec<PathBuf>, QueueAction)>;
-
-/// An entry in the artists list. None stands for tracks without an artist.
-type ArtistKey = Option<String>;
 
 /// What the context menu acts on.
 #[derive(Clone)]
@@ -92,25 +95,53 @@ mod imp {
         #[template_child]
         pub close_button: TemplateChild<gtk::Button>,
         #[template_child]
-        pub searchbar: TemplateChild<gtk::SearchBar>,
+        pub library_searchbar: TemplateChild<gtk::SearchBar>,
         #[template_child]
-        pub search_entry: TemplateChild<gtk::SearchEntry>,
+        pub library_searchentry: TemplateChild<gtk::SearchEntry>,
         #[template_child]
         pub root_stack: TemplateChild<gtk::Stack>,
         #[template_child]
-        pub artists_list: TemplateChild<gtk::ListBox>,
+        pub artists_count_label: TemplateChild<gtk::Label>,
         #[template_child]
-        pub search_box: TemplateChild<gtk::Box>,
+        pub artists_view: TemplateChild<gtk::ListView>,
+        #[template_child]
+        pub artists_model: TemplateChild<gio::ListStore>,
+        #[template_child]
+        pub search_view: TemplateChild<gtk::ListView>,
+        #[template_child]
+        pub search_sections: TemplateChild<gio::ListStore>,
+        #[template_child]
+        pub search_artists_model: TemplateChild<gio::ListStore>,
+        #[template_child]
+        pub search_albums_model: TemplateChild<gio::ListStore>,
+        #[template_child]
+        pub search_tracks_model: TemplateChild<gio::ListStore>,
         #[template_child]
         pub albums_page: TemplateChild<adw::NavigationPage>,
         #[template_child]
-        pub albums_list: TemplateChild<gtk::ListBox>,
+        pub albums_title_label: TemplateChild<gtk::Label>,
+        #[template_child]
+        pub albums_subtitle_label: TemplateChild<gtk::Label>,
+        #[template_child]
+        pub albums_view: TemplateChild<gtk::ListView>,
+        #[template_child]
+        pub albums_model: TemplateChild<gio::ListStore>,
         #[template_child]
         pub tracks_page: TemplateChild<adw::NavigationPage>,
         #[template_child]
-        pub tracks_list: TemplateChild<gtk::ListBox>,
+        pub tracks_title_label: TemplateChild<gtk::Label>,
+        #[template_child]
+        pub tracks_subtitle_label: TemplateChild<gtk::Label>,
         #[template_child]
         pub play_album_button: TemplateChild<gtk::Button>,
+        #[template_child]
+        pub tracks_view: TemplateChild<gtk::ListView>,
+        #[template_child]
+        pub tracks_selection: TemplateChild<gtk::MultiSelection>,
+        #[template_child]
+        pub tracks_model: TemplateChild<gio::ListStore>,
+        #[template_child]
+        pub context_menu: TemplateChild<gtk::PopoverMenu>,
 
         pub db: RefCell<Option<LibraryDB>>,
         /// None until the artists have been loaded once
@@ -122,11 +153,7 @@ mod imp {
         pub current_tracks: RefCell<Vec<Track>>,
         pub generations: [Cell<u64>; N_QUERIES],
         pub queue_handler: RefCell<Option<QueueHandler>>,
-
-        pub context_menu: RefCell<Option<gtk::PopoverMenu>>,
         pub(super) menu_target: RefCell<Option<MenuTarget>>,
-        /// Where a shift-click selection of tracks starts
-        pub selection_anchor: Cell<Option<i32>>,
     }
 
     #[glib::object_subclass]
@@ -136,6 +163,9 @@ mod imp {
         type ParentType = gtk::Widget;
 
         fn class_init(klass: &mut Self::Class) {
+            LibraryItem::static_type();
+            LibraryRow::static_type();
+
             Self::bind_template(klass);
 
             klass.set_layout_manager_type::<gtk::BinLayout>();
@@ -165,7 +195,9 @@ mod imp {
         fn constructed(&self) {
             self.parent_constructed();
 
-            self.obj().setup();
+            self.obj().setup_searchbar();
+            self.obj().setup_views();
+            self.obj().update_root_page();
         }
     }
 
@@ -175,7 +207,8 @@ mod imp {
 glib::wrapper! {
     pub struct LibraryView(ObjectSubclass<imp::LibraryView>)
         @extends gtk::Widget,
-        @implements gtk::Accessible, gtk::Buildable, gtk::ConstraintTarget;
+        @implements gio::ActionGroup, gio::ActionMap, gtk::Accessible,
+                    gtk::Buildable, gtk::ConstraintTarget;
 }
 
 impl Default for LibraryView {
@@ -189,22 +222,27 @@ impl LibraryView {
         Self::default()
     }
 
-    fn setup(&self) {
+    fn setup_searchbar(&self) {
         let imp = self.imp();
 
-        imp.searchbar.connect_entry(&imp.search_entry.get());
+        let entry = imp.library_searchentry.get();
+        imp.library_searchbar.connect_entry(&entry);
         imp.search_button
-            .bind_property("active", &imp.searchbar.get(), "search-mode-enabled")
+            .bind_property(
+                "active",
+                &imp.library_searchbar.get(),
+                "search-mode-enabled",
+            )
             .bidirectional()
             .sync_create()
             .build();
 
-        imp.search_entry.connect_search_changed(clone!(
+        imp.library_searchentry.connect_search_changed(clone!(
             #[weak(rename_to = this)]
             self,
             move |_| this.update_search()
         ));
-        imp.searchbar.connect_notify_local(
+        imp.library_searchbar.connect_notify_local(
             Some("search-mode-enabled"),
             clone!(
                 #[weak(rename_to = this)]
@@ -212,96 +250,172 @@ impl LibraryView {
                 move |_, _| this.update_search()
             ),
         );
+    }
+
+    fn setup_views(&self) {
+        let imp = self.imp();
+
+        // Each search section is a list of its own
+        imp.search_sections.append(&imp.search_artists_model.get());
+        imp.search_sections.append(&imp.search_albums_model.get());
+        imp.search_sections.append(&imp.search_tracks_model.get());
+        imp.search_view
+            .set_header_factory(Some(&self.section_header_factory()));
+
+        for view in [
+            imp.artists_view.get(),
+            imp.albums_view.get(),
+            imp.search_view.get(),
+        ] {
+            view.set_factory(Some(&self.row_factory(false)));
+            view.connect_activate(clone!(
+                #[weak(rename_to = this)]
+                self,
+                move |view, pos| {
+                    if let Some(item) = view.model().and_then(|m| m.item(pos)).and_downcast() {
+                        this.activate_item(&item);
+                    }
+                }
+            ));
+            self.add_menu_shortcut(&view, false);
+        }
+
+        // Mouse clicks are handled by the rows (for the keyboard)
+        imp.tracks_view.set_factory(Some(&self.row_factory(true)));
+        imp.tracks_view.connect_activate(clone!(
+            #[weak(rename_to = this)]
+            self,
+            move |_, pos| this.play_current_album(pos as usize)
+        ));
+        self.add_menu_shortcut(&imp.tracks_view.get(), true);
 
         imp.play_album_button.connect_clicked(clone!(
             #[weak(rename_to = this)]
             self,
             move |_| this.play_current_album(0)
         ));
-
-        self.setup_context_menu();
-        self.setup_track_selection();
-        self.update_root_page();
     }
 
-    fn setup_context_menu(&self) {
-        let menu = gio::Menu::new();
-        menu.append(Some(&i18n("Play Next")), Some("library.play-next"));
-        menu.append(Some(&i18n("Add to Queue")), Some("library.add-to-queue"));
+    /// album_track` is set for the list of an album's songs whose rows can be selected together
+    fn row_factory(&self, album_tracks: bool) -> gtk::ListItemFactory {
+        let factory = gtk::SignalListItemFactory::new();
+        factory.connect_setup(clone!(
+            #[weak(rename_to = this)]
+            self,
+            move |_, item| {
+                let row = LibraryRow::default();
+                let list_item = item.downcast_ref::<gtk::ListItem>().unwrap();
+                list_item.set_child(Some(&row));
 
-        // One menu for every row; parented to the view, which has a layout
-        // manager, so it gets positioned without extra work
-        let popover = gtk::PopoverMenu::from_model(Some(&menu));
-        popover.set_has_arrow(false);
-        popover.set_halign(gtk::Align::Start);
-        popover.set_parent(self);
-        self.imp().context_menu.replace(Some(popover));
+                list_item
+                    .bind_property("item", &row, "item")
+                    .sync_create()
+                    .build();
+
+                list_item
+                    .property_expression("item")
+                    .chain_property::<LibraryItem>("kind")
+                    .bind(&row, "kind", gtk::Widget::NONE);
+                list_item
+                    .property_expression("item")
+                    .chain_property::<LibraryItem>("title")
+                    .bind(&row, "title", gtk::Widget::NONE);
+                list_item
+                    .property_expression("item")
+                    .chain_property::<LibraryItem>("subtitle")
+                    .bind(&row, "subtitle", gtk::Widget::NONE);
+                list_item
+                    .property_expression("item")
+                    .chain_property::<LibraryItem>("number")
+                    .bind(&row, "number", gtk::Widget::NONE);
+                list_item
+                    .property_expression("item")
+                    .chain_property::<LibraryItem>("duration")
+                    .bind(&row, "duration", gtk::Widget::NONE);
+                list_item
+                    .property_expression("item")
+                    .chain_property::<LibraryItem>("cover")
+                    .bind(&row, "cover", gtk::Widget::NONE);
+
+                this.add_context_menu(&row, album_tracks);
+                if album_tracks {
+                    this.add_track_clicks(&row);
+                }
+            }
+        ));
+        factory.upcast()
     }
 
-    /// Ctrl+click and Shift+click select songs in an album, for the context
-    /// menu, instead of playing them. The arrow keys with Shift and
-    /// Ctrl+Space work too, as in any GtkListBox.
-    fn setup_track_selection(&self) {
+    fn section_header_factory(&self) -> gtk::ListItemFactory {
+        let factory = gtk::SignalListItemFactory::new();
+        factory.connect_setup(|_, item| {
+            let header = item.downcast_ref::<gtk::ListHeader>().unwrap();
+            let label = gtk::Label::builder()
+                .xalign(0.0)
+                .css_classes(["heading"])
+                .build();
+            header.set_child(Some(&label));
+        });
+        factory.connect_bind(|_, item| {
+            let header = item.downcast_ref::<gtk::ListHeader>().unwrap();
+            let kind = header
+                .item()
+                .and_downcast::<LibraryItem>()
+                .map(|item| item.kind());
+            let title = match kind {
+                Some(LibraryItemKind::Artist) => i18n("Artists"),
+                Some(LibraryItemKind::Album) => i18n("Albums"),
+                Some(LibraryItemKind::Track) => i18n("Songs"),
+                None => String::new(),
+            };
+            if let Some(label) = header.child().and_downcast::<gtk::Label>() {
+                label.set_label(&title);
+            }
+        });
+        factory.upcast()
+    }
+
+    fn activate_item(&self, item: &LibraryItem) {
+        match item.data() {
+            LibraryItemData::Artist(artist) => self.show_artist(artist),
+            LibraryItemData::Album(album) => self.show_album(album),
+            LibraryItemData::Track(track) => self.play_track_in_album(track),
+        }
+    }
+
+    /// A plain click on a song plays its album from there. Ctrl+Click and
+    /// Shift+Click are left to the list which selects songs for the context
+    /// menu, so do Shift with the arrow keys and Ctrl+Space.
+    fn add_track_clicks(&self, row: &LibraryRow) {
         let gesture = gtk::GestureClick::builder()
             .button(gdk::BUTTON_PRIMARY)
             .propagation_phase(gtk::PropagationPhase::Capture)
             .build();
-        gesture.connect_pressed(clone!(
+        gesture.connect_pressed(|gesture, _, _, _| {
+            let state = gesture.current_event_state();
+            if !state.intersects(gdk::ModifierType::CONTROL_MASK | gdk::ModifierType::SHIFT_MASK) {
+                gesture.set_state(gtk::EventSequenceState::Claimed);
+            }
+        });
+        gesture.connect_released(clone!(
             #[weak(rename_to = this)]
             self,
-            move |gesture, _, _, y| {
-                let state = gesture.current_event_state();
-                let toggle = state.contains(gdk::ModifierType::CONTROL_MASK);
-                let extend = state.contains(gdk::ModifierType::SHIFT_MASK);
-                if !toggle && !extend {
+            #[weak]
+            row,
+            move |_, n_press, _, _| {
+                if n_press != 1 {
                     return;
                 }
-
-                if let Some(row) = this.imp().tracks_list.row_at_y(y as i32) {
-                    gesture.set_state(gtk::EventSequenceState::Claimed);
-                    this.select_track_row(&row, extend);
+                if let Some(pos) = row.item().and_then(|item| this.track_position(&item)) {
+                    this.play_current_album(pos as usize);
                 }
             }
         ));
-        self.imp().tracks_list.add_controller(gesture);
+        row.add_controller(gesture);
     }
 
-    fn select_track_row(&self, row: &gtk::ListBoxRow, extend: bool) {
-        let imp = self.imp();
-        let list = imp.tracks_list.get();
-        let index = row.index();
-
-        if extend {
-            let anchor = imp.selection_anchor.get().unwrap_or(index);
-            list.unselect_all();
-            for i in anchor.min(index)..=anchor.max(index) {
-                if let Some(r) = list.row_at_index(i) {
-                    list.select_row(Some(&r));
-                }
-            }
-        } else {
-            if row.is_selected() {
-                list.unselect_row(row);
-            } else {
-                list.select_row(Some(row));
-            }
-            imp.selection_anchor.set(Some(index));
-        }
-    }
-
-    fn clear_track_selection(&self) {
-        self.imp().tracks_list.unselect_all();
-        self.imp().selection_anchor.set(None);
-    }
-
-    /// Opens the context menu on secondary click, long press, or the Menu key.
-    /// `target` is called when the menu opens, to find what it acts on.
-    fn add_context_menu<F>(&self, row: &adw::ActionRow, target: F)
-    where
-        F: Fn(&Self) -> Option<MenuTarget> + 'static,
-    {
-        let target = Rc::new(target);
-
+    /// Opens the context menu on secondary click or long press.
+    fn add_context_menu(&self, row: &LibraryRow, album_tracks: bool) {
         let click = gtk::GestureClick::builder()
             .button(gdk::BUTTON_SECONDARY)
             .build();
@@ -310,11 +424,9 @@ impl LibraryView {
             self,
             #[weak]
             row,
-            #[strong]
-            target,
             move |gesture, _, x, y| {
                 gesture.set_state(gtk::EventSequenceState::Claimed);
-                this.popup_menu(row.upcast_ref(), target(&this), Some((x, y)));
+                this.popup_menu(&row, album_tracks, Some((x, y)));
             }
         ));
         row.add_controller(click);
@@ -325,55 +437,55 @@ impl LibraryView {
             self,
             #[weak]
             row,
-            #[strong]
-            target,
             move |gesture, x, y| {
                 gesture.set_state(gtk::EventSequenceState::Claimed);
-                this.popup_menu(row.upcast_ref(), target(&this), Some((x, y)));
+                this.popup_menu(&row, album_tracks, Some((x, y)));
             }
         ));
         row.add_controller(long_press);
-
-        if let Some(trigger) = gtk::ShortcutTrigger::parse_string("Menu|<Shift>F10") {
-            let action = gtk::CallbackAction::new(clone!(
-                #[weak(rename_to = this)]
-                self,
-                #[weak]
-                row,
-                #[strong]
-                target,
-                #[upgrade_or]
-                glib::Propagation::Proceed,
-                move |_, _| {
-                    this.popup_menu(row.upcast_ref(), target(&this), None);
-                    glib::Propagation::Stop
-                }
-            ));
-            let shortcuts = gtk::ShortcutController::new();
-            shortcuts.add_shortcut(gtk::Shortcut::new(Some(trigger), Some(action)));
-            row.add_controller(shortcuts);
-        }
     }
 
-    /// Shows the context menu at `point`, in `widget` coordinates, or below
-    /// `widget` if there is no point.
-    fn popup_menu(
-        &self,
-        widget: &gtk::Widget,
-        target: Option<MenuTarget>,
-        point: Option<(f64, f64)>,
-    ) {
-        let imp = self.imp();
-        let (target, popover) = match (target, imp.context_menu.borrow().clone()) {
-            (Some(target), Some(popover)) => (target, popover),
-            _ => return,
+    /// Opens the context menu of the focused row with the Menu key
+    fn add_menu_shortcut(&self, view: &gtk::ListView, album_tracks: bool) {
+        let trigger = match gtk::ShortcutTrigger::parse_string("Menu|<Shift>F10") {
+            Some(trigger) => trigger,
+            None => return,
+        };
+        let action = gtk::CallbackAction::new(clone!(
+            #[weak(rename_to = this)]
+            self,
+            #[upgrade_or]
+            glib::Propagation::Proceed,
+            move |view, _| match focused_row(view) {
+                Some(row) => {
+                    this.popup_menu(&row, album_tracks, None);
+                    glib::Propagation::Stop
+                }
+                None => glib::Propagation::Proceed,
+            }
+        ));
+
+        let shortcuts = gtk::ShortcutController::new();
+        shortcuts.add_shortcut(gtk::Shortcut::new(Some(trigger), Some(action)));
+        view.add_controller(shortcuts);
+    }
+
+    /// Shows the context menu for 'row' at 'point', in row coordinates, or
+    /// below the row if there is no point
+    fn popup_menu(&self, row: &LibraryRow, album_tracks: bool, point: Option<(f64, f64)>) {
+        let target = match row
+            .item()
+            .and_then(|item| self.menu_target(&item, album_tracks))
+        {
+            Some(target) => target,
+            None => return,
         };
 
         let rect = match point {
-            Some((x, y)) => widget
+            Some((x, y)) => row
                 .compute_point(self, &graphene::Point::new(x as f32, y as f32))
                 .map(|p| gdk::Rectangle::new(p.x() as i32, p.y() as i32, 1, 1)),
-            None => widget.compute_bounds(self).map(|b| {
+            None => row.compute_bounds(self).map(|b| {
                 gdk::Rectangle::new(
                     b.x() as i32,
                     b.y() as i32,
@@ -383,9 +495,40 @@ impl LibraryView {
             }),
         };
 
+        let imp = self.imp();
         imp.menu_target.replace(Some(target));
-        popover.set_pointing_to(rect.as_ref());
-        popover.popup();
+        imp.context_menu.set_pointing_to(rect.as_ref());
+        imp.context_menu.popup();
+    }
+
+    fn menu_target(&self, item: &LibraryItem, album_tracks: bool) -> Option<MenuTarget> {
+        match item.data() {
+            LibraryItemData::Artist(artist) => Some(MenuTarget::Artist(artist)),
+            LibraryItemData::Album(album) => Some(MenuTarget::Album(album)),
+            LibraryItemData::Track(_) if album_tracks => {
+                self.track_menu_target(self.track_position(item)?)
+            }
+            LibraryItemData::Track(track) => Some(MenuTarget::Tracks(vec![track.path])),
+        }
+    }
+
+    /// The songs the context menu of the song at 'pos' acts on; the selected
+    /// songs, if that song is one of them, or else just that song
+    fn track_menu_target(&self, pos: u32) -> Option<MenuTarget> {
+        let imp = self.imp();
+        let selection = imp.tracks_selection.get();
+
+        if !selection.is_selected(pos) {
+            selection.select_item(pos, true);
+        }
+
+        let tracks = imp.current_tracks.borrow();
+        let paths: Vec<PathBuf> = (0..selection.n_items())
+            .filter(|&i| selection.is_selected(i))
+            .filter_map(|i| tracks.get(i as usize))
+            .map(|t| t.path.clone())
+            .collect();
+        Some(MenuTarget::Tracks(paths))
     }
 
     /// Queues what the context menu was opened on.
@@ -406,29 +549,13 @@ impl LibraryView {
         }
     }
 
-    /// The songs the context menu of the song at `index` acts on: the
-    /// selected songs, if that song is one of them, or else just that song.
-    fn track_menu_target(&self, index: usize) -> Option<MenuTarget> {
-        let imp = self.imp();
-        let list = imp.tracks_list.get();
-        let row = list.row_at_index(index as i32)?;
+    fn track_position(&self, item: &LibraryItem) -> Option<u32> {
+        let model = self.imp().tracks_model.get();
+        (0..model.n_items()).find(|&i| model.item(i).as_ref() == Some(item.upcast_ref()))
+    }
 
-        if !row.is_selected() {
-            self.clear_track_selection();
-            list.select_row(Some(&row));
-            imp.selection_anchor.set(Some(row.index()));
-        }
-
-        let mut indices: Vec<i32> = list.selected_rows().iter().map(|r| r.index()).collect();
-        indices.sort_unstable();
-
-        let tracks = imp.current_tracks.borrow();
-        let paths: Vec<PathBuf> = indices
-            .into_iter()
-            .filter_map(|i| tracks.get(i as usize))
-            .map(|t| t.path.clone())
-            .collect();
-        Some(MenuTarget::Tracks(paths))
+    fn clear_track_selection(&self) {
+        self.imp().tracks_selection.unselect_all();
     }
 
     /// Sets the database to browse, and loads it.
@@ -464,8 +591,12 @@ impl LibraryView {
         self.imp().close_button.get()
     }
 
-    pub fn searchbar(&self) -> gtk::SearchBar {
-        self.imp().searchbar.get()
+    pub fn library_searchbar(&self) -> gtk::SearchBar {
+        self.imp().library_searchbar.get()
+    }
+
+    pub fn library_searchentry(&self) -> gtk::SearchEntry {
+        self.imp().library_searchentry.get()
     }
 
     pub fn set_search(&self, search: bool) {
@@ -474,7 +605,7 @@ impl LibraryView {
             // Searching only makes sense from the root page
             imp.navigation_view.pop_to_tag("artists");
         }
-        imp.searchbar.set_search_mode(search);
+        imp.library_searchbar.set_search_mode(search);
     }
 
     /// Runs `query` against the database on a worker thread, then passes the
@@ -548,7 +679,6 @@ impl LibraryView {
 
     fn play_current_album(&self, index: usize) {
         self.clear_track_selection();
-
         let paths: Vec<PathBuf> = self
             .imp()
             .current_tracks
@@ -608,49 +738,27 @@ impl LibraryView {
     fn show_artists(&self, artists: Vec<(ArtistKey, u32)>) {
         let imp = self.imp();
 
-        imp.artists_list.remove_all();
-        imp.has_tracks.set(Some(!artists.is_empty()));
-        for (artist, num_albums) in artists {
-            imp.artists_list
-                .append(&self.artist_row(artist, num_albums));
-        }
+        let items: Vec<LibraryItem> = artists
+            .into_iter()
+            .map(|(artist, num_albums)| LibraryItem::artist(artist, num_albums))
+            .collect();
+        imp.artists_model
+            .splice(0, imp.artists_model.n_items(), &items);
+        imp.artists_count_label
+            .set_label(&artists_label(items.len() as u32));
+        imp.has_tracks.set(Some(!items.is_empty()));
 
         self.update_root_page();
-    }
-
-    fn artist_row(&self, artist: ArtistKey, num_albums: u32) -> adw::ActionRow {
-        let row = adw::ActionRow::builder()
-            .title(artist_display_name(artist.as_deref()))
-            .subtitle(ni18n_f(
-                // Translators: the `{}` must be left unmodified;
-                // it will be expanded to the number of albums
-                "{} album",
-                "{} albums",
-                num_albums,
-                &[&num_albums.to_string()],
-            ))
-            .use_markup(false)
-            .activatable(true)
-            .build();
-        row.add_suffix(&gtk::Image::from_icon_name("go-next-symbolic"));
-
-        let menu_artist = artist.clone();
-        self.add_context_menu(&row, move |_| Some(MenuTarget::Artist(menu_artist.clone())));
-        row.connect_activated(clone!(
-            #[weak(rename_to = this)]
-            self,
-            move |_| this.show_artist(artist.clone())
-        ));
-
-        row
     }
 
     fn show_artist(&self, artist: ArtistKey) {
         let imp = self.imp();
 
-        imp.albums_page
-            .set_title(&artist_display_name(artist.as_deref()));
-        imp.albums_list.remove_all();
+        let name = artist_display_name(artist.as_deref());
+        imp.albums_page.set_title(&name);
+        imp.albums_title_label.set_label(&name);
+        imp.albums_subtitle_label.set_label("");
+        imp.albums_model.remove_all();
         imp.current_artist.replace(Some(artist.clone()));
         self.load_albums(artist);
 
@@ -680,63 +788,25 @@ impl LibraryView {
         let imp = self.imp();
         let artist = imp.current_artist.borrow().clone().flatten();
 
-        imp.albums_list.remove_all();
-        for (album, cover) in albums {
-            imp.albums_list
-                .append(&self.album_row(album, cover.as_ref(), artist.as_deref()));
-        }
-    }
-
-    /// `artist` is the artist being browsed, if any; the album artist is only
-    /// shown when it differs.
-    fn album_row(
-        &self,
-        album: Album,
-        cover: Option<&gdk::Texture>,
-        artist: Option<&str>,
-    ) -> adw::ActionRow {
-        let mut details = Vec::new();
-        if artist.is_none() || album.album_artist.as_deref() != artist {
-            details.push(artist_display_name(album.album_artist.as_deref()));
-        }
-        if let Some(year) = &album.year {
-            details.push(year.clone());
-        }
-        details.push(ni18n_f(
-            // Translators: the `{}` must be left unmodified;
-            // it will be expanded to the number of songs
-            "{} song",
-            "{} songs",
-            album.num_tracks,
-            &[&album.num_tracks.to_string()],
-        ));
-
-        let row = adw::ActionRow::builder()
-            .title(album_display_title(&album.title))
-            .subtitle(details.join(" · "))
-            .use_markup(false)
-            .activatable(true)
-            .build();
-        row.add_prefix(&cover_image(cover));
-        row.add_suffix(&gtk::Image::from_icon_name("go-next-symbolic"));
-
-        let menu_album = album.clone();
-        self.add_context_menu(&row, move |_| Some(MenuTarget::Album(menu_album.clone())));
-        row.connect_activated(clone!(
-            #[weak(rename_to = this)]
-            self,
-            move |_| this.show_album(album.clone())
-        ));
-
-        row
+        let items: Vec<LibraryItem> = albums
+            .into_iter()
+            .map(|(album, cover)| LibraryItem::album(album, cover, artist.as_deref()))
+            .collect();
+        imp.albums_model
+            .splice(0, imp.albums_model.n_items(), &items);
+        imp.albums_subtitle_label
+            .set_label(&albums_label(items.len() as u32));
     }
 
     fn show_album(&self, album: Album) {
         let imp = self.imp();
 
-        imp.tracks_page
-            .set_title(&album_display_title(&album.title));
-        imp.tracks_list.remove_all();
+        let title = album_display_title(&album.title);
+        imp.tracks_page.set_title(&title);
+        imp.tracks_title_label.set_label(&title);
+        imp.tracks_subtitle_label
+            .set_label(&album_details(&album, None));
+        imp.tracks_model.remove_all();
         imp.current_tracks.borrow_mut().clear();
         imp.current_album.replace(Some(album.clone()));
         self.load_tracks(album);
@@ -769,72 +839,26 @@ impl LibraryView {
             .and_then(|a| a.album_artist.clone());
         let multi_disc = tracks.iter().filter_map(|t| t.disc).max().unwrap_or(0) > 1;
 
-        imp.tracks_list.remove_all();
-        imp.selection_anchor.set(None);
-        for (index, track) in tracks.iter().enumerate() {
-            imp.tracks_list.append(&self.track_row(
-                track,
-                index,
-                album_artist.as_deref(),
-                multi_disc,
-            ));
-        }
+        let items: Vec<LibraryItem> = tracks
+            .iter()
+            .map(|track| {
+                LibraryItem::album_track(track.clone(), album_artist.as_deref(), multi_disc)
+            })
+            .collect();
+        imp.tracks_model
+            .splice(0, imp.tracks_model.n_items(), &items);
         imp.play_album_button.set_sensitive(!tracks.is_empty());
         imp.current_tracks.replace(tracks);
-    }
-
-    fn track_row(
-        &self,
-        track: &Track,
-        index: usize,
-        album_artist: Option<&str>,
-        multi_disc: bool,
-    ) -> adw::ActionRow {
-        let row = adw::ActionRow::builder()
-            .title(&track.title)
-            .use_markup(false)
-            .activatable(true)
-            .build();
-
-        // Only credit artists when they differ from the album artist
-        if !track.artists.is_empty()
-            && !(track.artists.len() == 1 && Some(track.artists[0].as_str()) == album_artist)
-        {
-            row.set_subtitle(&track.artists.join(", "));
-        }
-
-        let number = match (track.disc, track.track) {
-            (Some(disc), Some(n)) if multi_disc => format!("{}.{}", disc, n),
-            (_, Some(n)) => n.to_string(),
-            _ => String::new(),
-        };
-        let number_label = gtk::Label::builder()
-            .label(number)
-            .width_chars(3)
-            .xalign(1.0)
-            .css_classes(["dim-label", "numeric"])
-            .build();
-        row.add_prefix(&number_label);
-        row.add_suffix(&duration_label(track.duration));
-
-        self.add_context_menu(&row, move |this| this.track_menu_target(index));
-        row.connect_activated(clone!(
-            #[weak(rename_to = this)]
-            self,
-            move |_| this.play_current_album(index)
-        ));
-
-        row
     }
 
     // ---- Search ----
 
     fn search_text(&self) -> String {
-        self.imp().search_entry.text().trim().to_string()
+        self.imp().library_searchentry.text().trim().to_string()
     }
 
     fn is_searching(&self) -> bool {
-        self.imp().searchbar.is_search_mode() && !self.search_text().is_empty()
+        self.imp().library_searchbar.is_search_mode() && !self.search_text().is_empty()
     }
 
     fn update_search(&self) {
@@ -855,84 +879,41 @@ impl LibraryView {
     }
 
     fn clear_search_results(&self) {
-        let search_box = self.imp().search_box.get();
-        while let Some(child) = search_box.first_child() {
-            search_box.remove(&child);
-        }
+        let imp = self.imp();
+        imp.search_artists_model.remove_all();
+        imp.search_albums_model.remove_all();
+        imp.search_tracks_model.remove_all();
     }
 
     fn show_search_results(&self, results: SearchResults) {
         let imp = self.imp();
-        self.clear_search_results();
 
         if results.artists.is_empty() && results.albums.is_empty() && results.tracks.is_empty() {
+            self.clear_search_results();
             imp.root_stack.set_visible_child_name("no-results");
             return;
         }
 
-        if !results.artists.is_empty() {
-            let group = adw::PreferencesGroup::builder()
-                .title(i18n("Artists"))
-                .build();
-            for artist in results.artists {
-                group.add(&self.artist_row(Some(artist.name), artist.num_albums));
-            }
-            imp.search_box.append(&group);
-        }
+        let artists: Vec<LibraryItem> = results
+            .artists
+            .into_iter()
+            .map(|artist| LibraryItem::artist(Some(artist.name), artist.num_albums))
+            .collect();
+        let albums: Vec<LibraryItem> = results
+            .albums
+            .into_iter()
+            .map(|(album, cover)| LibraryItem::album(album, cover, None))
+            .collect();
+        let tracks: Vec<LibraryItem> = results.tracks.into_iter().map(LibraryItem::track).collect();
 
-        if !results.albums.is_empty() {
-            let group = adw::PreferencesGroup::builder()
-                .title(i18n("Albums"))
-                .build();
-            for (album, cover) in results.albums {
-                group.add(&self.album_row(album, cover.as_ref(), None));
-            }
-            imp.search_box.append(&group);
-        }
-
-        if !results.tracks.is_empty() {
-            let group = adw::PreferencesGroup::builder()
-                .title(i18n("Songs"))
-                .build();
-            for track in results.tracks {
-                group.add(&self.search_track_row(track));
-            }
-            imp.search_box.append(&group);
-        }
+        imp.search_artists_model
+            .splice(0, imp.search_artists_model.n_items(), &artists);
+        imp.search_albums_model
+            .splice(0, imp.search_albums_model.n_items(), &albums);
+        imp.search_tracks_model
+            .splice(0, imp.search_tracks_model.n_items(), &tracks);
 
         imp.root_stack.set_visible_child_name("search");
-    }
-
-    fn search_track_row(&self, track: Track) -> adw::ActionRow {
-        let artist = if track.artists.is_empty() {
-            artist_display_name(track.album_artist.as_deref())
-        } else {
-            track.artists.join(", ")
-        };
-
-        let row = adw::ActionRow::builder()
-            .title(&track.title)
-            .subtitle(format!(
-                "{} · {}",
-                artist,
-                album_display_title(&track.album)
-            ))
-            .use_markup(false)
-            .activatable(true)
-            .build();
-        row.add_suffix(&duration_label(track.duration));
-
-        let menu_path = track.path.clone();
-        self.add_context_menu(&row, move |_| {
-            Some(MenuTarget::Tracks(vec![menu_path.clone()]))
-        });
-        row.connect_activated(clone!(
-            #[weak(rename_to = this)]
-            self,
-            move |_| this.play_track_in_album(track.clone())
-        ));
-
-        row
     }
 
     /// Shows the artists, or an empty state, unless search results are shown.
@@ -951,10 +932,25 @@ impl LibraryView {
     }
 }
 
+/// The row that has the keyboard focus in 'view' if any
+fn focused_row(view: &gtk::Widget) -> Option<LibraryRow> {
+    let focus = view.root()?.focus()?;
+    if !focus.is_ancestor(view) {
+        return None;
+    }
+
+    // The focus is on the list item that holds the row
+    focus
+        .clone()
+        .downcast::<LibraryRow>()
+        .ok()
+        .or_else(|| focus.first_child().and_downcast::<LibraryRow>())
+}
+
 fn search_library(db: &LibraryDB, query: &str) -> db::Result<SearchResults> {
     let matcher = SkimMatcherV2::default().ignore_case();
 
-    // Album artists and track artists, without duplicates
+    // Album artists and track artists without duplicates
     let mut candidates = db.album_artists()?;
     for artist in db.artists()? {
         if !candidates.iter().any(|a| a.name == artist.name) {
@@ -1005,7 +1001,7 @@ fn search_library(db: &LibraryDB, query: &str) -> db::Result<SearchResults> {
     })
 }
 
-/// The albums of an artist, in the order the albums page shows them.
+/// The albums of an artist in the order the albums page shows them
 fn artist_albums(db: &LibraryDB, artist: &ArtistKey) -> db::Result<Vec<Album>> {
     let mut albums = match artist {
         Some(name) => db.artist_albums(name)?,
@@ -1019,7 +1015,7 @@ fn artist_albums(db: &LibraryDB, artist: &ArtistKey) -> db::Result<Vec<Album>> {
     Ok(albums)
 }
 
-/// The songs a context menu acts on, in playing order.
+/// The songs a context menu acts on in playing order
 fn target_paths(db: &LibraryDB, target: &MenuTarget) -> db::Result<Vec<PathBuf>> {
     let albums = match target {
         MenuTarget::Tracks(paths) => return Ok(paths.clone()),
@@ -1035,44 +1031,8 @@ fn target_paths(db: &LibraryDB, target: &MenuTarget) -> db::Result<Vec<PathBuf>>
     Ok(paths)
 }
 
-fn artist_display_name(artist: Option<&str>) -> String {
-    match artist {
-        None => i18n("Unknown Artist"),
-        Some(name) if name == LibraryDB::VARIOUS_ARTISTS => i18n("Various Artists"),
-        Some(name) => name.to_string(),
-    }
-}
-
-fn album_display_title(title: &str) -> String {
-    if title.is_empty() {
-        i18n("Unknown Album")
-    } else {
-        title.to_string()
-    }
-}
-
-fn duration_label(seconds: f64) -> gtk::Label {
-    gtk::Label::builder()
-        .label(utils::format_time(seconds.round() as i64))
-        .css_classes(["dim-label", "numeric"])
-        .build()
-}
-
-fn cover_image(cover: Option<&gdk::Texture>) -> gtk::Image {
-    let image = match cover {
-        Some(texture) => gtk::Image::from_paintable(Some(texture)),
-        None => gtk::Image::from_icon_name("audio-x-generic-symbolic"),
-    };
-    image.set_pixel_size(COVER_SIZE);
-    image.add_css_class("album-cover");
-    if cover.is_none() {
-        image.add_css_class("missing");
-    }
-    image
-}
-
 /// Loads the album's cover image file or, failing that, the cover art embedded
-/// in one of its tracks. Blocking; call from a worker thread.
+/// in one of its tracks. Blocking; call from a worker thread
 fn load_album_cover(album: &Album) -> Option<gdk::Texture> {
     let pixbuf = album
         .cover
