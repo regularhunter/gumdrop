@@ -162,7 +162,7 @@
         <attribute name="action">queue.add-folder</attribute>
       </item>
       <item>
-        <attribute name="label" translatable="yes">Clear Playlist</attribute>
+        <attribute name="label" translatable="yes">Clear Queue</attribute>
         <attribute name="action">queue.clear</attribute>
       </item>
       <item>
