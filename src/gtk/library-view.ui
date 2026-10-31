@@ -6,11 +6,10 @@
     <child>
       <object class="AdwNavigationView" id="navigation_view">
 
-        <!-- Artists and search results -->
+        <!-- Artists or albums (depending on the mode) and search results -->
         <child>
-          <object class="AdwNavigationPage">
-            <property name="tag">artists</property>
-            <property name="title" translatable="yes">Library</property>
+          <object class="AdwNavigationPage" id="root_page">
+            <property name="tag">root</property>
             <property name="child">
               <object class="AdwToolbarView">
                 <child type="top">
@@ -27,16 +26,15 @@
                         <property name="orientation">vertical</property>
                         <property name="valign">center</property>
                         <child>
-                          <object class="GtkLabel">
+                          <object class="GtkLabel" id="root_title_label">
                             <property name="ellipsize">end</property>
-                            <property name="label" translatable="yes">Library</property>
                             <style>
                               <class name="heading"/>
                             </style>
                           </object>
                         </child>
                         <child>
-                          <object class="GtkLabel" id="artists_count_label">
+                          <object class="GtkLabel" id="root_subtitle_label">
                             <property name="ellipsize">end</property>
                             <style>
                               <class name="caption"/>
@@ -61,7 +59,7 @@
                     <property name="child">
                       <object class="GtkSearchEntry" id="library_searchentry">
                         <property name="placeholder-text" translatable="yes">Search artists, albums, and songs</property>
-                        <property name="hexpand">true</property>
+                        <property name="hexpand">True</property>
                         <accessibility>
                           <property name="label" translatable="yes" context="a11y">Search</property>
                           <property name="description" translatable="yes" context="a11y">Type to search the library</property>
@@ -101,26 +99,23 @@
                     </child>
                     <child>
                       <object class="GtkStackPage">
-                        <property name="name">artists</property>
+                        <property name="name">list</property>
                         <property name="child">
                           <object class="GtkScrolledWindow">
                             <property name="hscrollbar-policy">never</property>
                             <property name="vscrollbar-policy">automatic</property>
                             <property name="child">
-                              <object class="GtkListView" id="artists_view">
+                              <object class="GtkListView" id="root_view">
                                 <property name="single-click-activate">true</property>
                                 <property name="model">
                                   <object class="GtkNoSelection">
                                     <property name="model">
-                                      <object class="GListStore" id="artists_model">
+                                      <object class="GListStore" id="root_model">
                                         <property name="item-type">GumdropLibraryItem</property>
                                       </object>
                                     </property>
                                   </object>
                                 </property>
-                                <accessibility>
-                                  <property name="label" translatable="yes" context="a11y">Artists</property>
-                                </accessibility>
                                 <style>
                                   <class name="navigation-sidebar"/>
                                 </style>

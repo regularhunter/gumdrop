@@ -91,6 +91,8 @@ mod imp {
         #[template_child]
         pub library_view: TemplateChild<LibraryView>,
         #[template_child]
+        pub album_view: TemplateChild<LibraryView>,
+        #[template_child]
         pub add_folder_button: TemplateChild<gtk::Button>,
 
         pub provider: gtk::CssProvider,
@@ -260,6 +262,7 @@ mod imp {
                 playlist_view: TemplateChild::default(),
                 sidebar_stack: TemplateChild::default(),
                 library_view: TemplateChild::default(),
+                album_view: TemplateChild::default(),
                 loading_songs: Cell::new(false),
                 playlist_shuffled: Cell::new(false),
                 playlist_visible: Cell::new(true),
@@ -376,30 +379,42 @@ impl Window {
             .is_some_and(|n| n > 0)
     }
 
-    fn sidebar_shows_library(&self) -> bool {
-        self.imp().sidebar_stack.visible_child_name().as_deref() == Some("library")
+    /// The library views in the sidebar by artist and album
+    fn library_views(&self) -> [LibraryView; 2] {
+        let imp = self.imp();
+        [imp.library_view.get(), imp.album_view.get()]
+    }
+
+    /// The library view shown in the sidebar if the queue is not
+    fn visible_library_view(&self) -> Option<LibraryView> {
+        self.imp()
+            .sidebar_stack
+            .visible_child()
+            .and_downcast::<LibraryView>()
     }
 
     fn setup_library(&self) {
         let imp = self.imp();
 
-        imp.library_view.set_library(self.library());
-        imp.library_view.set_queue_handler(clone!(
-            #[weak(rename_to = win)]
-            self,
-            move |paths, action| win.queue_tracks(paths, action)
-        ));
-
-        imp.library_view.library_searchbar().connect_notify_local(
-            Some("search-mode-enabled"),
-            clone!(
+        for view in self.library_views() {
+            view.set_library(self.library());
+            view.set_queue_handler(clone!(
                 #[weak(rename_to = win)]
                 self,
-                move |searchbar, _| {
-                    win.set_playlist_search(searchbar.is_search_mode());
-                }
-            ),
-        );
+                move |paths, action| win.queue_tracks(paths, action)
+            ));
+
+            view.library_searchbar().connect_notify_local(
+                Some("search-mode-enabled"),
+                clone!(
+                    #[weak(rename_to = win)]
+                    self,
+                    move |searchbar, _| {
+                        win.set_playlist_search(searchbar.is_search_mode());
+                    }
+                ),
+            );
+        }
 
         imp.sidebar_stack.connect_visible_child_name_notify(clone!(
             #[weak(rename_to = win)]
@@ -414,25 +429,30 @@ impl Window {
         let imp = self.imp();
 
         imp.playlist_view.set_search(false);
-        imp.library_view.set_search(false);
+        for view in self.library_views() {
+            view.set_search(false);
+            view.library_searchbar()
+                .set_key_capture_widget(gtk::Widget::NONE);
+        }
         if imp.playlist_search.replace(false) {
             self.notify("playlist-search");
         }
 
-        let library_searchbar = imp.library_view.library_searchbar();
         let queue_searchbar = imp.playlist_view.playlist_searchbar();
-        if self.sidebar_shows_library() {
+        if let Some(view) = self.visible_library_view() {
             queue_searchbar.set_key_capture_widget(gtk::Widget::NONE);
-            library_searchbar.set_key_capture_widget(Some(self.upcast_ref::<gtk::Widget>()));
+            view.library_searchbar()
+                .set_key_capture_widget(Some(self.upcast_ref::<gtk::Widget>()));
         } else {
-            library_searchbar.set_key_capture_widget(gtk::Widget::NONE);
             queue_searchbar.set_key_capture_widget(Some(self.upcast_ref::<gtk::Widget>()));
         }
     }
 
     /// Reloads the library view after the database changed
     pub fn reload_library(&self) {
-        self.imp().library_view.reload();
+        for view in self.library_views() {
+            view.reload();
+        }
 
         // The library may have gained its first songs
         if self.imp().main_stack.visible_child_name().as_deref() == Some("initial-view") {
@@ -615,8 +635,8 @@ impl Window {
         let imp = self.imp();
 
         if search != imp.playlist_search.replace(search) {
-            if self.sidebar_shows_library() {
-                imp.library_view.set_search(search);
+            if let Some(view) = self.visible_library_view() {
+                view.set_search(search);
             } else {
                 imp.playlist_view.set_search(search);
             }
@@ -1054,10 +1074,9 @@ impl Window {
                         .playlist_view
                         .back_button()
                         .set_visible(split_view.is_collapsed());
-                    win.imp()
-                        .library_view
-                        .close_button()
-                        .set_visible(split_view.is_collapsed());
+                    for view in win.library_views() {
+                        view.close_button().set_visible(split_view.is_collapsed());
+                    }
                 }
             ),
         );

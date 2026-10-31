@@ -183,11 +183,25 @@
                                     <property name="vexpand">true</property>
                                     <child>
                                       <object class="AdwViewStackPage">
-                                        <property name="name">library</property>
-                                        <property name="title" translatable="yes">Library</property>
-                                        <property name="icon-name">folder-music-symbolic</property>
+                                        <property name="name">artists</property>
+                                        <property name="title" translatable="yes">Artist</property>
+                                        <property name="icon-name">avatar-default-symbolic</property>
                                         <property name="child">
-                                          <object class="GumdropLibraryView" id="library_view"/>
+                                          <object class="GumdropLibraryView" id="library_view">
+                                            <property name="mode">artists</property>
+                                          </object>
+                                        </property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="AdwViewStackPage">
+                                        <property name="name">albums</property>
+                                        <property name="title" translatable="yes">Album</property>
+                                        <property name="icon-name">media-optical-symbolic</property>
+                                        <property name="child">
+                                          <object class="GumdropLibraryView" id="album_view">
+                                            <property name="mode">albums</property>
+                                          </object>
                                         </property>
                                       </object>
                                     </child>
