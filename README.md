@@ -30,7 +30,7 @@ Dependencies
 - cargo
 - gtk4 >= 4.16.0
 - glib2
-- libadwaita-1 >= 1.5
+- libadwaita-1 >= 1.7
 - libpng
 - gstreamer-1.0 >= 1.20
 ```
