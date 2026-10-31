@@ -220,6 +220,11 @@ mod imp {
                 debug!("Window::queue.clear()");
                 win.clear_queue();
             });
+            klass.install_action_async("library.clear", None, |win, _, _| async move {
+                debug!("Window::library.clear()");
+                win.clear_library().await;
+            });
+
             klass.install_property_action("queue.toggle", "playlist-visible");
             klass.install_property_action("queue.shuffle", "playlist-shuffled");
             klass.install_property_action("queue.select", "playlist-selection");
@@ -444,6 +449,47 @@ impl Window {
         }
     }
 
+    // Asks for confirmation then removes everything from the library database.
+    // The music files and the queue are left alone
+    async fn clear_library(&self) {
+        use adw::prelude::{AlertDialogExt, AlertDialogExtManual};
+
+        let db = match self.library() {
+            Some(db) => db,
+            None => return,
+        };
+
+        let dialog = adw::AlertDialog::builder()
+            .heading(i18n("Clear Library?"))
+            .body(i18n(
+                "All artists, albums, and songs will be removed from your library. \
+                 Your music files and the queue will not be affected.",
+            ))
+            .close_response("cancel")
+            .default_response("cancel")
+            .build();
+        dialog.add_response("cancel", &i18n("_Cancel"));
+        dialog.add_response("clear", &i18n("_Clear"));
+        dialog.set_response_appearance("clear", adw::ResponseAppearance::Destructive);
+
+        if dialog.choose_future(self).await != "clear" {
+            return;
+        }
+
+        match gio::spawn_blocking(move || db.clear()).await {
+            Ok(Ok(n)) => {
+                debug!("Removed {} songs from the library", n);
+                self.reload_library();
+                self.add_toast(i18n("Library cleared"));
+            }
+            Ok(Err(e)) => {
+                warn!("Unable to clear the library: {}", e);
+                self.add_toast(i18n("Unable to clear the library"));
+            }
+            Err(_) => warn!("Clearing the library panicked"),
+        }
+    }
+
     pub fn reload_library(&self) {
         for view in self.library_views() {
             view.reload();
@@ -650,6 +696,7 @@ impl Window {
         self.action_set_enabled("queue.add-song", false);
         self.action_set_enabled("queue.add-folder", false);
         self.action_set_enabled("queue.clear", false);
+        self.action_set_enabled("library.clear", false);
 
         self.imp().playlist_view.begin_loading();
 
@@ -698,6 +745,7 @@ impl Window {
                         win.action_set_enabled("queue.add-song", true);
                         win.action_set_enabled("queue.add-folder", true);
                         win.action_set_enabled("queue.clear", true);
+                        win.action_set_enabled("library.clear", true);
                         win.imp().loading_songs.set(false);
                         win.imp().playlist_view.end_loading();
 

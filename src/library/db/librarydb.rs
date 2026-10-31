@@ -278,6 +278,18 @@ impl LibraryDB {
         })
     }
 
+    // Removes every track, artist, genre and cover from the library and returns
+    // the number of tracks removed. The audio files themselves are not touched
+    pub fn clear(&self) -> Result<usize> {
+        self.write(|tx| {
+            tx.execute("DELETE FROM artists", [])?;
+            tx.execute("DELETE FROM genres", [])?;
+            tx.execute("DELETE FROM covers", [])?;
+            let removed = tx.execute("DELETE FROM tracks", [])?;
+            Ok(removed)
+        })
+    }
+
     // Records cover image files
     pub fn add_covers(&self, paths: &[PathBuf]) -> Result<()> {
         if paths.is_empty() {
