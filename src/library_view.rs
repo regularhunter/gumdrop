@@ -37,28 +37,21 @@ use crate::{
     library_row::LibraryRow,
 };
 
-/// Covers are decoded at twice the size of a small CoverPicture for HiDPI displays
 const COVER_DECODE_SIZE: i32 = 96;
 
 const MAX_ARTIST_RESULTS: usize = 10;
 const MAX_ALBUM_RESULTS: usize = 20;
 const MAX_SONG_RESULTS: usize = 50;
 
-/// What to do with songs picked in the library.
 #[derive(Clone, Copy, Debug)]
 pub enum QueueAction {
-    /// Replace the queue with the songs, and play the one at this index
     Play(usize),
-    /// Insert the songs after the current song
     PlayNext,
-    /// Add the songs to the end of the queue
     Append,
 }
 
-/// Called with the paths of the songs to queue, and what to do with them.
 type QueueHandler = Rc<dyn Fn(Vec<PathBuf>, QueueAction)>;
 
-/// What the root page of a library view lists
 #[derive(Clone, Copy, Debug, glib::Enum, PartialEq, Default)]
 #[enum_type(name = "GumdropLibraryMode")]
 pub enum LibraryMode {
@@ -69,7 +62,6 @@ pub enum LibraryMode {
     Albums,
 }
 
-/// What the context menu acts on.
 #[derive(Clone)]
 enum MenuTarget {
     Tracks(Vec<PathBuf>),
@@ -165,11 +157,8 @@ mod imp {
 
         pub mode: Cell<LibraryMode>,
         pub db: RefCell<Option<LibraryDB>>,
-        /// None until the root page has been loaded once
         pub has_tracks: Cell<Option<bool>>,
-        /// The artist whose albums are shown in albums_page
         pub current_artist: RefCell<Option<ArtistKey>>,
-        /// The album whose tracks are shown in tracks_page
         pub current_album: RefCell<Option<Album>>,
         pub current_tracks: RefCell<Vec<Track>>,
         pub generations: [Cell<u64>; N_QUERIES],
@@ -362,7 +351,6 @@ impl LibraryView {
         ));
     }
 
-    /// 'album_tracks' is set for the list of an album's songs whose rows
     fn row_factory(&self, album_tracks: bool) -> gtk::ListItemFactory {
         let factory = gtk::SignalListItemFactory::new();
         factory.connect_setup(clone!(
@@ -449,9 +437,6 @@ impl LibraryView {
         }
     }
 
-    /// A plain click on a song plays its album from there. Ctrl+Click and
-    /// Shift+Click are left to the list which selects songs for the context
-    /// menu; so do Shift with the arrow keys and Ctrl+Space
     fn add_track_clicks(&self, row: &LibraryRow) {
         let gesture = gtk::GestureClick::builder()
             .button(gdk::BUTTON_PRIMARY)
@@ -480,7 +465,6 @@ impl LibraryView {
         row.add_controller(gesture);
     }
 
-    /// Opens the context menu on secondary click or long press.
     fn add_context_menu(&self, row: &LibraryRow, album_tracks: bool) {
         let click = gtk::GestureClick::builder()
             .button(gdk::BUTTON_SECONDARY)
@@ -511,7 +495,6 @@ impl LibraryView {
         row.add_controller(long_press);
     }
 
-    /// Opens the context menu of the focused row with the Menu key
     fn add_menu_shortcut(&self, view: &gtk::ListView, album_tracks: bool) {
         let trigger = match gtk::ShortcutTrigger::parse_string("Menu|<Shift>F10") {
             Some(trigger) => trigger,
@@ -536,8 +519,6 @@ impl LibraryView {
         view.add_controller(shortcuts);
     }
 
-    /// Shows the context menu for 'row' at 'point' in row coordinates or
-    /// below the row if there is no point
     fn popup_menu(&self, row: &LibraryRow, album_tracks: bool, point: Option<(f64, f64)>) {
         let target = match row
             .item()
@@ -578,8 +559,6 @@ impl LibraryView {
         }
     }
 
-    /// The songs the context menu of the song at 'pos' acts on; the selected
-    /// songs, if that song is one of them, or else just that song
     fn track_menu_target(&self, pos: u32) -> Option<MenuTarget> {
         let imp = self.imp();
         let selection = imp.tracks_selection.get();
@@ -597,7 +576,6 @@ impl LibraryView {
         Some(MenuTarget::Tracks(paths))
     }
 
-    /// Queues what the context menu was opened on.
     fn queue_menu_target(&self, action: QueueAction) {
         let target = match self.imp().menu_target.take() {
             Some(target) => target,
@@ -624,18 +602,15 @@ impl LibraryView {
         self.imp().tracks_selection.unselect_all();
     }
 
-    /// Sets the database to browse, and loads it.
     pub fn set_library(&self, db: Option<LibraryDB>) {
         self.imp().db.replace(db);
         self.reload();
     }
 
-    /// Sets the function called when the user picks songs to play or queue.
     pub fn set_queue_handler<F: Fn(Vec<PathBuf>, QueueAction) + 'static>(&self, handler: F) {
         self.imp().queue_handler.replace(Some(Rc::new(handler)));
     }
 
-    /// Reloads every page from the database, e.g. after a scan finished.
     pub fn reload(&self) {
         let imp = self.imp();
 
@@ -674,9 +649,6 @@ impl LibraryView {
         imp.library_searchbar.set_search_mode(search);
     }
 
-    /// Runs `query` against the database on a worker thread, then passes the
-    /// result to `update` on the main thread, unless a newer query of the same
-    /// kind was started in the meantime.
     fn query<T, Q, U>(&self, kind: Query, query: Q, update: U)
     where
         T: Send + 'static,
@@ -686,7 +658,6 @@ impl LibraryView {
         self.run_query(Some(kind), query, update);
     }
 
-    /// Like query(), but with `kind` None the result is always applied.
     fn run_query<T, Q, U>(&self, kind: Option<Query>, query: Q, update: U)
     where
         T: Send + 'static,
@@ -721,7 +692,6 @@ impl LibraryView {
         });
     }
 
-    /// Invalidates pending queries of this kind and returns the new generation.
     fn next_generation(&self, kind: Query) -> u64 {
         let generation = &self.imp().generations[kind as usize];
         generation.set(generation.get().wrapping_add(1));
@@ -755,7 +725,6 @@ impl LibraryView {
         self.play(paths, index);
     }
 
-    /// Plays the album containing `track`, starting from `track`.
     fn play_track_in_album(&self, track: Track) {
         self.query(
             Query::Play,
@@ -777,7 +746,6 @@ impl LibraryView {
         }
     }
 
-    /// Shows the items of the root page and whether the library has songs
     fn show_root_items(&self, items: &[LibraryItem], subtitle: &str) {
         let imp = self.imp();
 
@@ -843,7 +811,6 @@ impl LibraryView {
 
     // ---- Albums ----
 
-    /// Lists every album for albums mode. The covers are loaded afterwards
     fn load_all_albums(&self) {
         self.query(
             Query::Root,
@@ -1030,7 +997,6 @@ impl LibraryView {
         imp.root_stack.set_visible_child_name("search");
     }
 
-    /// Shows the artists, or an empty state unless search results are shown
     fn update_root_page(&self) {
         if self.is_searching() {
             return;
@@ -1046,7 +1012,6 @@ impl LibraryView {
     }
 }
 
-/// The row that has the keyboard focus in 'view' if any
 fn focused_row(view: &gtk::Widget) -> Option<LibraryRow> {
     let focus = view.root()?.focus()?;
     if !focus.is_ancestor(view) {
@@ -1115,7 +1080,6 @@ fn search_library(db: &LibraryDB, query: &str) -> db::Result<SearchResults> {
     })
 }
 
-/// The albums of an artist in the order the albums page shows them
 fn artist_albums(db: &LibraryDB, artist: &ArtistKey) -> db::Result<Vec<Album>> {
     let mut albums = match artist {
         Some(name) => db.artist_albums(name)?,
@@ -1129,7 +1093,6 @@ fn artist_albums(db: &LibraryDB, artist: &ArtistKey) -> db::Result<Vec<Album>> {
     Ok(albums)
 }
 
-/// The songs a context menu acts on in playing order
 fn target_paths(db: &LibraryDB, target: &MenuTarget) -> db::Result<Vec<PathBuf>> {
     let albums = match target {
         MenuTarget::Tracks(paths) => return Ok(paths.clone()),
@@ -1145,8 +1108,6 @@ fn target_paths(db: &LibraryDB, target: &MenuTarget) -> db::Result<Vec<PathBuf>>
     Ok(paths)
 }
 
-/// Loads the album's cover image file or, failing that, the cover art embedded
-/// in one of its tracks. Blocking; call from a worker thread
 fn load_album_cover(album: &Album) -> Option<gdk::Texture> {
     let pixbuf = album
         .cover

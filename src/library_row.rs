@@ -177,8 +177,6 @@ impl LibraryRow {
         }
     }
 
-    /// Shows the parts of the row that the kind of item uses. Each kind also
-    /// gets a style class: `libraryrow.artist`, `.album` or `.track`.
     fn update_mode(&self) {
         let imp = self.imp();
         let kind = imp.kind.get();
@@ -198,8 +196,6 @@ impl LibraryRow {
         imp.subtitle_label.set_visible(!subtitle.is_empty());
     }
 
-    /// The track number; None hides it, while an empty number keeps the
-    /// space so that the titles of an album stay aligned.
     fn set_number(&self, number: Option<&str>) {
         let imp = self.imp();
         imp.number_label.set_label(number.unwrap_or_default());

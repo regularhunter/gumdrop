@@ -13,7 +13,6 @@ use crate::{
     utils,
 };
 
-/// An entry in the artists list. None stands for tracks without an artist.
 pub type ArtistKey = Option<String>;
 
 #[derive(Clone, Copy, Debug, glib::Enum, PartialEq, Default)]
@@ -35,7 +34,6 @@ impl AsRef<str> for LibraryItemKind {
     }
 }
 
-/// What a library item stands for.
 #[derive(Debug, Clone)]
 pub enum LibraryItemData {
     Artist(ArtistKey),
@@ -125,8 +123,6 @@ impl LibraryItem {
         )
     }
 
-    /// `browsed_artist` is the artist whose albums are listed, if any; the
-    /// album artist is only mentioned when it differs.
     pub fn album(album: Album, cover: Option<gdk::Texture>, browsed_artist: Option<&str>) -> Self {
         let title = album_display_title(&album.title);
         let subtitle = album_details(&album, browsed_artist);
@@ -135,7 +131,6 @@ impl LibraryItem {
         item
     }
 
-    /// A song in the list of an album's songs.
     pub fn album_track(track: Track, album_artist: Option<&str>, multi_disc: bool) -> Self {
         // Only credit artists when they differ from the album artist
         let subtitle =
@@ -159,7 +154,6 @@ impl LibraryItem {
         item
     }
 
-    /// A song found by searching, outside of its album.
     pub fn track(track: Track) -> Self {
         let artist = if track.artists.is_empty() {
             artist_display_name(track.album_artist.as_deref())
@@ -187,7 +181,6 @@ impl LibraryItem {
         self.imp().data.borrow().clone()
     }
 
-    /// Sets the cover of an album once it has been loaded
     pub fn set_cover(&self, cover: Option<gdk::Texture>) {
         self.imp().cover.replace(cover);
         self.notify("cover");
@@ -211,8 +204,6 @@ pub fn album_display_title(title: &str) -> String {
     }
 }
 
-/// The album artist, year and number of songs of an album. The album artist
-/// is left out when it is `browsed_artist`.
 pub fn album_details(album: &Album, browsed_artist: Option<&str>) -> String {
     let mut details = Vec::new();
     if browsed_artist.is_none() || album.album_artist.as_deref() != browsed_artist {
