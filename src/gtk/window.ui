@@ -50,7 +50,7 @@
                                         <child>
                                           <object class="GtkButton" id="add_folder_button">
                                             <property name="label" translatable="yes">Add Folder</property>
-                                            <property name="action-name">queue.add-folder</property>
+                                            <property name="action-name">library.add-folder</property>
                                             <style>
                                               <class name="suggested-action"/>
                                               <class name="pill"/>
