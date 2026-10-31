@@ -8,7 +8,7 @@ use adw::prelude::AdwDialogExt;
 use adw::subclass::prelude::*;
 #[cfg(any(target_os = "linux", target_os = "freebsd"))]
 use ashpd::{desktop::background::Background, WindowIdentifier};
-use async_channel::Receiver;
+use async_channel::{Receiver, Sender};
 use glib::clone;
 use gtk::{gio, glib, prelude::*};
 use log::{debug, warn};
@@ -17,12 +17,14 @@ use crate::{
     audio::AudioPlayer,
     config::{APPLICATION_ID, VERSION},
     i18n::i18n,
+    library::{scanner, LibraryDB},
     utils,
     window::Window,
 };
 
 pub enum ApplicationAction {
     Present,
+    LibraryChanged,
 }
 
 mod imp {
@@ -31,9 +33,11 @@ mod imp {
     #[derive(Debug)]
     pub struct Application {
         pub player: Rc<AudioPlayer>,
+        pub sender: Sender<ApplicationAction>,
         pub receiver: RefCell<Option<Receiver<ApplicationAction>>>,
         pub background_hold: RefCell<Option<gio::ApplicationHoldGuard>>,
         pub settings: gio::Settings,
+        pub library: RefCell<Option<LibraryDB>>,
     }
 
     #[glib::object_subclass]
@@ -47,10 +51,12 @@ mod imp {
             let receiver = RefCell::new(Some(r));
 
             Self {
-                player: AudioPlayer::new(sender),
+                player: AudioPlayer::new(sender.clone()),
+                sender,
                 receiver,
                 background_hold: RefCell::default(),
                 settings: utils::settings_manager(),
+                library: RefCell::default(),
             }
         }
     }
@@ -87,6 +93,8 @@ mod imp {
             self.parent_startup();
 
             gtk::Window::set_default_icon_name(APPLICATION_ID);
+
+            self.obj().setup_library();
         }
 
         fn activate(&self) {
@@ -135,6 +143,43 @@ impl Application {
         self.imp().player.clone()
     }
 
+    // The music library or None if the database could not be opened
+    pub fn library(&self) -> Option<LibraryDB> {
+        self.imp().library.borrow().clone()
+    }
+
+    // Sender for ApplicationAction messages (usable from any thread)
+    pub fn sender(&self) -> Sender<ApplicationAction> {
+        self.imp().sender.clone()
+    }
+
+    fn setup_library(&self) {
+        let db = match LibraryDB::new() {
+            Ok(db) => db,
+            Err(e) => {
+                warn!("Unable to open the music library: {}", e);
+                return;
+            }
+        };
+
+        self.imp().library.replace(Some(db.clone()));
+
+        // Catch up with files that were changed or removed while not running
+        let sender = self.sender();
+        let res = std::thread::Builder::new()
+            .name("library-refresh".to_string())
+            .spawn(move || match scanner::refresh(&db, false) {
+                Ok(0) => (),
+                Ok(_) => {
+                    let _ = sender.send_blocking(ApplicationAction::LibraryChanged);
+                }
+                Err(e) => warn!("Unable to refresh the music library: {}", e),
+            });
+        if let Err(e) = res {
+            warn!("Unable to start the library refresh thread: {}", e);
+        }
+    }
+
     fn setup_settings(&self) {
         self.imp().settings.connect_changed(
             Some("background-play"),
@@ -177,6 +222,13 @@ impl Application {
     fn process_action(&self, action: ApplicationAction) -> glib::ControlFlow {
         match action {
             ApplicationAction::Present => self.present_main_window(),
+            ApplicationAction::LibraryChanged => {
+                for window in self.windows() {
+                    if let Ok(window) = window.downcast::<Window>() {
+                        window.reload_library();
+                    }
+                }
+            }
             // _ => debug!("Received action {:?}", action),
         }
 
@@ -235,7 +287,7 @@ impl Application {
             .application_name("Gumdrop")
             .developer_name("Hunter Wardlaw")
             .version(VERSION)
-            .developers(vec!["Hunter Wardlaw"])
+            .developers(vec!["Hunter Wardlaw",  "Emmanuele Bassi"])
             .copyright("© 2025 Hunter Wardlaw")
             .website("https://github.com/regularhunter/gumdrop")
             .issue_url("https://github.com/regularhunter/gumdrop/issues")

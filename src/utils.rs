@@ -142,13 +142,17 @@ fn load_files_from_folder_internal(
     folder: &gio::File,
     recursive: bool,
 ) -> Vec<gio::File> {
-    let mut enumerator = folder
-        .enumerate_children(
-            "standard::name,standard::type",
-            gio::FileQueryInfoFlags::NOFOLLOW_SYMLINKS,
-            None::<&gio::Cancellable>,
-        )
-        .expect("Unable to enumerate");
+    let mut enumerator = if let Ok(enumerator) = folder.enumerate_children(
+        "standard::name,standard::type",
+        gio::FileQueryInfoFlags::NOFOLLOW_SYMLINKS,
+        None::<&gio::Cancellable>,
+    ) {
+        enumerator
+    } else {
+        warn!("Unable to enumerate {}", folder.uri());
+        return Vec::new();
+    };
+
 
     let mut files = Vec::new();
     while let Some(info) = enumerator.next().and_then(|s| s.ok()) {
@@ -268,40 +272,3 @@ pub fn store_playlist(queue: &Queue) {
     }
 }
 
-pub fn load_cached_songs() -> Option<Vec<gio::File>> {
-    let mut pls_cache = glib::user_cache_dir();
-    pls_cache.push("gumdrop");
-    pls_cache.push("playlists");
-    pls_cache.push("current.pls");
-
-    let pls = glib::KeyFile::new();
-    if let Err(e) = pls.load_from_file(&pls_cache, glib::KeyFileFlags::NONE) {
-        debug!("Unable to load current playlist: {e}");
-        return None;
-    }
-
-    let n_entries: usize = match pls.int64("playlist", "NumberOfEntries") {
-        Ok(n) => n as usize,
-        Err(_) => 0,
-    };
-
-    let mut res = Vec::with_capacity(n_entries);
-
-    for i in 0..n_entries {
-        match pls.value("playlist", &format!("File{i}")) {
-            Ok(p) => res.push(gio::File::for_path(p)),
-            Err(e) => debug!("Skipping File{i} from playlist: {e}"),
-        }
-    }
-
-    Some(res)
-}
-
-pub fn has_cached_playlist() -> bool {
-    let mut pls_cache = glib::user_cache_dir();
-    pls_cache.push("gumdrop");
-    pls_cache.push("playlists");
-    pls_cache.push("current.pls");
-
-    pls_cache.exists()
-}

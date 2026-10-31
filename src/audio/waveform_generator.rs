@@ -123,6 +123,26 @@ impl WaveformGenerator {
         self.notify("has-peaks");
     }
 
+    async fn load_peaks_cache(&self, cache: impl AsRef<std::path::Path>) {
+        let file = gio::File::for_path(&cache);
+        if let Ok((bytes, _tag)) = file.load_contents_future().await {
+            match serde_json::from_slice(&bytes[..]) {
+                Ok(p) => {
+                    debug!("Loaded cached waveform file");
+                    self.imp().peaks.replace(Some(p));
+                    self.notify("has-peaks");
+                }
+                Err(err) => {
+                    debug!("Could not parse cached waveform file: {}", err);
+                    self.generate_peaks();
+                }
+            }
+        } else {
+            debug!("Could not read cached waveform file");
+            self.generate_peaks();
+        }
+    }
+
     fn load_peaks(&self) {
         let song = match self.imp().song.borrow().as_ref() {
             Some(s) => s.clone(),
@@ -135,28 +155,12 @@ impl WaveformGenerator {
             cache.push("waveforms");
             cache.push(format!("{}.json", uuid));
 
-            let file = gio::File::for_path(&cache);
-            file.load_contents_async(
-                gio::Cancellable::NONE,
-                clone!(
-                    #[strong(rename_to = this)]
-                    self,
-                    move |res| {
-                        match res {
-                            Ok((bytes, _tag)) => {
-                                let p: Vec<(f64, f64)> =
-                                    serde_json::from_slice(&bytes[..]).unwrap();
-                                this.imp().peaks.replace(Some(p));
-                                this.notify("has-peaks");
-                            }
-                            Err(err) => {
-                                debug!("Could not read waveform cache file: {}", err);
-                                this.generate_peaks();
-                            }
-                        }
-                    }
-                ),
-            );
+            let ctx = glib::MainContext::default();
+            ctx.spawn_local(clone!(
+                #[weak(rename_to = this)]
+                self,
+                async move { this.load_peaks_cache(&cache).await }
+            ));
         }
     }
 

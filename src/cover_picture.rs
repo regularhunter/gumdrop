@@ -156,7 +156,8 @@ mod imp {
 glib::wrapper! {
     pub struct CoverPicture(ObjectSubclass<imp::CoverPicture>)
         @extends gtk::Widget,
-        @implements gio::ActionGroup, gio::ActionMap, gtk::Accessible;
+        @implements gio::ActionGroup, gio::ActionMap, gtk::Accessible,
+                    gtk::Buildable, gtk::ConstraintTarget;
 }
 
 impl Default for CoverPicture {

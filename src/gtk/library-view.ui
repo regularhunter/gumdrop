@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="Adw" version="1.4"/>
+  <template class="GumdropLibraryView" parent="GtkWidget">
+    <child>
+      <object class="AdwNavigationView" id="navigation_view">
+
+        <!-- Artists or albums (depending on the mode) and search results -->
+        <child>
+          <object class="AdwNavigationPage" id="root_page">
+            <property name="tag">root</property>
+            <property name="child">
+              <object class="AdwToolbarView">
+                <child type="top">
+                  <object class="AdwHeaderBar">
+                    <child type="start">
+                      <object class="GtkToggleButton" id="search_button">
+                        <property name="icon-name">system-search-symbolic</property>
+                        <property name="valign">center</property>
+                        <property name="tooltip-text" translatable="yes">Search the Library</property>
+                      </object>
+                    </child>
+                    <property name="title-widget">
+                      <object class="GtkBox">
+                        <property name="orientation">vertical</property>
+                        <property name="valign">center</property>
+                        <child>
+                          <object class="GtkLabel" id="root_title_label">
+                            <property name="ellipsize">end</property>
+                            <style>
+                              <class name="heading"/>
+                            </style>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="root_subtitle_label">
+                            <property name="ellipsize">end</property>
+                            <style>
+                              <class name="caption"/>
+                            </style>
+                          </object>
+                        </child>
+                      </object>
+                    </property>
+                    <child type="end">
+                      <object class="GtkButton" id="close_button">
+                        <property name="visible">false</property>
+                        <property name="icon-name">go-previous-symbolic</property>
+                        <property name="action-name">queue.toggle</property>
+                        <property name="valign">center</property>
+                        <property name="tooltip-text" translatable="yes">Close the Library</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <child type="top">
+                  <object class="GtkSearchBar" id="library_searchbar">
+                    <property name="child">
+                      <object class="GtkSearchEntry" id="library_searchentry">
+                        <property name="placeholder-text" translatable="yes">Search artists, albums, and songs</property>
+                        <property name="hexpand">True</property>
+                        <accessibility>
+                          <property name="label" translatable="yes" context="a11y">Search</property>
+                          <property name="description" translatable="yes" context="a11y">Type to search the library</property>
+                        </accessibility>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <property name="content">
+                  <object class="GtkStack" id="root_stack">
+                    <property name="vexpand">true</property>
+                    <child>
+                      <object class="GtkStackPage">
+                        <property name="name">empty</property>
+                        <property name="child">
+                          <object class="AdwStatusPage">
+                            <property name="icon-name">folder-music-symbolic</property>
+                            <property name="title" translatable="yes">Your Library Is Empty</property>
+                            <property name="description" translatable="yes">Songs you add to the queue are saved in your library</property>
+                            <property name="child">
+                              <object class="GtkButton">
+                                <property name="label" translatable="yes">Add Folder</property>
+                                <property name="action-name">library.add-folder</property>
+                                <property name="halign">center</property>
+                                <style>
+                                  <class name="suggested-action"/>
+                                  <class name="pill"/>
+                                </style>
+                              </object>
+                            </property>
+                            <style>
+                              <class name="compact"/>
+                            </style>
+                          </object>
+                        </property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkStackPage">
+                        <property name="name">list</property>
+                        <property name="child">
+                          <object class="GtkScrolledWindow">
+                            <property name="hscrollbar-policy">never</property>
+                            <property name="vscrollbar-policy">automatic</property>
+                            <property name="child">
+                              <object class="GtkListView" id="root_view">
+                                <property name="single-click-activate">true</property>
+                                <property name="model">
+                                  <object class="GtkNoSelection">
+                                    <property name="model">
+                                      <object class="GListStore" id="root_model">
+                                        <property name="item-type">GumdropLibraryItem</property>
+                                      </object>
+                                    </property>
+                                  </object>
+                                </property>
+                                <style>
+                                  <class name="navigation-sidebar"/>
+                                </style>
+                              </object>
+                            </property>
+                          </object>
+                        </property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkStackPage">
+                        <property name="name">search</property>
+                        <property name="child">
+                          <object class="GtkScrolledWindow">
+                            <property name="hscrollbar-policy">never</property>
+                            <property name="vscrollbar-policy">automatic</property>
+                            <property name="child">
+                              <object class="GtkListView" id="search_view">
+                                <property name="single-click-activate">true</property>
+                                <property name="model">
+                                  <object class="GtkNoSelection">
+                                    <property name="model">
+                                      <object class="GtkFlattenListModel">
+                                        <property name="model">
+                                          <object class="GListStore" id="search_sections">
+                                            <property name="item-type">GListModel</property>
+                                          </object>
+                                        </property>
+                                      </object>
+                                    </property>
+                                  </object>
+                                </property>
+                                <accessibility>
+                                  <property name="label" translatable="yes" context="a11y">Search results</property>
+                                </accessibility>
+                                <style>
+                                  <class name="navigation-sidebar"/>
+                                </style>
+                              </object>
+                            </property>
+                          </object>
+                        </property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkStackPage">
+                        <property name="name">no-results</property>
+                        <property name="child">
+                          <object class="AdwStatusPage">
+                            <property name="icon-name">system-search-symbolic</property>
+                            <property name="title" translatable="yes">No Results Found</property>
+                            <property name="description" translatable="yes">Try a different search</property>
+                            <style>
+                              <class name="compact"/>
+                            </style>
+                          </object>
+                        </property>
+                      </object>
+                    </child>
+                  </object>
+                </property>
+                <style>
+                  <class name="playlist-background"/>
+                </style>
+              </object>
+            </property>
+          </object>
+        </child>
+
+        <!-- Albums of an artist -->
+        <child>
+          <object class="AdwNavigationPage" id="albums_page">
+            <property name="tag">albums</property>
+            <property name="title" translatable="yes">Albums</property>
+            <property name="child">
+              <object class="AdwToolbarView">
+                <child type="top">
+                  <object class="AdwHeaderBar">
+                    <property name="title-widget">
+                      <object class="GtkBox">
+                        <property name="orientation">vertical</property>
+                        <property name="valign">center</property>
+                        <child>
+                          <object class="GtkLabel" id="albums_title_label">
+                            <property name="ellipsize">end</property>
+                            <style>
+                              <class name="heading"/>
+                            </style>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="albums_subtitle_label">
+                            <property name="ellipsize">end</property>
+                            <style>
+                              <class name="caption"/>
+                            </style>
+                          </object>
+                        </child>
+                      </object>
+                    </property>
+                  </object>
+                </child>
+                <property name="content">
+                  <object class="GtkScrolledWindow">
+                    <property name="hscrollbar-policy">never</property>
+                    <property name="vscrollbar-policy">automatic</property>
+                    <property name="vexpand">true</property>
+                    <property name="child">
+                      <object class="GtkListView" id="albums_view">
+                        <property name="single-click-activate">true</property>
+                        <property name="model">
+                          <object class="GtkNoSelection">
+                            <property name="model">
+                              <object class="GListStore" id="albums_model">
+                                <property name="item-type">GumdropLibraryItem</property>
+                              </object>
+                            </property>
+                          </object>
+                        </property>
+                        <accessibility>
+                          <property name="label" translatable="yes" context="a11y">Albums</property>
+                        </accessibility>
+                        <style>
+                          <class name="navigation-sidebar"/>
+                        </style>
+                      </object>
+                    </property>
+                  </object>
+                </property>
+                <style>
+                  <class name="playlist-background"/>
+                </style>
+              </object>
+            </property>
+          </object>
+        </child>
+
+        <!-- Tracks of an album -->
+        <child>
+          <object class="AdwNavigationPage" id="tracks_page">
+            <property name="tag">tracks</property>
+            <property name="title" translatable="yes">Songs</property>
+            <property name="child">
+              <object class="AdwToolbarView">
+                <child type="top">
+                  <object class="AdwHeaderBar">
+                    <property name="title-widget">
+                      <object class="GtkBox">
+                        <property name="orientation">vertical</property>
+                        <property name="valign">center</property>
+                        <child>
+                          <object class="GtkLabel" id="tracks_title_label">
+                            <property name="ellipsize">end</property>
+                            <style>
+                              <class name="heading"/>
+                            </style>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkLabel" id="tracks_subtitle_label">
+                            <property name="ellipsize">end</property>
+                            <style>
+                              <class name="caption"/>
+                            </style>
+                          </object>
+                        </child>
+                      </object>
+                    </property>
+                    <child type="end">
+                      <object class="GtkButton" id="play_album_button">
+                        <property name="icon-name">media-playback-start-symbolic</property>
+                        <property name="valign">center</property>
+                        <property name="tooltip-text" translatable="yes">Play Album</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+                <property name="content">
+                  <object class="GtkScrolledWindow">
+                    <property name="hscrollbar-policy">never</property>
+                    <property name="vscrollbar-policy">automatic</property>
+                    <property name="vexpand">true</property>
+                    <property name="child">
+                      <object class="GtkListView" id="tracks_view">
+                        <property name="single-click-activate">false</property>
+                        <property name="model">
+                          <object class="GtkMultiSelection" id="tracks_selection">
+                            <property name="model">
+                              <object class="GListStore" id="tracks_model">
+                                <property name="item-type">GumdropLibraryItem</property>
+                              </object>
+                            </property>
+                          </object>
+                        </property>
+                        <accessibility>
+                          <property name="label" translatable="yes" context="a11y">Songs</property>
+                        </accessibility>
+                        <style>
+                          <class name="navigation-sidebar"/>
+                        </style>
+                      </object>
+                    </property>
+                  </object>
+                </property>
+                <style>
+                  <class name="playlist-background"/>
+                </style>
+              </object>
+            </property>
+          </object>
+        </child>
+
+      </object>
+    </child>
+    <child>
+      <object class="GtkPopoverMenu" id="context_menu">
+        <property name="menu-model">context_menu_model</property>
+        <property name="has-arrow">false</property>
+        <property name="halign">start</property>
+      </object>
+    </child>
+  </template>
+  <object class="GListStore" id="search_artists_model">
+    <property name="item-type">GumdropLibraryItem</property>
+  </object>
+  <object class="GListStore" id="search_albums_model">
+    <property name="item-type">GumdropLibraryItem</property>
+  </object>
+  <object class="GListStore" id="search_tracks_model">
+    <property name="item-type">GumdropLibraryItem</property>
+  </object>
+  <menu id="context_menu_model">
+    <section>
+      <item>
+        <attribute name="label" translatable="yes">Play Next</attribute>
+        <attribute name="action">library.play-next</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes">Add to Queue</attribute>
+        <attribute name="action">library.add-to-queue</attribute>
+      </item>
+    </section>
+  </menu>
+</interface>

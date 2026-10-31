@@ -6,7 +6,6 @@ QA Plan
 
 1. Initial state
   - Open folder
-  - Open file
   - Drag and drop
 2. Main view
   - Play/pause
@@ -18,7 +17,7 @@ QA Plan
   - Select
   - Remove song
   - Remove all
-  - Toggle playlist
+  - Toggle library/queue
 
 Release
 -------

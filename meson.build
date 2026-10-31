@@ -2,14 +2,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 project('gumdrop', 'rust',
-  version: '0.1.1',
+  version: '0.1.2',
   license: ['GPL-3.0'],
   meson_version: '>= 0.59.0',
   default_options: [ 'warning_level=2', ],
 )
 
 dependency('gtk4', version: '>= 4.16.0')
-dependency('libadwaita-1', version: '>= 1.5')
+dependency('libadwaita-1', version: '>= 1.7')
 dependency('gstreamer-1.0', version: '>= 1.20')
 dependency('gstreamer-audio-1.0', version: '>= 1.20')
 dependency('gstreamer-play-1.0', version: '>= 1.20')

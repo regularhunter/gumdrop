@@ -11,7 +11,13 @@ use std::{
 
 use glib::{ParamSpec, ParamSpecBoolean, ParamSpecObject, ParamSpecString, ParamSpecUInt, Value};
 use gtk::{gdk, gio, glib, prelude::*, subclass::prelude::*};
-use lofty::prelude::{Accessor, TaggedFileExt};
+use itertools::Itertools;
+
+use lofty::{
+    prelude::{Accessor, TaggedFileExt},
+    probe::Probe,
+    tag::ItemKey,
+};
 use log::{debug, warn};
 use once_cell::sync::Lazy;
 use sha2::{Digest, Sha256};
@@ -88,10 +94,29 @@ impl SongData {
         let file = gio::File::for_uri(uri);
         let path = file.path().expect("Unable to find file");
 
-        let tagged_file = match lofty::read_from_path(&path) {
-            Ok(f) => f,
+        let (mime_type, _) = gio::content_type_guess(Some(&path), None);
+        if !mime_type.starts_with("audio") || mime_type.ends_with("x-mpegurl") {
+            return SongData::default();
+        }
+
+        let file_probe = match Probe::open(&path) {
+            Ok(p) => p,
             Err(e) => {
                 warn!("Unable to open file {:?}: {}", path, e);
+                return SongData::default();
+            }
+        };
+
+        let tagged_file = match file_probe.guess_file_type() {
+            Ok(t) => match t.read() {
+                Ok(f) => f,
+                Err(e) => {
+                    warn!("Unable to read parsed file {:?}: {}", path, e);
+                    return SongData::default();
+                }
+            },
+            Err(e) => {
+                warn!("Unable to parse file type {:?}: {}", path, e);
                 return SongData::default();
             }
         };
@@ -105,7 +130,7 @@ impl SongData {
         let mut cover_uuid = None;
         if let Some(tag) = tagged_file.primary_tag() {
             debug!("Found primary tag");
-            artist = tag.artist().map(|s| s.to_string());
+            artist = Some(tag.get_strings(ItemKey::TrackArtist).join(", "));
             title = tag.title().map(|s| s.to_string());
             album = tag.album().map(|s| s.to_string());
             if let Some(res) = cover_cache.cover_art(&path, tag) {
@@ -116,7 +141,7 @@ impl SongData {
             warn!("Unable to load primary tag for: {}", uri);
             for tag in tagged_file.tags() {
                 debug!("Found tag: {:?}", tag.tag_type());
-                artist = tag.artist().map(|s| s.to_string());
+                artist = Some(tag.get_strings(ItemKey::TrackArtist).join(", "));
                 title = tag.title().map(|s| s.to_string());
                 album = tag.album().map(|s| s.to_string());
                 if let Some(res) = cover_cache.cover_art(&path, tag) {

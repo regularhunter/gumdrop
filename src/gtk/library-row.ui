@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <template class="GumdropLibraryRow" parent="GtkWidget">
+    <child>
+      <object class="GtkBox">
+        <property name="hexpand">true</property>
+        <child>
+          <object class="GtkLabel" id="number_label">
+            <property name="visible">false</property>
+            <property name="width-chars">3</property>
+            <property name="xalign">1</property>
+            <style>
+              <class name="track-number"/>
+              <class name="dim-label"/>
+              <class name="numeric"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkStack" id="cover_stack">
+            <property name="visible">false</property>
+            <child>
+              <object class="GtkStackPage">
+                <property name="name">no-cover</property>
+                <property name="child">
+                  <object class="GtkImage">
+                    <property name="icon-name">folder-music-symbolic</property>
+                    <property name="pixel-size">32</property>
+                    <style>
+                      <class name="dim-label"/>
+                      <class name="card"/>
+                      <class name="small"/>
+                    </style>
+                    <accessibility>
+                      <property name="label" translatable="yes" context="a11y">No cover available</property>
+                    </accessibility>
+                  </object>
+                </property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkStackPage">
+                <property name="name">cover</property>
+                <property name="child">
+                  <object class="GumdropCoverPicture" id="cover_image">
+                    <property name="cover-size">1</property>
+                    <property name="halign">center</property>
+                    <property name="valign">center</property>
+                    <style>
+                      <class name="card"/>
+                    </style>
+                  </object>
+                </property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="orientation">vertical</property>
+            <property name="valign">center</property>
+            <property name="hexpand">true</property>
+            <property name="spacing">3</property>
+            <child>
+              <object class="GtkInscription" id="title_label">
+                <property name="xalign">0</property>
+                <property name="text-overflow">ellipsize-end</property>
+                <style>
+                  <class name="row-title"/>
+                </style>
+              </object>
+            </child>
+            <child>
+              <object class="GtkInscription" id="subtitle_label">
+                <property name="xalign">0</property>
+                <property name="text-overflow">ellipsize-end</property>
+                <style>
+                  <class name="row-subtitle"/>
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkLabel" id="duration_label">
+            <property name="visible">false</property>
+            <property name="valign">center</property>
+            <style>
+              <class name="duration"/>
+              <class name="dim-label"/>
+              <class name="numeric"/>
+            </style>
+          </object>
+        </child>
+        <child>
+          <object class="GtkImage" id="arrow_image">
+            <property name="icon-name">go-next-symbolic</property>
+            <property name="pixel-size">16</property>
+            <property name="valign">center</property>
+            <style>
+              <class name="dim-label"/>
+            </style>
+          </object>
+        </child>
+        <style>
+          <class name="row-details"/>
+        </style>
+      </object>
+    </child>
+  </template>
+</interface>

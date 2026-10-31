@@ -40,7 +40,7 @@
                                     <property name="margin-start">12</property>
                                     <property name="margin-end">12</property>
                                     <property name="title">Gumdrop</property>
-                                    <property name="description" translatable="yes">Select a file or a folder, or drag files from your file manager to the application window to add songs to the playlist</property>
+                                    <property name="description" translatable="yes">Select a file or a folder, or drag files from your file manager to the application window to add songs to your library.</property>
                                     <property name="child">
                                       <object class="GtkBox">
                                         <property name="orientation">vertical</property>
@@ -48,29 +48,11 @@
                                         <property name="homogeneous">true</property>
                                         <property name="spacing">12</property>
                                         <child>
-                                          <object class="GtkButton" id="restore_playlist_button">
-                                            <property name="label" translatable="yes">Restore Playlist</property>
-                                            <property name="action-name">queue.restore-playlist</property>
-                                            <style>
-                                              <class name="suggested-action"/>
-                                              <class name="pill"/>
-                                            </style>
-                                          </object>
-                                        </child>
-                                        <child>
                                           <object class="GtkButton" id="add_folder_button">
                                             <property name="label" translatable="yes">Add Folder</property>
-                                            <property name="action-name">queue.add-folder</property>
+                                            <property name="action-name">library.add-folder</property>
                                             <style>
-                                              <class name="pill"/>
-                                            </style>
-                                          </object>
-                                        </child>
-                                        <child>
-                                          <object class="GtkButton">
-                                            <property name="label" translatable="yes">Add Song</property>
-                                            <property name="action-name">queue.add-song</property>
-                                            <style>
+                                              <class name="suggested-action"/>
                                               <class name="pill"/>
                                             </style>
                                           </object>
@@ -189,9 +171,59 @@
                               </object>
                             </property>
 
-                            <!-- Playlist view -->
+                            <!-- Library and queue -->
                             <property name="sidebar">
-                              <object class="GumdropPlaylistView" id="playlist_view"/>
+                              <object class="GtkBox">
+                                <property name="orientation">vertical</property>
+                                <style>
+                                  <class name="sidebar-pane"/>
+                                </style>
+                                <child>
+                                  <object class="AdwViewStack" id="sidebar_stack">
+                                    <property name="vexpand">true</property>
+                                    <child>
+                                      <object class="AdwViewStackPage">
+                                        <property name="name">artists</property>
+                                        <property name="title" translatable="yes">Artists</property>
+                                        <property name="icon-name">avatar-default-symbolic</property>
+                                        <property name="child">
+                                          <object class="GumdropLibraryView" id="library_view">
+                                            <property name="mode">artists</property>
+                                          </object>
+                                        </property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="AdwViewStackPage">
+                                        <property name="name">albums</property>
+                                        <property name="title" translatable="yes">Albums</property>
+                                        <property name="icon-name">media-optical-symbolic</property>
+                                        <property name="child">
+                                          <object class="GumdropLibraryView" id="album_view">
+                                            <property name="mode">albums</property>
+                                          </object>
+                                        </property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="AdwViewStackPage">
+                                        <property name="name">queue</property>
+                                        <property name="title" translatable="yes">Queue</property>
+                                        <property name="icon-name">folder-music-symbolic</property>
+                                        <property name="child">
+                                          <object class="GumdropPlaylistView" id="playlist_view"/>
+                                        </property>
+                                      </object>
+                                    </child>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="AdwViewSwitcherBar">
+                                    <property name="stack">sidebar_stack</property>
+                                    <property name="reveal">true</property>
+                                  </object>
+                                </child>
+                              </object>
                             </property>
                           </object>
                         </property>

@@ -13,7 +13,6 @@ use crate::audio::{PlaybackAction, ReplayGainMode, SeekDirection};
 pub struct GstBackend {
     sender: Sender<PlaybackAction>,
     gst_player: gst_play::Play,
-    gst_signals: gst_play::PlaySignalAdapter,
     replaygain: Option<GstReplayGain>,
 }
 
@@ -73,7 +72,6 @@ impl GstReplayGain {
 impl GstBackend {
     pub fn new(sender: Sender<PlaybackAction>) -> Self {
         let gst_player = gst_play::Play::default();
-        let gst_signals = gst_play::PlaySignalAdapter::new(&gst_player);
 
         gst_player.set_video_track_enabled(false);
 
@@ -84,7 +82,6 @@ impl GstBackend {
         let res = Self {
             sender,
             gst_player,
-            gst_signals,
             replaygain: GstReplayGain::new().ok(),
         };
 
@@ -94,58 +91,59 @@ impl GstBackend {
     }
 
     fn setup_signals(&self) {
-        self.gst_signals.connect_warning(move |_, warn, _| {
-            warn!("GStreamer warning: {}", warn);
-        });
-
-        self.gst_signals.connect_end_of_stream(clone!(
+        let bus = self.gst_player.message_bus();
+        bus.set_sync_handler(clone!(
             #[strong(rename_to = sender)]
             self.sender,
-            move |_| {
-                if let Err(e) = sender.send_blocking(PlaybackAction::PlayNext) {
-                    error!("Failed to send PlayNext: {e}");
+            move |_bus, msg| {
+                let Ok(play_msg) = gst_play::PlayMessage::parse(&msg) else {
+                    return gst::BusSyncReply::Drop;
+                };
+
+                match play_msg {
+                    gst_play::PlayMessage::Error(message) => {
+                        error!("GStreamer error: {}", message.error());
+                    }
+                    gst_play::PlayMessage::Warning(message) => {
+                        warn!("GStreamer warning: {}", message.error());
+                    }
+                    gst_play::PlayMessage::EndOfStream(_) => {
+                        if let Err(e) = sender.send_blocking(PlaybackAction::PlayNext) {
+                            error!("Failed to send PlayNext: {e}");
+                        }
+                    }
+                    gst_play::PlayMessage::PositionUpdated(message) => {
+                        if let Some(position) = message.position() {
+                            send_update_position(&sender, position, false);
+                        }
+                    }
+                    gst_play::PlayMessage::SeekDone(message) => {
+                        if let Some(position) = message.position() {
+                            send_update_position(&sender, position, true);
+                        }
+                    }
+                    gst_play::PlayMessage::VolumeChanged(message) => {
+                        let volume = gst_audio::StreamVolume::convert_volume(
+                            gst_audio::StreamVolumeFormat::Linear,
+                            gst_audio::StreamVolumeFormat::Cubic,
+                            message.volume(),
+                        );
+                        if let Err(e) = sender.send_blocking(PlaybackAction::VolumeChanged(volume))
+                        {
+                            error!("Failed to send VolumeChanged({volume}): {e}");
+                        }
+                    }
+                    _ => {}
                 }
-            }
-        ));
 
-        self.gst_signals.connect_position_updated(clone!(
-            #[strong(rename_to = sender)]
-            self.sender,
-            move |_, clock| {
-                if let Some(clock) = clock {
-                    send_update_position(&sender, clock, false);
-                }
-            }
-        ));
-
-        self.gst_signals.connect_seek_done(clone!(
-            #[strong(rename_to = sender)]
-            self.sender,
-            move |_, clock| {
-                send_update_position(&sender, clock, true);
-            }
-        ));
-
-        self.gst_signals.connect_volume_changed(clone!(
-            #[strong(rename_to = sender)]
-            self.sender,
-            move |_, volume| {
-                let volume = gst_audio::StreamVolume::convert_volume(
-                    gst_audio::StreamVolumeFormat::Linear,
-                    gst_audio::StreamVolumeFormat::Cubic,
-                    volume,
-                );
-                if let Err(e) = sender.send_blocking(PlaybackAction::VolumeChanged(volume)) {
-                    error!("Failed to send VolumeChanged({volume}): {e}");
-                }
+                gst::BusSyncReply::Drop
             }
         ));
     }
 
+
     pub fn set_song_uri(&self, uri: Option<&str>) {
-        if uri.is_some() {
-            self.gst_player.set_uri(uri);
-        }
+        self.gst_player.set_uri(uri);
     }
 
     pub fn seek(&self, position: u64, duration: u64, offset: u64, direction: SeekDirection) {

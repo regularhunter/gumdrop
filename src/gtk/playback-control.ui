@@ -75,12 +75,12 @@
                     <property name="icon-name">view-queue-symbolic</property>
                     <property name="action-name">queue.toggle</property>
                     <property name="valign">center</property>
-                    <property name="tooltip-text" translatable="yes">Toggle Playlist</property>
+                    <property name="tooltip-text" translatable="yes">Toggle Music Browser</property>
                     <style>
                       <class name="circular"/>
                     </style>
                     <accessibility>
-                      <property name="label" translatable="yes" context="a11y">Toggle playlist</property>
+                      <property name="label" translatable="yes" context="a11y">Toggle library and queue</property>
                     </accessibility>
                   </object>
                 </child>
@@ -148,8 +148,8 @@
   <menu id="primary_menu">
     <section>
       <item>
-        <attribute name="label" translatable="yes">Copy</attribute>
-        <attribute name="action">win.copy</attribute>
+        <attribute name="label" translatable="yes">Open Directory</attribute>
+        <attribute name="action">win.open-directory</attribute>
       </item>
     </section>
     <section>
@@ -162,8 +162,12 @@
         <attribute name="action">queue.add-folder</attribute>
       </item>
       <item>
-        <attribute name="label" translatable="yes">Clear</attribute>
+        <attribute name="label" translatable="yes">Clear Queue</attribute>
         <attribute name="action">queue.clear</attribute>
+      </item>
+      <item>
+        <attribute name="label" translatable="yes">Clear Library</attribute>
+        <attribute name="action">library.clear</attribute>
       </item>
     </section>
     <section>
@@ -212,3 +216,4 @@
     </section>
   </menu>
 </interface>
+

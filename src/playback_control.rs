@@ -81,7 +81,8 @@ mod imp {
 glib::wrapper! {
     pub struct PlaybackControl(ObjectSubclass<imp::PlaybackControl>)
         @extends gtk::Widget,
-        @implements gio::ActionGroup, gio::ActionMap;
+        @implements gio::ActionGroup, gio::ActionMap, gtk::Accessible,
+                    gtk::Buildable, gtk::ConstraintTarget;
 }
 
 impl Default for PlaybackControl {
@@ -112,7 +113,7 @@ impl PlaybackControl {
         match repeat_mode {
             RepeatMode::Consecutive => {
                 repeat_button.set_icon_name("media-playlist-consecutive-symbolic");
-                repeat_button.set_tooltip_text(Some(&i18n("Enable Repeat")));
+                repeat_button.set_tooltip_text(Some(&i18n("Do Not Repeat")));
             }
             RepeatMode::RepeatAll => {
                 repeat_button.set_icon_name("media-playlist-repeat-symbolic");
