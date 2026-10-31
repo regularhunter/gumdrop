@@ -131,7 +131,7 @@ dragoverlay {
 }
 
 .main-window {
-  --sidebar-bg-color: rgb(0 0 0 / 6%);
+  --sidebar-bg-color: rgb(0 0 0 / 3%);
   --sidebar-backdrop-color: rgb(0 0 0 / 3%);
   --sidebar-shade-color: rgb(0 0 0 / 10%);
   --sidebar-border-color: rgb(0 0 0 / 10%);
