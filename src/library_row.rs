@@ -33,8 +33,6 @@ mod imp {
         pub subtitle_label: TemplateChild<gtk::Inscription>,
         #[template_child]
         pub duration_label: TemplateChild<gtk::Label>,
-        #[template_child]
-        pub arrow_image: TemplateChild<gtk::Image>,
 
         pub item: RefCell<Option<LibraryItem>>,
         pub kind: Cell<LibraryItemKind>,
@@ -183,7 +181,6 @@ impl LibraryRow {
 
         self.add_css_class(kind.as_ref());
         imp.cover_stack.set_visible(kind == LibraryItemKind::Album);
-        imp.arrow_image.set_visible(kind != LibraryItemKind::Track);
     }
 
     fn set_title(&self, title: &str) {
