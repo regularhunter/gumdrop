@@ -184,7 +184,7 @@
                                     <child>
                                       <object class="AdwViewStackPage">
                                         <property name="name">artists</property>
-                                        <property name="title" translatable="yes">Artist</property>
+                                        <property name="title" translatable="yes">Artists</property>
                                         <property name="icon-name">avatar-default-symbolic</property>
                                         <property name="child">
                                           <object class="GumdropLibraryView" id="library_view">
@@ -196,7 +196,7 @@
                                     <child>
                                       <object class="AdwViewStackPage">
                                         <property name="name">albums</property>
-                                        <property name="title" translatable="yes">Album</property>
+                                        <property name="title" translatable="yes">Albums</property>
                                         <property name="icon-name">media-optical-symbolic</property>
                                         <property name="child">
                                           <object class="GumdropLibraryView" id="album_view">
