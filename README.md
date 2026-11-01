@@ -12,7 +12,7 @@ Why fork Amberol?
 -----------------------------------
 
 Amberol is an intentionally minimal application. Gumdrop's goals are of a larger scope including 
-persistent music organization of large numbers of files and integration with online services.
+persistent organization of large music libraries and integration with Last.fm.
 
 ------------
 
