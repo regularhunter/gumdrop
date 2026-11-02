@@ -1,5 +1,5 @@
 {
-    "app-id" : "com.github.regularhunter.Gumdrop",
+    "app-id" : "io.regularhunter.Gumdrop",
     "runtime" : "org.gnome.Platform",
     "runtime-version" : "master",
     "sdk" : "org.gnome.Sdk",
@@ -50,7 +50,7 @@
                 {
                     "type" : "git",
                     "url" : "https://github.com/regularhunter/gumdrop.git",
-                    "branch": "main"
+                    "tag": "0.1.2"
                 }
             ]
         }

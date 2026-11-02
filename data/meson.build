@@ -6,8 +6,8 @@ desktop_data = configuration_data()
 desktop_data.set('APPLICATION_ID', application_id)
 desktop_file = i18n.merge_file(
   input: configure_file(
-    input: 'com.github.regularhunter.Gumdrop.desktop.in.in',
-    output: 'com.github.regularhunter.Gumdrop.desktop.in',
+    input: 'io.regularhunter.Gumdrop.desktop.in.in',
+    output: 'io.regularhunter.Gumdrop.desktop.in',
     configuration: desktop_data,
   ),
   output: '@0@.desktop'.format(application_id),
@@ -30,8 +30,8 @@ appstream_data = configuration_data()
 appstream_data.set('APPLICATION_ID', application_id)
 appstream_file = i18n.merge_file(
   input: configure_file(
-    input: 'com.github.regularhunter.Gumdrop.metainfo.xml.in.in',
-    output: 'com.github.regularhunter.Gumdrop.metainfo.xml.in',
+    input: 'io.regularhunter.Gumdrop.metainfo.xml.in.in',
+    output: 'io.regularhunter.Gumdrop.metainfo.xml.in',
     configuration: appstream_data,
   ),
   output: '@0@.metainfo.xml'.format(application_id),
@@ -49,7 +49,7 @@ if appstreamcli.found()
  )
 endif
 
-install_data('com.github.regularhunter.Gumdrop.gschema.xml',
+install_data('io.regularhunter.Gumdrop.gschema.xml',
   install_dir: get_option('datadir') / 'glib-2.0/schemas',
 )
 
@@ -69,7 +69,7 @@ service_conf = configuration_data()
 service_conf.set('application_id', application_id)
 service_conf.set('bindir', get_option('prefix') / get_option('bindir'))
 configure_file(
-  input: 'com.github.regularhunter.Gumdrop.service.in',
+  input: 'io.regularhunter.Gumdrop.service.in',
   output: '@0@.service'.format(application_id),
   configuration: service_conf,
   install: true,

@@ -1,7 +1,7 @@
 Gumdrop
 =======
 
-<img src="data/icons/hicolor/scalable/apps/com.github.regularhunter.Gumdrop.svg">
+<img src="data/icons/hicolor/scalable/apps/io.regularhunter.Gumdrop.svg">
 
 Gtk4 music player written in rust. Forked from [Amberol](https://gitlab.gnome.org/World/amberol).
 
@@ -45,7 +45,7 @@ How to obtain debugging information
 
 Run Gumdrop from your terminal using:
 
-    RUST_BACKTRACE=1 RUST_LOG=gumdrop=debug flatpak run com.github.regularhunter.Gumdrop
+    RUST_BACKTRACE=1 RUST_LOG=gumdrop=debug flatpak run io.regularhunter.Gumdrop
 
 to obtain a full debug log.
 
