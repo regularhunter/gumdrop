@@ -1085,8 +1085,8 @@ fn artist_albums(db: &LibraryDB, artist: &ArtistKey) -> db::Result<Vec<Album>> {
         None => db.albums_without_album_artist()?,
     };
     albums.sort_by(|a, b| {
-        a.year
-            .cmp(&b.year)
+        b.year
+            .cmp(&a.year)
             .then_with(|| a.title.to_lowercase().cmp(&b.title.to_lowercase()))
     });
     Ok(albums)
