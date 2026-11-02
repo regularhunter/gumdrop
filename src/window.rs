@@ -20,7 +20,7 @@ use crate::{
     audio::{AudioPlayer, RepeatMode, ReplayGainMode, Song},
     config::APPLICATION_ID,
     drag_overlay::DragOverlay,
-    i18n::{i18n, ni18n_f, ni18n_k},
+    i18n::{i18n, i18n_f, ni18n_f, ni18n_k},
     library::{scanner, LibraryDB},
     library_view::{LibraryView, QueueAction},
     playback_control::PlaybackControl,
@@ -228,6 +228,10 @@ mod imp {
             klass.install_action_async("library.clear", None, |win, _, _| async move {
                 debug!("Window::library.clear()");
                 win.clear_library().await;
+            });
+            klass.install_action_async("library.rescan", None, |win, _, _| async move {
+                debug!("Window::library.rescan()");
+                win.rescan_library().await;
             });
 
             klass.install_property_action("queue.toggle", "playlist-visible");
@@ -461,7 +465,68 @@ impl Window {
         let loading = imp.loading_songs.get();
 
         self.action_set_enabled("library.add-folder", !scanning);
+        self.action_set_enabled("library.rescan", !scanning);
         self.action_set_enabled("library.clear", !scanning && !loading);
+    }
+
+    async fn rescan_library(&self) {
+        let db = match self.library() {
+            Some(db) => db,
+            None => return,
+        };
+
+        self.imp().scanning_library.set(true);
+        self.update_library_actions();
+        self.add_toast(i18n("Rescanning the library…"));
+
+        let res = gio::spawn_blocking(move || scanner::rescan(&db)).await;
+
+        self.imp().scanning_library.set(false);
+        self.update_library_actions();
+
+        match res {
+            Ok(Ok(summary)) => {
+                self.reload_library();
+
+                let mut changes = Vec::new();
+                if summary.added > 0 {
+                    changes.push(ni18n_f(
+                        // Translators: the `{}` must be left unmodified;
+                        // it will be expanded to the number of songs
+                        "{} song added",
+                        "{} songs added",
+                        summary.added as u32,
+                        &[&summary.added.to_string()],
+                    ));
+                }
+                if summary.removed > 0 {
+                    changes.push(ni18n_f(
+                        // Translators: the `{}` must be left unmodified;
+                        // it will be expanded to the number of songs
+                        "{} song removed",
+                        "{} songs removed",
+                        summary.removed as u32,
+                        &[&summary.removed.to_string()],
+                    ));
+                }
+
+                if changes.is_empty() {
+                    self.add_toast(i18n("Library rescanned"));
+                } else {
+                    self.add_toast(i18n_f(
+                        // Translators: the `{}` must be left unmodified; it will be
+                        // expanded to what changed, e.g. "3 songs added, 1 song removed"
+                        "Library rescanned: {}",
+                        &[&changes.join(", ")],
+                    ));
+                }
+            }
+            Ok(Err(e)) => {
+                warn!("Unable to rescan the library: {}", e);
+                self.add_toast(i18n("Unable to rescan the library"));
+            }
+            Err(_) => warn!("Rescanning the library panicked"),
+        }
     }
 
     async fn add_folders_to_library(&self) {
@@ -829,7 +894,6 @@ impl Window {
                         win.action_set_enabled("queue.add-song", true);
                         win.action_set_enabled("queue.add-folder", true);
                         win.action_set_enabled("queue.clear", true);
-                        win.action_set_enabled("library.clear", true);
                         win.imp().loading_songs.set(false);
                         win.update_library_actions();
                         win.imp().playlist_view.end_loading();

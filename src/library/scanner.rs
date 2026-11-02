@@ -189,6 +189,10 @@ where
 }
 
 pub fn audio_files_in_folder(folder: &Path) -> Vec<PathBuf> {
+    audio_files(folder, true)
+}
+
+fn audio_files(folder: &Path, recursive: bool) -> Vec<PathBuf> {
     let mut files = Vec::new();
     let mut pending = vec![folder.to_path_buf()];
 
@@ -209,7 +213,9 @@ pub fn audio_files_in_folder(folder: &Path) -> Vec<PathBuf> {
             };
 
             if file_type.is_dir() {
-                pending.push(path);
+                if recursive {
+                    pending.push(path);
+                }
             } else if (file_type.is_file() || (file_type.is_symlink() && path.is_file()))
                 && is_audio_file(&path)
             {
@@ -225,6 +231,30 @@ pub fn scan_folder(db: &LibraryDB, folder: &Path) -> Result<usize> {
     debug!("Scanning folder {:?}", folder);
     db.remove_missing()?;
     index_files(db, audio_files_in_folder(folder))
+}
+
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
+pub struct RescanSummary {
+    pub removed: usize,
+    pub added: usize,
+}
+
+pub fn rescan(db: &LibraryDB) -> Result<RescanSummary> {
+    let removed = db.remove_missing()?;
+
+    let known: HashSet<PathBuf> = db.track_paths()?.into_iter().collect();
+    index(db, known.iter().cloned(), true)?;
+
+    let folders: HashSet<&Path> = known.iter().filter_map(|p| p.parent()).collect();
+    let new_files: Vec<PathBuf> = folders
+        .into_iter()
+        .flat_map(|folder| audio_files(folder, false))
+        .filter(|path| !known.contains(path))
+        .collect();
+    let added = index_files(db, new_files)?;
+
+    debug!("Rescan removed {} and added {} tracks", removed, added);
+    Ok(RescanSummary { removed, added })
 }
 
 pub fn refresh(db: &LibraryDB, force: bool) -> Result<usize> {

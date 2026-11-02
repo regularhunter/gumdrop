@@ -166,6 +166,10 @@
         <attribute name="action">queue.clear</attribute>
       </item>
       <item>
+        <attribute name="label" translatable="yes">Re-scan Library</attribute>
+        <attribute name="action">library.rescan</attribute>
+      </item>
+      <item>
         <attribute name="label" translatable="yes">Clear Library</attribute>
         <attribute name="action">library.clear</attribute>
       </item>
