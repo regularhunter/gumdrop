@@ -45,10 +45,10 @@
     <control>touch</control>
   </recommends>
   <releases>
-    <release version="0.1.2" date="2026-10-31">
+    <release version="0.1.2" date="2026-11-02">
       <description>
         <ul>
-          <li>First release!</li>
+          <li>First public release!</li>
           <li>Forked from Amberol.</li>
         </ul>
       </description>
