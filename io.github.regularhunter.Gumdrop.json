@@ -1,10 +1,10 @@
 {
-    "app-id" : "io.github.regularhunter.Gumdrop",
+    "app-id" : "io.github.regularhunter.Gumdrop.Devel",
     "runtime" : "org.gnome.Platform",
     "runtime-version" : "51",
     "sdk" : "org.gnome.Sdk",
     "sdk-extensions" : [
-        "org.freedesktop.Sdk.Extension.rust-stable.Devel"
+        "org.freedesktop.Sdk.Extension.rust-stable"
     ],
     "command" : "gumdrop",
     "finish-args" : [
