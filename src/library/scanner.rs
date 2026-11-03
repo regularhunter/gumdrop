@@ -227,10 +227,29 @@ fn audio_files(folder: &Path, recursive: bool) -> Vec<PathBuf> {
     files
 }
 
+// Adds the songs in a folder and its subfolders to the library, and remembers
+// the folder so that rescans can find songs added to it later
 pub fn scan_folder(db: &LibraryDB, folder: &Path) -> Result<usize> {
     debug!("Scanning folder {:?}", folder);
+    db.add_folders(&[folder.to_path_buf()])?;
     db.remove_missing()?;
     index_files(db, audio_files_in_folder(folder))
+}
+
+// The folders added to the library that still exist, leaving out folders
+// inside another one so that nothing is searched twice
+fn library_folders(db: &LibraryDB) -> Result<Vec<PathBuf>> {
+    let mut folders: Vec<PathBuf> = db.folders()?.into_iter().filter(|f| f.is_dir()).collect();
+    // Shorter paths first, so that parents come before their subfolders
+    folders.sort_by_key(|f| f.components().count());
+
+    let mut roots: Vec<PathBuf> = Vec::new();
+    for folder in folders {
+        if !roots.iter().any(|root| folder.starts_with(root)) {
+            roots.push(folder);
+        }
+    }
+    Ok(roots)
 }
 
 #[derive(Debug, Default, Clone, Copy, PartialEq)]
@@ -245,12 +264,15 @@ pub fn rescan(db: &LibraryDB) -> Result<RescanSummary> {
     let known: HashSet<PathBuf> = db.track_paths()?.into_iter().collect();
     index(db, known.iter().cloned(), true)?;
 
-    let folders: HashSet<&Path> = known.iter().filter_map(|p| p.parent()).collect();
-    let new_files: Vec<PathBuf> = folders
-        .into_iter()
-        .flat_map(|folder| audio_files(folder, false))
-        .filter(|path| !known.contains(path))
-        .collect();
+    let mut new_files: HashSet<PathBuf> = HashSet::new();
+    for folder in library_folders(db)? {
+        new_files.extend(audio_files(&folder, true));
+    }
+    let song_folders: HashSet<&Path> = known.iter().filter_map(|p| p.parent()).collect();
+    for folder in song_folders {
+        new_files.extend(audio_files(folder, false));
+    }
+    new_files.retain(|path| !known.contains(path));
     let added = index_files(db, new_files)?;
 
     debug!("Rescan removed {} and added {} tracks", removed, added);
