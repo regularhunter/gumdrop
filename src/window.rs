@@ -1026,6 +1026,7 @@ impl Window {
 
     fn add_files_to_queue(&self, model: &gio::ListModel) {
         let mut queue: Vec<gio::File> = vec![];
+        let mut folders: Vec<PathBuf> = vec![];
 
         for pos in 0..model.n_items() {
             let file = model.item(pos).unwrap().downcast::<gio::File>().unwrap();
@@ -1046,6 +1047,9 @@ impl Window {
                     }
                     gio::FileType::Directory => {
                         debug!("Adding folder '{}' to the queue", file.uri());
+                        if let Some(path) = file.path() {
+                            folders.push(path);
+                        }
                         let files = utils::load_files_from_folder(&file, true);
                         queue.extend(files);
                     }
@@ -1054,7 +1058,30 @@ impl Window {
             }
         }
 
+        self.remember_library_folders(folders);
         self.queue_songs(queue, QueueMode::Append);
+    }
+
+    // Remember library folders for later rescanning
+    fn remember_library_folders(&self, folders: Vec<PathBuf>) {
+        if folders.is_empty() {
+            return;
+        }
+        let db = match self.library() {
+            Some(db) => db,
+            None => return,
+        };
+
+        let res = std::thread::Builder::new()
+            .name("library-folders".to_string())
+            .spawn(move || {
+                if let Err(e) = db.add_folders(&folders) {
+                    warn!("Unable to remember the library folders: {}", e);
+                }
+            });
+        if let Err(e) = res {
+            warn!("Unable to start the library folders thread: {}", e);
+        }
     }
 
     // Bind the PlayerState to the UI
