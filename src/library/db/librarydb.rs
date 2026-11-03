@@ -24,7 +24,10 @@ use super::models::{Album, Artist, Track};
 // Schema migrations. Each entry upgrades the database by one version and the
 // 'user_version' pragma records how many have been applied. Only ever append
 // to this list
-const MIGRATIONS: &[&str] = &[include_str!("sql/schema.sql")];
+const MIGRATIONS: &[&str] = &[
+    include_str!("sql/schema.sql"),
+    include_str!("sql/folders.sql"),
+];
 
 const INSERT_TRACK: &str = "
 INSERT INTO tracks (path, title, track, discnumber, discsubtitle, album,
@@ -261,6 +264,7 @@ impl LibraryDB {
         self.write(|tx| {
             let removed = tx.execute("DELETE FROM tracks WHERE is_subdir(path, ?1)", [folder])?;
             tx.execute("DELETE FROM covers WHERE is_subdir(path, ?1)", [folder])?;
+            tx.execute("DELETE FROM folders WHERE is_subdir(path, ?1)", [folder])?;
             update_album_artists(tx)?;
             Ok(removed)
         })
@@ -285,8 +289,25 @@ impl LibraryDB {
             tx.execute("DELETE FROM artists", [])?;
             tx.execute("DELETE FROM genres", [])?;
             tx.execute("DELETE FROM covers", [])?;
+            tx.execute("DELETE FROM folders", [])?;
             let removed = tx.execute("DELETE FROM tracks", [])?;
             Ok(removed)
+        })
+    }
+
+    // Records folders that were added to the library so that rescans can find
+    // songs added to them later
+    pub fn add_folders(&self, folders: &[PathBuf]) -> Result<()> {
+        if folders.is_empty() {
+            return Ok(());
+        }
+
+        self.write(|tx| {
+            let mut insert = tx.prepare_cached("INSERT INTO folders (path) VALUES (?1)")?;
+            for folder in folders.iter().filter_map(|f| path_to_str(f)) {
+                insert.execute([folder])?;
+            }
+            Ok(())
         })
     }
 
@@ -322,6 +343,11 @@ impl LibraryDB {
             .optional()?;
 
         Ok(indexed == Some(modified))
+    }
+
+    // Folders that were added to the library
+    pub fn folders(&self) -> Result<Vec<PathBuf>> {
+        self.query_paths("SELECT path FROM folders")
     }
 
     // Paths of all tracks in the library
