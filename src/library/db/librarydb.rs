@@ -213,7 +213,7 @@ impl LibraryDB {
                     track.disc,
                     track.disc_subtitle,
                     track.album,
-                    stored_album_artist(track.album_artist.as_deref()), // already cached
+                    stored_album_artist(track.album_artist.as_deref()),
                     track.year,
                     track.duration,
                     track.modified,
