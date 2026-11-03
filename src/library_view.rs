@@ -1031,7 +1031,10 @@ fn search_library(db: &LibraryDB, query: &str) -> db::Result<SearchResults> {
     // Album artists and track artists without duplicates
     let mut candidates = db.album_artists()?;
     for artist in db.artists()? {
-        if !candidates.iter().any(|a| a.name == artist.name) {
+        if !candidates
+            .iter()
+            .any(|a| artist_display_name(Some(&a.name)).eq_ignore_ascii_case(&name))
+        {
             candidates.push(artist);
         }
     }

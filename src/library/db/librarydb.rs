@@ -27,6 +27,7 @@ use super::models::{Album, Artist, Track};
 const MIGRATIONS: &[&str] = &[
     include_str!("sql/schema.sql"),
     include_str!("sql/folders.sql"),
+    include_str!("sql/various_artists.sql"),
 ];
 
 const INSERT_TRACK: &str = "
@@ -212,7 +213,7 @@ impl LibraryDB {
                     track.disc,
                     track.disc_subtitle,
                     track.album,
-                    track.album_artist,
+                    stored_album_artist(track.album_artist.as_deref()), // already cached
                     track.year,
                     track.duration,
                     track.modified,
@@ -548,6 +549,17 @@ fn migrate(conn: &mut Connection) -> Result<(usize, usize)> {
     }
 
     Ok((current, MIGRATIONS.len()))
+}
+
+// Album artist tags that say "Various Artists" are stored like the
+// compilations found by update_albumartists.sql so both show as one artist
+fn stored_album_artist(album_artist: Option<&str>) -> Option<&str> {
+    match album_artist {
+        Some(name) if name.trim().eq_ignore_ascii_case("Various Artists") => {
+            Some(LibraryDB::VARIOUS_ARTISTS)
+        }
+        other => other,
+    }
 }
 
 fn update_album_artists(conn: &Connection) -> rusqlite::Result<()> {
