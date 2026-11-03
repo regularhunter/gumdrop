@@ -72,6 +72,8 @@ mod imp {
 
             obj.set_accels_for_action("app.quit", &["<primary>q"]);
 
+            obj.set_accels_for_action("library.rescan", &["<primary>R"]);
+
             obj.set_accels_for_action("queue.add-song", &["<primary>s"]);
             obj.set_accels_for_action("queue.add-folder", &["<primary>a"]);
             obj.set_accels_for_action("queue.clear", &["<primary>L"]);
