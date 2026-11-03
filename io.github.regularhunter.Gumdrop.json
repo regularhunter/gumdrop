@@ -4,7 +4,7 @@
     "runtime-version" : "51",
     "sdk" : "org.gnome.Sdk",
     "sdk-extensions" : [
-        "org.freedesktop.Sdk.Extension.rust-stable"
+        "org.freedesktop.Sdk.Extension.rust-stable.Devel"
     ],
     "command" : "gumdrop",
     "finish-args" : [
@@ -41,7 +41,7 @@
             "builddir" : true,
             "buildsystem" : "meson",
             "config-opts" : [
-                "-Dprofile=default",
+                "-Dprofile=development",
                 "--libdir=lib"
             ],
             "sources" : [
