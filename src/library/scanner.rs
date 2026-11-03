@@ -227,8 +227,6 @@ fn audio_files(folder: &Path, recursive: bool) -> Vec<PathBuf> {
     files
 }
 
-// Adds the songs in a folder and its subfolders to the library, and remembers
-// the folder so that rescans can find songs added to it later
 pub fn scan_folder(db: &LibraryDB, folder: &Path) -> Result<usize> {
     debug!("Scanning folder {:?}", folder);
     db.add_folders(&[folder.to_path_buf()])?;
@@ -236,8 +234,6 @@ pub fn scan_folder(db: &LibraryDB, folder: &Path) -> Result<usize> {
     index_files(db, audio_files_in_folder(folder))
 }
 
-// The folders added to the library that still exist, leaving out folders
-// inside another one so that nothing is searched twice
 fn library_folders(db: &LibraryDB) -> Result<Vec<PathBuf>> {
     let mut folders: Vec<PathBuf> = db.folders()?.into_iter().filter(|f| f.is_dir()).collect();
     // Shorter paths first, so that parents come before their subfolders
