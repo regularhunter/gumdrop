@@ -762,26 +762,30 @@ impl LibraryView {
         self.query(
             Query::Root,
             |db| {
-                let mut artists: Vec<(ArtistKey, u32)> = Vec::new();
-                let mut various = None;
-                for artist in db.album_artists()? {
-                    if artist.name == LibraryDB::VARIOUS_ARTISTS {
-                        various = Some(artist.num_albums);
-                    } else {
-                        artists.push((Some(artist.name), artist.num_albums));
-                    }
-                }
+                let mut artists: Vec<(String, ArtistKey, u32)> = db
+                    .album_artists()?
+                    .into_iter()
+                    .map(|artist| {
+                        let Artist {
+                            name,
+                            sort,
+                            num_albums,
+                        } = artist;
+                        let key = sort.unwrap_or_else(|| artist_display_name(Some(&name)));
+                        (key.to_lowercase(), Some(name), num_albums)
+                    })
+                    .collect();
 
-                // Compilations and unknown artists go at the end of the list
-                if let Some(num_albums) = various {
-                    artists.push((Some(LibraryDB::VARIOUS_ARTISTS.to_string()), num_albums));
-                }
                 let unknown = db.albums_without_album_artist()?.len() as u32;
                 if unknown > 0 {
-                    artists.push((None, unknown));
+                    artists.push((artist_display_name(None).to_lowercase(), None, unknown));
                 }
 
-                Ok(artists)
+                artists.sort_by(|a, b| a.0.cmp(&b.0));
+                Ok(artists
+                    .into_iter()
+                    .map(|(_, artist, num_albums)| (artist, num_albums))
+                    .collect::<Vec<_>>())
             },
             |this, artists| this.show_artists(artists),
         );
@@ -1031,6 +1035,7 @@ fn search_library(db: &LibraryDB, query: &str) -> db::Result<SearchResults> {
     // Album artists and track artists without duplicates
     let mut candidates = db.album_artists()?;
     for artist in db.artists()? {
+        let name = artist_display_name(Some(&artist.name));
         if !candidates
             .iter()
             .any(|a| artist_display_name(Some(&a.name)).eq_ignore_ascii_case(&name))
