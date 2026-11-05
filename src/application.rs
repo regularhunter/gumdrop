@@ -289,7 +289,7 @@ impl Application {
             .application_name("Gumdrop")
             .developer_name("Hunter Wardlaw")
             .version(VERSION)
-            .developers(vec!["Hunter Wardlaw",  "Emmanuele Bassi"])
+            .developers(vec!["Hunter Wardlaw",  "Emmanuele Bassi", "Emmett de St. Croix"])
             .copyright("© 2025 Hunter Wardlaw")
             .website("https://github.com/regularhunter/gumdrop")
             .issue_url("https://github.com/regularhunter/gumdrop/issues")
@@ -342,3 +342,4 @@ impl Application {
     #[cfg(not(any(target_os = "linux", target_os = "freebsd")))]
     fn request_background(&self) {}
 }
+
