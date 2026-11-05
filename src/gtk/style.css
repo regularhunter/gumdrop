@@ -58,10 +58,6 @@ playbackcontrol {
   padding-bottom: 12px;
 }
 
-libraryview header {
-  padding: 12px 6px 6px 6px;
-}
-
 libraryrow box.row-details {
   padding: 6px 0;
   border-spacing: 12px;
