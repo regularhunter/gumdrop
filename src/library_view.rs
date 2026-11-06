@@ -741,7 +741,11 @@ impl LibraryView {
         self.query(
             Query::Play,
             move |db| {
-                let tracks = db.album_tracks(&track.album, track.album_artist.as_deref())?;
+                let tracks = db.album_tracks(
+                    &track.album,
+                    track.album_artist.as_deref(),
+                    track.year.as_deref(),
+                )?;
                 Ok((tracks, track.path))
             },
             |this, (tracks, path)| match tracks.iter().position(|t| t.path == path) {
@@ -765,7 +769,31 @@ impl LibraryView {
         imp.root_subtitle_label.set_label(subtitle);
         imp.has_tracks.set(Some(!items.is_empty()));
 
+        if items.is_empty() {
+            self.return_to_root();
+        }
+
         self.update_root_page();
+    }
+
+    fn return_to_root(&self) {
+        let imp = self.imp();
+
+        // Drop loads still in flight for the pages being left
+        self.next_generation(Query::Albums);
+        self.next_generation(Query::AlbumCovers);
+        self.next_generation(Query::Tracks);
+
+        imp.current_artist.replace(None);
+        imp.current_album.replace(None);
+       // self.leave_playlist(); // TODO: Placeholder for upcoming playlist support
+        imp.albums_model.remove_all();
+        imp.tracks_model.remove_all();
+        imp.current_tracks.borrow_mut().clear();
+
+        if imp.navigation_view.visible_page_tag().as_deref() != Some("root") {
+            imp.navigation_view.pop_to_tag("root");
+        }
     }
 
     // ---- Artists ----
@@ -838,6 +866,7 @@ impl LibraryView {
                         a.title.is_empty(),
                         a.title.to_lowercase(),
                         a.album_artist.as_deref().map(str::to_lowercase),
+                        a.year.clone(),
                     )
                 });
                 Ok(albums)
@@ -919,7 +948,13 @@ impl LibraryView {
     fn load_tracks(&self, album: Album) {
         self.query(
             Query::Tracks,
-            move |db| db.album_tracks(&album.title, album.album_artist.as_deref()),
+            move |db| {
+                db.album_tracks(
+                    &album.title,
+                    album.album_artist.as_deref(),
+                    album.year.as_deref(),
+                )
+            },
             |this, tracks| this.show_tracks(tracks),
         );
     }
@@ -1119,7 +1154,11 @@ fn target_paths(db: &LibraryDB, target: &MenuTarget) -> db::Result<Vec<PathBuf>>
 
     let mut paths = Vec::new();
     for album in albums {
-        let tracks = db.album_tracks(&album.title, album.album_artist.as_deref())?;
+        let tracks = db.album_tracks(
+            &album.title,
+            album.album_artist.as_deref(),
+            album.year.as_deref(),
+        )?;
         paths.extend(tracks.into_iter().map(|t| t.path));
     }
     Ok(paths)
