@@ -147,9 +147,33 @@ where
     I: IntoIterator<Item = PathBuf>,
 {
     let now = Instant::now();
+    let mut written = 0;
+    let res = index_batches(db, files, force, &mut written);
+
+    // Album artists are derived once per scan
+    let updated = if written > 0 {
+        db.update_album_artists()
+    } else {
+        Ok(())
+    };
+    res?;
+    updated?;
+
+    debug!(
+        "Indexed {} tracks in {} ms",
+        written,
+        now.elapsed().as_millis()
+    );
+
+    Ok(written)
+}
+
+fn index_batches<I>(db: &LibraryDB, files: I, force: bool, written: &mut usize) -> Result<()>
+where
+    I: IntoIterator<Item = PathBuf>,
+{
     let mut batch = Vec::with_capacity(BATCH_SIZE);
     let mut dirs = HashSet::new();
-    let mut written = 0;
 
     for path in files {
         let modified = match modified_time(&path) {
@@ -169,23 +193,15 @@ where
         }
 
         if batch.len() >= BATCH_SIZE {
-            written += db.insert_tracks(&batch)?;
+            *written += db.insert_tracks_deferred(&batch)?;
             batch.clear();
         }
     }
 
-    written += db.insert_tracks(&batch)?;
+    *written += db.insert_tracks_deferred(&batch)?;
 
     let covers: Vec<PathBuf> = dirs.iter().flat_map(|d| find_covers(d)).collect();
-    db.add_covers(&covers)?;
-
-    debug!(
-        "Indexed {} tracks in {} ms",
-        written,
-        now.elapsed().as_millis()
-    );
-
-    Ok(written)
+    db.add_covers(&covers)
 }
 
 pub fn audio_files_in_folder(folder: &Path) -> Vec<PathBuf> {
