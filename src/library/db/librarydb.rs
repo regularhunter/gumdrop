@@ -186,6 +186,21 @@ impl LibraryDB {
     // Adds tracks to the library and replaces any existing entries with the
     // same path. Returns the number of tracks written
     pub fn insert_tracks(&self, tracks: &[Track]) -> Result<usize> {
+        self.write_tracks(tracks, true)
+    }
+
+    // Like insert_tracks() but leaves the album artists deferred
+    pub fn insert_tracks_deferred(&self, tracks: &[Track]) -> Result<usize> {
+        self.write_tracks(tracks, false)
+    }
+
+    // Derives the album artists of tracks without an album artist tag after
+    // insert_tracks_deferred()
+    pub fn update_album_artists(&self) -> Result<()> {
+        self.write(|tx| update_album_artists(tx))
+    }
+
+    fn write_tracks(&self, tracks: &[Track], update_artists: bool) -> Result<usize> {
         if tracks.is_empty() {
             return Ok(0);
         }
@@ -237,7 +252,9 @@ impl LibraryDB {
                 inserted += 1;
             }
 
-            update_album_artists(tx)?;
+            if update_artists {
+                update_album_artists(tx)?;
+            }
             Ok(inserted)
         })
     }
