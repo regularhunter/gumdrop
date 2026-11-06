@@ -244,5 +244,17 @@
         <setter object="split_view" property="collapsed">True</setter>
       </object>
     </child>
+    <child>
+      <object class="AdwBreakpoint">
+        <condition>min-width: 600sp and min-height: 760sp</condition>
+        <setter object="song_cover" property="cover-size">larger</setter>
+      </object>
+    </child>
+    <child>
+      <object class="AdwBreakpoint">q
+        <condition>min-width: 900sp and min-height: 960sp</condition>
+        <setter object="song_cover" property="cover-size">largest</setter>
+      </object>
+    </child>
   </template>
 </interface>

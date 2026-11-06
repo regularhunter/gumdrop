@@ -15,6 +15,8 @@ pub enum CoverSize {
     #[default]
     Large = 0,
     Small = 1,
+    Larger = 2,
+    Largest = 3,
 }
 
 impl AsRef<str> for CoverSize {
@@ -22,6 +24,8 @@ impl AsRef<str> for CoverSize {
         match self {
             CoverSize::Large => "large",
             CoverSize::Small => "small",
+            CoverSize::Larger => "larger",
+            CoverSize::Largest => "largest",
         }
     }
 }
@@ -32,6 +36,8 @@ mod imp {
 
     use super::*;
 
+    const LARGEST_SIZE: i32 = 480;
+    const LARGER_SIZE: i32 = 288;
     const LARGE_SIZE: i32 = 192;
     const SMALL_SIZE: i32 = 48;
 
@@ -115,6 +121,8 @@ mod imp {
         fn measure(&self, _orientation: gtk::Orientation, _for_size: i32) -> (i32, i32, i32, i32) {
             match self.cover_size.get() {
                 CoverSize::Large => (LARGE_SIZE, LARGE_SIZE, -1, -1),
+                CoverSize::Larger => (LARGER_SIZE, LARGE_SIZE, -1, -1),
+                CoverSize::Largest => (LARGEST_SIZE, LARGE_SIZE, -1, -1),
                 CoverSize::Small => (SMALL_SIZE, SMALL_SIZE, -1, -1),
             }
         }
@@ -184,6 +192,10 @@ impl CoverPicture {
 
         self.queue_draw();
         self.notify("cover");
+    }
+
+    pub fn cover_size(&self) -> CoverSize {
+        self.imp().cover_size.get()
     }
 
     pub fn set_cover_size(&self, cover_size: CoverSize) {
