@@ -28,6 +28,8 @@ const MIGRATIONS: &[&str] = &[
     include_str!("sql/schema.sql"),
     include_str!("sql/folders.sql"),
     include_str!("sql/various_artists.sql"),
+    include_str!("sql/album_years.sql"),
+    include_str!("sql/playlists.sql"),
 ];
 
 const INSERT_TRACK: &str = "
@@ -410,11 +412,16 @@ impl LibraryDB {
     }
 
     // The tracks of an album, in disc and track order
-    pub fn album_tracks(&self, album: &str, album_artist: Option<&str>) -> Result<Vec<Track>> {
+    pub fn album_tracks(
+        &self,
+        album: &str,
+        album_artist: Option<&str>,
+        year: Option<&str>,
+    ) -> Result<Vec<Track>> {
         self.query_tracks(
-            "WHERE t.album = ?1 AND t.albumartist IS ?2",
+            "WHERE t.album = ?1 AND t.albumartist IS ?2 AND t.year IS ?3",
             ALBUM_TRACK_ORDER,
-            params![album, album_artist],
+            params![album, album_artist, year],
         )
     }
 
@@ -470,7 +477,8 @@ impl LibraryDB {
         self.query_albums(
             "WHERE t.albumartist = ?1 OR EXISTS \
              (SELECT 1 FROM tracks t3 JOIN artists a ON a.path = t3.path \
-              WHERE t3.album = t.album AND t3.albumartist IS t.albumartist AND a.name = ?1)",
+              WHERE t3.album = t.album AND t3.albumartist IS t.albumartist \
+              AND t3.year IS t.year AND a.name = ?1)",
             [artist],
         )
     }
@@ -484,7 +492,8 @@ impl LibraryDB {
         self.query_albums(
             "WHERE EXISTS \
              (SELECT 1 FROM tracks t3 JOIN genres g ON g.path = t3.path \
-              WHERE t3.album = t.album AND t3.albumartist IS t.albumartist AND g.name = ?1)",
+              WHERE t3.album = t.album AND t3.albumartist IS t.albumartist \
+              AND t3.year IS t.year AND g.name = ?1)",
             [genre],
         )
     }
