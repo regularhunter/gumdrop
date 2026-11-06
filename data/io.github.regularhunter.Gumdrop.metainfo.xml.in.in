@@ -7,16 +7,16 @@
   <summary>Plays music.</summary>
   <description>
     <p>
-      Gumdrop is a music player with no delusions of grandeur. If you just
-      want to play music available on your local system then Gumdrop is the
-      music player you are looking for.
+      Gumdrop is a fast and simple music player. It is intended for users that
+      want to listen to large, local music libraries.
     </p>
     <p>Current features:</p>
     <ul>
-      <li>adaptive UI</li>
+      <li>Persistent library organization</li>
+      <li>Adaptive UI</li>
       <li>UI recoloring using the album art</li>
-      <li>drag and drop support to queue songs</li>
-      <li>shuffle and repeat</li>
+      <li>Drag and drop support to queue songs</li>
+      <li>Shuffle and repeat</li>
       <li>MPRIS integration</li>
     </ul>
   </description>
@@ -45,14 +45,34 @@
     <control>touch</control>
   </recommends>
   <releases>
+    <release version="0.2.0" date="2026-11-06">
+      <description>
+        <ul>
+          <li>Add rescan library shortcut (Ctrl+R)</li>
+          <li>Find new tracks during rescan, not just removed tracks</li>
+          <li>Optimize library scan by only computing album artists once</li>
+          <li>Combine 'Various Artists' entries in library</li>
+          <li>Sort 'Various Artists' and 'Unknown Artists' alphabetically</li>
+          <li>Share cover art cache between sidebar views (artists, albums, queue)</li>
+          <li>Display audio format information (File format, Bit-depth, Sample rate)</li>
+          <li>Display larger cover art</li>
+          <li>Add MPRIS volume control support</li>
+          <li>Replace deprecated dark-style.css with media queries</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.1.2" date="2026-11-02">
       <description>
         <ul>
           <li>First public release!</li>
+          <li>Implement sqlite database backend for persistent music libraries</li>
+          <li>Add UI elements to browse new persistent library database</li>
           <li>Forked from Amberol.</li>
         </ul>
       </description>
     </release>
+    <release version="0.1.1" type="development" date="2025-02-27"/>
+    <release version="0.1.0" type="development" date="2025-02-27"/>
   </releases>
   <kudos>
     <kudo>ModernToolkit</kudo>
