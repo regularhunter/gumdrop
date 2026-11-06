@@ -48,7 +48,7 @@
                 {
                     "type" : "git",
                     "url" : "https://github.com/regularhunter/gumdrop.git",
-                    "commit" : "c12678a941d4080f084ba98d854cefee0a9d5157"
+                    "commit" : "e88bb8a8061a41ac152b10b131ec19286847aff7"
                 },
                 "cargo-sources.json"
             ]
