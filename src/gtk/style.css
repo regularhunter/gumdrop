@@ -19,7 +19,13 @@ songcover image.card {
               0px 2px 12px rgba(0,0,0,0.15),
               0px 6px 32px rgba(0,0,0,0.1);
   border-radius: 12px;
-  margin: 6px;
+  margin-bottom: -12px;
+}
+
+label.song-format {
+  color: var(--audio-format-color);
+  font-size: 83%;
+  margin-bottom: 10px;
 }
 
 image.card.small {
@@ -56,10 +62,6 @@ waveformview {
 
 playbackcontrol {
   padding-bottom: 12px;
-}
-
-libraryview header {
-  padding: 12px 6px 6px 6px;
 }
 
 libraryrow box.row-details {
@@ -138,6 +140,7 @@ dragoverlay {
 
   --accent-bg-color: rgb(0 0 0 / 75%);
   --accent-fg-color: white;
+  --audio-format-color: rgb(0 0 0 / 40%);
   --accent-color: oklab(from var(--accent-bg-color) var(--standalone-color-oklab));
 
   --scrollbar-outline-color: rgb(255 255 255 / 25%);
@@ -182,4 +185,20 @@ volume:hover > scale { color: inherit; }
 volume > scale trough highlight { min-height: 12px; min-width: 12px; }
 
 volume > scale trough slider { opacity: 0; }
+
+@media (prefers-color-scheme: dark) {
+  .main-window {
+    --sidebar-bg-color: rgb(255 255 255 / 5.5%);
+    --sidebar-backdrop-color: rgb(255 255 255 / 2.75%);
+    --sidebar-shade-color: rgb(0 0 0 / 20%);
+    --sidebar-border-color: rgb(0 0 0 / 28%);
+
+    --accent-bg-color: rgb(255 255 255 / 75%);
+    --accent-fg-color: rgb(0 0 0 / 75%);
+
+    --audio-format-color: rgb(255 255 255 / 40%);
+
+    --scrollbar-outline-color: rgb(0 0 0 / 25%);
+  }
+}
 

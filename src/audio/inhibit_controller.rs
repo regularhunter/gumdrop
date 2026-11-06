@@ -56,4 +56,5 @@ impl Controller for InhibitController {
     fn set_song(&self, _song: &Song) {}
     fn set_position(&self, _position: u64, _notify: bool) {}
     fn set_repeat_mode(&self, _mode: RepeatMode) {}
+    fn set_volume(&self, _volume: f64) {}
 }

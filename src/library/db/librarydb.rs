@@ -24,7 +24,11 @@ use super::models::{Album, Artist, Track};
 // Schema migrations. Each entry upgrades the database by one version and the
 // 'user_version' pragma records how many have been applied. Only ever append
 // to this list
-const MIGRATIONS: &[&str] = &[include_str!("sql/schema.sql")];
+const MIGRATIONS: &[&str] = &[
+    include_str!("sql/schema.sql"),
+    include_str!("sql/folders.sql"),
+    include_str!("sql/various_artists.sql"),
+];
 
 const INSERT_TRACK: &str = "
 INSERT INTO tracks (path, title, track, discnumber, discsubtitle, album,
@@ -182,6 +186,21 @@ impl LibraryDB {
     // Adds tracks to the library and replaces any existing entries with the
     // same path. Returns the number of tracks written
     pub fn insert_tracks(&self, tracks: &[Track]) -> Result<usize> {
+        self.write_tracks(tracks, true)
+    }
+
+    // Like insert_tracks() but leaves the album artists deferred
+    pub fn insert_tracks_deferred(&self, tracks: &[Track]) -> Result<usize> {
+        self.write_tracks(tracks, false)
+    }
+
+    // Derives the album artists of tracks without an album artist tag after
+    // insert_tracks_deferred()
+    pub fn update_album_artists(&self) -> Result<()> {
+        self.write(|tx| update_album_artists(tx))
+    }
+
+    fn write_tracks(&self, tracks: &[Track], update_artists: bool) -> Result<usize> {
         if tracks.is_empty() {
             return Ok(0);
         }
@@ -209,7 +228,7 @@ impl LibraryDB {
                     track.disc,
                     track.disc_subtitle,
                     track.album,
-                    track.album_artist,
+                    stored_album_artist(track.album_artist.as_deref()),
                     track.year,
                     track.duration,
                     track.modified,
@@ -233,7 +252,9 @@ impl LibraryDB {
                 inserted += 1;
             }
 
-            update_album_artists(tx)?;
+            if update_artists {
+                update_album_artists(tx)?;
+            }
             Ok(inserted)
         })
     }
@@ -261,6 +282,7 @@ impl LibraryDB {
         self.write(|tx| {
             let removed = tx.execute("DELETE FROM tracks WHERE is_subdir(path, ?1)", [folder])?;
             tx.execute("DELETE FROM covers WHERE is_subdir(path, ?1)", [folder])?;
+            tx.execute("DELETE FROM folders WHERE is_subdir(path, ?1)", [folder])?;
             update_album_artists(tx)?;
             Ok(removed)
         })
@@ -285,8 +307,25 @@ impl LibraryDB {
             tx.execute("DELETE FROM artists", [])?;
             tx.execute("DELETE FROM genres", [])?;
             tx.execute("DELETE FROM covers", [])?;
+            tx.execute("DELETE FROM folders", [])?;
             let removed = tx.execute("DELETE FROM tracks", [])?;
             Ok(removed)
+        })
+    }
+
+    // Records folders that were added to the library so that rescans can find
+    // songs added to them later
+    pub fn add_folders(&self, folders: &[PathBuf]) -> Result<()> {
+        if folders.is_empty() {
+            return Ok(());
+        }
+
+        self.write(|tx| {
+            let mut insert = tx.prepare_cached("INSERT INTO folders (path) VALUES (?1)")?;
+            for folder in folders.iter().filter_map(|f| path_to_str(f)) {
+                insert.execute([folder])?;
+            }
+            Ok(())
         })
     }
 
@@ -322,6 +361,11 @@ impl LibraryDB {
             .optional()?;
 
         Ok(indexed == Some(modified))
+    }
+
+    // Folders that were added to the library
+    pub fn folders(&self) -> Result<Vec<PathBuf>> {
+        self.query_paths("SELECT path FROM folders")
     }
 
     // Paths of all tracks in the library
@@ -522,6 +566,17 @@ fn migrate(conn: &mut Connection) -> Result<(usize, usize)> {
     }
 
     Ok((current, MIGRATIONS.len()))
+}
+
+// Album artist tags that say "Various Artists" are stored like the
+// compilations found by update_albumartists.sql so both show as one artist
+fn stored_album_artist(album_artist: Option<&str>) -> Option<&str> {
+    match album_artist {
+        Some(name) if name.trim().eq_ignore_ascii_case("Various Artists") => {
+            Some(LibraryDB::VARIOUS_ARTISTS)
+        }
+        other => other,
+    }
 }
 
 fn update_album_artists(conn: &Connection) -> rusqlite::Result<()> {

@@ -22,6 +22,7 @@ use crate::{
 pub struct MprisController {
     mpris: Rc<OnceCell<Player>>,
     song: RefCell<Option<Song>>,
+    volume: RefCell<f64>,
 }
 
 impl MprisController {
@@ -35,7 +36,9 @@ impl MprisController {
             .can_seek(true)
             .can_go_next(true)
             .can_go_previous(true)
-            .can_set_fullscreen(false);
+            .can_set_fullscreen(false)
+            .can_control(true)
+            .volume(1.0);
 
         let mpris = Rc::new(OnceCell::new());
 
@@ -60,6 +63,7 @@ impl MprisController {
         Self {
             mpris,
             song: RefCell::new(None),
+            volume: RefCell::new(1.0),
         }
     }
 
@@ -176,6 +180,26 @@ impl Controller for MprisController {
             }
         ));
     }
+
+    fn set_volume(&self, volume: f64) {
+        let current = self.volume.replace(volume);
+
+        // Only update MPRIS if the volume actually changed
+        // This prevents feedback loops from MPRIS clients
+        if (current - volume).abs() > 0.001 {
+            glib::spawn_future_local(clone!(
+                #[weak(rename_to = mpris)]
+                self.mpris,
+                async move {
+                    if let Some(mpris) = mpris.get() {
+                        if let Err(err) = mpris.set_volume(volume).await {
+                            error!("Unable to set MPRIS volume: {err:?}");
+                        }
+                    }
+                }
+            ));
+        }
+    }
 }
 
 fn setup_signals(sender: Sender<PlaybackAction>, mpris: &Player) {
@@ -286,6 +310,16 @@ fn setup_signals(sender: Sender<PlaybackAction>, mpris: &Player) {
             let offset = offset.as_secs();
             if let Err(e) = sender.send_blocking(PlaybackAction::Seek(offset)) {
                 error!("Unable to send Seek({offset}): {e}");
+            }
+        }
+    ));
+
+    mpris.connect_set_volume(clone!(
+        #[strong]
+        sender,
+        move |_, volume| {
+            if let Err(e) = sender.send_blocking(PlaybackAction::VolumeChanged(volume)) {
+                error!("Unable to send VolumeChanged({volume}): {e}");
             }
         }
     ));

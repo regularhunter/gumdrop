@@ -480,11 +480,23 @@ impl AudioPlayer {
 
     fn update_volume(&self, volume: f64) {
         debug!("Updating volume to: {}", &volume);
+
+        // Only propagate if volume actually changed
+        let old_volume = self.state.volume();
+        if (old_volume - volume).abs() < 0.001 {
+            return;
+        }
+
         self.state.set_volume(volume);
+        self.backend.set_volume(volume);
+
+        for c in &self.controllers {
+            c.set_volume(volume);
+        }
     }
 
     pub fn set_volume(&self, volume: f64) {
-        self.backend.set_volume(volume);
+        self.update_volume(volume);
     }
 
     pub fn toggle_repeat_mode(&self) {

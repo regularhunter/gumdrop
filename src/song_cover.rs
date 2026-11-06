@@ -5,9 +5,11 @@
 use adw::subclass::prelude::*;
 use gtk::{glib, prelude::*, CompositeTemplate};
 
-use crate::cover_picture::CoverPicture;
+use crate::cover_picture::{CoverPicture, CoverSize};
 
 mod imp {
+    use glib::{ParamSpec, ParamSpecEnum, Value};
+    use once_cell::sync::Lazy;
     use super::*;
 
     #[derive(Debug, Default, CompositeTemplate)]
@@ -46,6 +48,31 @@ mod imp {
                 child.unparent();
             }
         }
+
+        fn properties() -> &'static [ParamSpec] {
+            static PROPERTIES: Lazy<Vec<ParamSpec>> = Lazy::new(|| {
+                vec![ParamSpecEnum::builder::<CoverSize>("cover-size")
+                    .explicit_notify()
+                    .build()]
+            });
+            PROPERTIES.as_ref()
+        }
+
+        fn set_property(&self, _id: usize, value: &Value, pspec: &ParamSpec) {
+            match pspec.name() {
+                "cover-size" => self
+                    .obj()
+                    .set_cover_size(value.get::<CoverSize>().expect("Required CoverSize")),
+                _ => unimplemented!(),
+            }
+        }
+
+        fn property(&self, _id: usize, pspec: &ParamSpec) -> Value {
+            match pspec.name() {
+                "cover-size" => self.album_image.cover_size().to_value(),
+                _ => unimplemented!(),
+            }
+        }
     }
 
     impl WidgetImpl for SongCover {}
@@ -70,6 +97,14 @@ impl SongCover {
 
     pub fn album_image(&self) -> CoverPicture {
         self.imp().album_image.get()
+    }
+
+    pub fn set_cover_size(&self, cover_size: CoverSize) {
+        let picture = self.imp().album_image.get();
+        if picture.cover_size() != cover_size {
+            picture.set_cover_size(cover_size);
+            self.notify("cover-size");
+        }
     }
 
     pub fn show_cover_image(&self, has_image: bool) {

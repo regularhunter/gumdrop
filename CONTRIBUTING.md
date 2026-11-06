@@ -109,7 +109,7 @@ the repository manually; make sure to have an account on GitHub, and that you
 have an SSH key associated to that account:
 
 ```sh
-$ git clone ggit@github.com:yourusername/gumdrop.git
+$ git clone git@github.com:yourusername/gumdrop.git
 $ cd gumdrop
 ```
 

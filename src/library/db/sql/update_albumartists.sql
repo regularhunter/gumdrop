@@ -19,6 +19,9 @@ CREATE TEMP TABLE derived_albumartists AS
 SELECT
   albums.album AS album,
   CASE
+    -- Songs all credited to "Various Artists" are a compilation
+    WHEN COUNT(shared.name) = 1 AND MIN(shared.name) = 'Various Artists' COLLATE NOCASE
+      THEN '[Various Artists]'
     WHEN COUNT(shared.name) = 1 THEN MIN(shared.name)
     -- No artist tags at all so there is nothing to derive from
     WHEN NOT EXISTS (SELECT 1 FROM tracks t JOIN artists a ON a.path = t.path

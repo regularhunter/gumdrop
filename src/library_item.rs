@@ -181,6 +181,10 @@ impl LibraryItem {
         self.imp().data.borrow().clone()
     }
 
+    pub fn cover(&self) -> Option<gdk::Texture> {
+        self.imp().cover.borrow().clone()
+    }
+
     pub fn set_cover(&self, cover: Option<gdk::Texture>) {
         self.imp().cover.replace(cover);
         self.notify("cover");

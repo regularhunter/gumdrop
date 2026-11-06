@@ -16,8 +16,11 @@
 
 use std::{
     cell::{Cell, RefCell},
+    collections::HashMap,
     path::{Path, PathBuf},
     rc::Rc,
+    sync::Mutex,
+    time::SystemTime,
 };
 
 use adw::{prelude::*, subclass::prelude::*};
@@ -26,6 +29,7 @@ use glib::clone;
 use gtk::{gdk, gio, glib, graphene, CompositeTemplate};
 use lofty::{file::TaggedFileExt, picture::PictureType};
 use log::warn;
+use once_cell::sync::Lazy;
 
 use crate::{
     i18n::i18n,
@@ -38,6 +42,14 @@ use crate::{
 };
 
 const COVER_DECODE_SIZE: i32 = 96;
+
+struct CachedCover {
+    modified: Option<SystemTime>,
+    texture: Option<gdk::Texture>,
+}
+
+static COVER_CACHE: Lazy<Mutex<HashMap<PathBuf, CachedCover>>> =
+    Lazy::new(|| Mutex::new(HashMap::new()));
 
 const MAX_ARTIST_RESULTS: usize = 10;
 const MAX_ALBUM_RESULTS: usize = 20;
@@ -74,12 +86,13 @@ enum Query {
     Root,
     Covers,
     Albums,
+    AlbumCovers,
     Tracks,
     Search,
     Play,
 }
 
-const N_QUERIES: usize = 6;
+const N_QUERIES: usize = 7;
 
 struct SearchResults {
     artists: Vec<Artist>,
@@ -179,7 +192,6 @@ mod imp {
             Self::bind_template(klass);
 
             klass.set_layout_manager_type::<gtk::BinLayout>();
-            klass.set_css_name("libraryview");
             klass.set_accessible_role(gtk::AccessibleRole::Group);
 
             klass.install_action("library.play-next", None, |this, _, _| {
@@ -762,26 +774,30 @@ impl LibraryView {
         self.query(
             Query::Root,
             |db| {
-                let mut artists: Vec<(ArtistKey, u32)> = Vec::new();
-                let mut various = None;
-                for artist in db.album_artists()? {
-                    if artist.name == LibraryDB::VARIOUS_ARTISTS {
-                        various = Some(artist.num_albums);
-                    } else {
-                        artists.push((Some(artist.name), artist.num_albums));
-                    }
-                }
+                let mut artists: Vec<(String, ArtistKey, u32)> = db
+                    .album_artists()?
+                    .into_iter()
+                    .map(|artist| {
+                        let Artist {
+                            name,
+                            sort,
+                            num_albums,
+                        } = artist;
+                        let key = sort.unwrap_or_else(|| artist_display_name(Some(&name)));
+                        (key.to_lowercase(), Some(name), num_albums)
+                    })
+                    .collect();
 
-                // Compilations and unknown artists go at the end of the list
-                if let Some(num_albums) = various {
-                    artists.push((Some(LibraryDB::VARIOUS_ARTISTS.to_string()), num_albums));
-                }
                 let unknown = db.albums_without_album_artist()?.len() as u32;
                 if unknown > 0 {
-                    artists.push((None, unknown));
+                    artists.push((artist_display_name(None).to_lowercase(), None, unknown));
                 }
 
-                Ok(artists)
+                artists.sort_by(|a, b| a.0.cmp(&b.0));
+                Ok(artists
+                    .into_iter()
+                    .map(|(_, artist, num_albums)| (artist, num_albums))
+                    .collect::<Vec<_>>())
             },
             |this, artists| this.show_artists(artists),
         );
@@ -833,51 +849,49 @@ impl LibraryView {
     fn show_all_albums(&self, albums: Vec<Album>) {
         let items: Vec<LibraryItem> = albums
             .iter()
-            .map(|album| LibraryItem::album(album.clone(), None, None))
+            .map(|album| LibraryItem::album(album.clone(), cached_album_cover(album), None))
             .collect();
         self.show_root_items(&items, &albums_label(items.len() as u32));
-
-        self.query(
-            Query::Covers,
-            move |_| Ok(albums.iter().map(load_album_cover).collect::<Vec<_>>()),
-            move |_, covers| {
-                for (item, cover) in items.iter().zip(covers) {
-                    if cover.is_some() {
-                        item.set_cover(cover);
-                    }
-                }
-            },
-        );
+        self.load_covers(Query::Covers, albums, items);
     }
 
     fn load_albums(&self, artist: ArtistKey) {
         self.query(
             Query::Albums,
-            move |db| {
-                Ok(artist_albums(db, &artist)?
-                    .into_iter()
-                    .map(|album| {
-                        let cover = load_album_cover(&album);
-                        (album, cover)
-                    })
-                    .collect::<Vec<_>>())
-            },
+            move |db| artist_albums(db, &artist),
             |this, albums| this.show_albums(albums),
         );
     }
 
-    fn show_albums(&self, albums: Vec<(Album, Option<gdk::Texture>)>) {
+    fn show_albums(&self, albums: Vec<Album>) {
         let imp = self.imp();
         let artist = imp.current_artist.borrow().clone().flatten();
 
         let items: Vec<LibraryItem> = albums
-            .into_iter()
-            .map(|(album, cover)| LibraryItem::album(album, cover, artist.as_deref()))
+            .iter()
+            .map(|album| {
+                LibraryItem::album(album.clone(), cached_album_cover(album), artist.as_deref())
+            })
             .collect();
         imp.albums_model
             .splice(0, imp.albums_model.n_items(), &items);
         imp.albums_subtitle_label
             .set_label(&albums_label(items.len() as u32));
+        self.load_covers(Query::AlbumCovers, albums, items);
+    }
+
+    fn load_covers(&self, kind: Query, albums: Vec<Album>, items: Vec<LibraryItem>) {
+        self.query(
+            kind,
+            move |_| Ok(albums.iter().map(load_album_cover).collect::<Vec<_>>()),
+            move |_, covers| {
+                for (item, cover) in items.iter().zip(covers) {
+                    if item.cover() != cover {
+                        item.set_cover(cover);
+                    }
+                }
+            },
+        );
     }
 
     fn show_album(&self, album: Album) {
@@ -1031,7 +1045,11 @@ fn search_library(db: &LibraryDB, query: &str) -> db::Result<SearchResults> {
     // Album artists and track artists without duplicates
     let mut candidates = db.album_artists()?;
     for artist in db.artists()? {
-        if !candidates.iter().any(|a| a.name == artist.name) {
+        let name = artist_display_name(Some(&artist.name));
+        if !candidates
+            .iter()
+            .any(|a| artist_display_name(Some(&a.name)).eq_ignore_ascii_case(&name))
+        {
             candidates.push(artist);
         }
     }
@@ -1107,7 +1125,44 @@ fn target_paths(db: &LibraryDB, target: &MenuTarget) -> db::Result<Vec<PathBuf>>
     Ok(paths)
 }
 
+fn album_cover_source(album: &Album) -> &Path {
+    album.cover.as_deref().unwrap_or(&album.sample_track)
+}
+
+fn cached_album_cover(album: &Album) -> Option<gdk::Texture> {
+    let cache = COVER_CACHE.lock().ok()?;
+    cache
+        .get(album_cover_source(album))
+        .and_then(|cached| cached.texture.clone())
+}
+
 fn load_album_cover(album: &Album) -> Option<gdk::Texture> {
+    let source = album_cover_source(album);
+    let modified = source.metadata().and_then(|m| m.modified()).ok();
+
+    if let Ok(cache) = COVER_CACHE.lock() {
+        if let Some(cached) = cache.get(source) {
+            if cached.modified == modified {
+                return cached.texture.clone();
+            }
+        }
+    }
+
+    // Decode without holding the lock so other covers can also load
+    let texture = decode_album_cover(album);
+    if let Ok(mut cache) = COVER_CACHE.lock() {
+        cache.insert(
+            source.to_path_buf(),
+            CachedCover {
+                modified,
+                texture: texture.clone(),
+            },
+        );
+    }
+    texture
+}
+
+fn decode_album_cover(album: &Album) -> Option<gdk::Texture> {
     let pixbuf = album
         .cover
         .as_ref()
