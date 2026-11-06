@@ -19,7 +19,13 @@ songcover image.card {
               0px 2px 12px rgba(0,0,0,0.15),
               0px 6px 32px rgba(0,0,0,0.1);
   border-radius: 12px;
-  margin: 6px;
+  margin-bottom: -12px;
+}
+
+label.song-format {
+  color: rgb(0 0 0 / 40%);
+  font-size: 83%;
+  margin-bottom: 10px;
 }
 
 image.card.small {

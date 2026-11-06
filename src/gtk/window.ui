@@ -102,6 +102,19 @@
                                       </object>
                                     </child>
 
+                                    <!-- Format, bit depth, and sample rate -->
+                                    <child>
+                                      <object class="GtkLabel" id="song_format_label">
+                                        <property name="halign">center</property>
+                                        <property name="justify">center</property>
+                                        <property name="ellipsize">end</property>
+                                        <property name="visible">false</property>
+                                        <style>
+                                          <class name="song-format"/>
+                                        </style>
+                                      </object>
+                                    </child>
+
                                     <!-- Song position -->
                                     <child>
                                       <object class="GtkBox">

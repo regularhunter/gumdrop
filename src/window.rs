@@ -75,6 +75,8 @@ mod imp {
         #[template_child]
         pub song_details: TemplateChild<SongDetails>,
         #[template_child]
+        pub song_format_label: TemplateChild<gtk::Label>,
+        #[template_child]
         pub waveform_view: TemplateChild<WaveformView>,
         #[template_child]
         pub elapsed_label: TemplateChild<gtk::Label>,
@@ -261,6 +263,7 @@ mod imp {
         fn new() -> Self {
             Self {
                 song_details: TemplateChild::default(),
+                song_format_label: TemplateChild::default(),
                 song_cover: TemplateChild::default(),
                 split_view: TemplateChild::default(),
                 toast_overlay: TemplateChild::default(),
@@ -1158,6 +1161,16 @@ impl Window {
                 .build();
             state
                 .bind_property("album", &imp.song_details.get().album_label(), "label")
+                .sync_create()
+                .build();
+            state
+                .bind_property("audio-format", &imp.song_format_label.get(), "label")
+                .transform_to(|_, format: Option<String>| Some(format.unwrap_or_default()))
+                .sync_create()
+                .build();
+            state
+                .bind_property("audio-format", &imp.song_format_label.get(), "visible")
+                .transform_to(|_, format: Option<String>| Some(format.is_some()))
                 .sync_create()
                 .build();
             state

@@ -14,8 +14,10 @@ use gtk::{gdk, gio, glib, prelude::*, subclass::prelude::*};
 use itertools::Itertools;
 
 use lofty::{
+    file::FileType,
     prelude::{Accessor, TaggedFileExt},
     probe::Probe,
+    properties::FileProperties,
     tag::ItemKey,
 };
 use log::{debug, warn};
@@ -24,7 +26,7 @@ use sha2::{Digest, Sha256};
 
 use crate::{
     audio::cover_cache::{CoverArt, CoverCache},
-    i18n::i18n,
+    i18n::{i18n, i18n_f},
 };
 
 #[derive(Debug, Clone)]
@@ -36,6 +38,7 @@ pub struct SongData {
     cover_uuid: Option<String>,
     uuid: Option<String>,
     duration: u64,
+    audio_format: Option<String>,
     file: gio::File,
 }
 
@@ -62,6 +65,10 @@ impl SongData {
 
     pub fn duration(&self) -> u64 {
         self.duration
+    }
+
+    pub fn audio_format(&self) -> Option<&str> {
+        self.audio_format.as_deref()
     }
 
     pub fn cover_texture(&self) -> Option<&gdk::Texture> {
@@ -182,6 +189,7 @@ impl SongData {
 
         let properties = lofty::prelude::AudioFile::properties(&tagged_file);
         let duration = properties.duration().as_secs();
+        let audio_format = describe_audio_format(tagged_file.file_type(), properties);
 
         debug!(
             "Song {:?} ('{:?}') loading time: {} ms",
@@ -198,6 +206,7 @@ impl SongData {
             cover_uuid,
             uuid,
             duration,
+            audio_format,
             file,
         }
     }
@@ -211,6 +220,44 @@ impl SongData {
     }
 }
 
+fn describe_audio_format(file_type: FileType, properties: &FileProperties) -> Option<String> {
+    let bit_depth = properties.bit_depth();
+    let format = match file_type {
+        FileType::Aac => "AAC",
+        FileType::Aiff => "AIFF",
+        FileType::Ape => "APE",
+        FileType::Flac => "FLAC",
+        FileType::Mpeg => "MP3",
+        // MPEG-4 files hold either lossless ALAC (which has a bit depth) or AAC
+        FileType::Mp4 if bit_depth.is_some() => "ALAC",
+        FileType::Mp4 => "AAC",
+        FileType::Mpc => "Musepack",
+        FileType::Opus => "Opus",
+        FileType::Vorbis => "Vorbis",
+        FileType::Speex => "Speex",
+        FileType::Wav => "WAV",
+        FileType::WavPack => "WavPack",
+        FileType::Custom(name) => name,
+        _ => return None,
+    };
+
+    let mut parts = vec![format.to_string()];
+    if let Some(bits) = bit_depth {
+        // Translators: the `{}` must be left unmodified;
+        // it will be expanded to the bit depth, e.g. "16-bit"
+        parts.push(i18n_f("{}-bit", &[&bits.to_string()]));
+    }
+    if let Some(rate) = properties.sample_rate().filter(|&r| r > 0) {
+        // 44100 Hz is "44.1 kHz", 48000 Hz is "48 kHz"
+        let khz = format!("{:.2}", rate as f64 / 1000.0);
+        let khz = khz.trim_end_matches('0').trim_end_matches('.');
+        // Translators: the `{}` must be left unmodified;
+        // it will be expanded to the sample rate, e.g. "44.1 kHz"
+        parts.push(i18n_f("{} kHz", &[khz]));
+    }
+    Some(parts.join(" · "))
+}
+
 impl Default for SongData {
     fn default() -> Self {
         SongData {
@@ -221,6 +268,7 @@ impl Default for SongData {
             cover_uuid: None,
             uuid: None,
             duration: 0,
+            audio_format: None,
             file: gio::File::for_path("/does-not-exist"),
         }
     }
@@ -380,6 +428,10 @@ impl Song {
 
     pub fn duration(&self) -> u64 {
         self.imp().data.borrow().duration()
+    }
+
+    pub fn audio_format(&self) -> Option<String> {
+        self.imp().data.borrow().audio_format().map(String::from)
     }
 
     pub fn playing(&self) -> bool {
