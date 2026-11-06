@@ -121,8 +121,8 @@ mod imp {
         fn measure(&self, _orientation: gtk::Orientation, _for_size: i32) -> (i32, i32, i32, i32) {
             match self.cover_size.get() {
                 CoverSize::Large => (LARGE_SIZE, LARGE_SIZE, -1, -1),
-                CoverSize::Larger => (LARGER_SIZE, LARGE_SIZE, -1, -1),
-                CoverSize::Largest => (LARGEST_SIZE, LARGE_SIZE, -1, -1),
+                CoverSize::Larger => (LARGER_SIZE, LARGER_SIZE, -1, -1),
+                CoverSize::Largest => (LARGEST_SIZE, LARGEST_SIZE, -1, -1),
                 CoverSize::Small => (SMALL_SIZE, SMALL_SIZE, -1, -1),
             }
         }
