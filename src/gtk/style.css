@@ -23,7 +23,7 @@ songcover image.card {
 }
 
 label.song-format {
-  color: rgb(0 0 0 / 40%);
+  color: var(--audio-format-color);
   font-size: 83%;
   margin-bottom: 10px;
 }
@@ -140,6 +140,7 @@ dragoverlay {
 
   --accent-bg-color: rgb(0 0 0 / 75%);
   --accent-fg-color: white;
+  --audio-format-color: rgb(0 0 0 / 40%);
   --accent-color: oklab(from var(--accent-bg-color) var(--standalone-color-oklab));
 
   --scrollbar-outline-color: rgb(255 255 255 / 25%);
@@ -194,6 +195,8 @@ volume > scale trough slider { opacity: 0; }
 
     --accent-bg-color: rgb(255 255 255 / 75%);
     --accent-fg-color: rgb(0 0 0 / 75%);
+
+    --audio-format-color: rgb(255 255 255 / 40%);
 
     --scrollbar-outline-color: rgb(0 0 0 / 25%);
   }
