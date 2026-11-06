@@ -77,7 +77,7 @@
                         <property name="child">
                           <object class="AdwStatusPage">
                             <property name="icon-name">folder-music-symbolic</property>
-                            <property name="title" translatable="yes">Your Library Is Empty</property>
+                            <property name="title" translatable="yes">Your Library is Empty</property>
                             <property name="description" translatable="yes">Songs you add to the queue are saved in your library</property>
                             <property name="child">
                               <object class="GtkButton">
