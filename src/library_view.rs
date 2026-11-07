@@ -173,6 +173,8 @@ mod imp {
         pub has_tracks: Cell<Option<bool>>,
         pub current_artist: RefCell<Option<ArtistKey>>,
         pub current_album: RefCell<Option<Album>>,
+        //pub current_playlist: RefCell<Option<PathBuf>>, // TODO For future playlist support
+        pub playing_track: RefCell<Option<PathBuf>>,
         pub current_tracks: RefCell<Vec<Track>>,
         pub generations: [Cell<u64>; N_QUERIES],
         pub queue_handler: RefCell<Option<QueueHandler>>,
@@ -402,6 +404,10 @@ impl LibraryView {
                     .property_expression("item")
                     .chain_property::<LibraryItem>("cover")
                     .bind(&row, "cover", gtk::Widget::NONE);
+                list_item
+                    .property_expression("item")
+                    .chain_property::<LibraryItem>("playing")
+                    .bind(&row, "playing", gtk::Widget::NONE);
 
                 this.add_context_menu(&row, album_tracks);
                 if album_tracks {
@@ -612,6 +618,28 @@ impl LibraryView {
 
     fn clear_track_selection(&self) {
         self.imp().tracks_selection.unselect_all();
+    }
+
+    pub fn set_playing_track(&self, path: Option<PathBuf>) {
+        let imp = self.imp();
+        if *imp.playing_track.borrow() == path {
+            return;
+        }
+        imp.playing_track.replace(path);
+
+        for model in [imp.tracks_model.get(), imp.search_tracks_model.get()] {
+            self.mark_playing_tracks(&model, 0, model.n_items());
+        }
+    }
+
+    fn mark_playing_tracks(&self, model: &gio::ListStore, position: u32, count: u32) {
+        let playing = self.imp().playing_track.borrow().clone();
+        for i in position..position + count {
+            if let Some(item) = model.item(i).and_downcast::<LibraryItem>() {
+                let is_playing = playing.as_deref().is_some_and(|p| item.is_track_at(p));
+                item.set_playing(is_playing);
+            }
+        }
     }
 
     pub fn set_library(&self, db: Option<LibraryDB>) {

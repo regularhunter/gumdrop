@@ -74,6 +74,17 @@ libraryrow label.row-title {
   font-size: 83%;
 }
 
+libraryrow.track label.row-title {
+  font-weight: normal;
+}
+
+libraryrow.track.playing label.row-title,
+libraryrow.track.playing label.row-subtitle,
+libraryrow.track.playing label.track-number,
+libraryrow.track.playing label.duration {
+  font-weight: 700;
+}
+
 libraryrow label.row-subtitle,
 libraryrow label.track-number,
 libraryrow label.duration {
@@ -201,4 +212,6 @@ volume > scale trough slider { opacity: 0; }
     --scrollbar-outline-color: rgb(0 0 0 / 25%);
   }
 }
+
+
 

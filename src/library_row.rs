@@ -12,7 +12,7 @@ use crate::{
 };
 
 mod imp {
-    use glib::{ParamSpec, ParamSpecEnum, ParamSpecObject, ParamSpecString, Value};
+    use glib::{ParamSpec, ParamSpecBoolean, ParamSpecEnum, ParamSpecObject, ParamSpecString, Value};
     use once_cell::sync::Lazy;
 
     use super::*;
@@ -82,6 +82,7 @@ mod imp {
                     ParamSpecString::builder("number").build(),
                     ParamSpecString::builder("duration").build(),
                     ParamSpecObject::builder::<gdk::Texture>("cover").build(),
+                    ParamSpecBoolean::builder("playing").build(),
                 ]
             });
             PROPERTIES.as_ref()
@@ -118,6 +119,10 @@ mod imp {
                 "cover" => {
                     let p = value.get::<gdk::Texture>().ok();
                     self.obj().set_cover(p);
+                }
+                "playing" => {
+                    let p = value.get::<bool>().unwrap_or_default();
+                    self.obj().set_playing(p);
                 }
                 _ => unimplemented!(),
             }
@@ -181,6 +186,14 @@ impl LibraryRow {
 
         self.add_css_class(kind.as_ref());
         imp.cover_stack.set_visible(kind == LibraryItemKind::Album);
+    }
+
+    fn set_playing(&self, playing: bool) {
+        if playing {
+            self.add_css_class("playing");
+        } else {
+            self.remove_css_class("playing");
+        }
     }
 
     fn set_title(&self, title: &str) {

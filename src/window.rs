@@ -1720,6 +1720,11 @@ impl Window {
             self.update_playlist_time();
             self.update_title(state.current_song().as_ref());
             self.update_style(state.current_song().as_ref());
+
+            let playing = state.current_song().and_then(|song| song.file().path());
+            for view in self.library_views() {
+                view.set_playing_track(playing.clone());
+            }
         }
     }
 

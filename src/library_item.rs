@@ -1,9 +1,12 @@
 // SPDX-FileCopyrightText: 2025  Hunter Wardlaw
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-use std::cell::RefCell;
+use std::{
+    cell::{Cell, RefCell},
+    path::Path,
+};
 
-use glib::{ParamSpec, ParamSpecEnum, ParamSpecObject, ParamSpecString, Value};
+use glib::{ParamSpec, ParamSpecBoolean, ParamSpecEnum, ParamSpecObject, ParamSpecString, Value};
 use gtk::{gdk, glib, prelude::*, subclass::prelude::*};
 use once_cell::sync::Lazy;
 
@@ -58,6 +61,7 @@ mod imp {
         pub number: RefCell<Option<String>>,
         pub duration: RefCell<Option<String>>,
         pub cover: RefCell<Option<gdk::Texture>>,
+        pub playing: Cell<bool>,
     }
 
     #[glib::object_subclass]
@@ -80,6 +84,7 @@ mod imp {
                     ParamSpecObject::builder::<gdk::Texture>("cover")
                         .read_only()
                         .build(),
+                    ParamSpecBoolean::builder("playing").read_only().build(),
                 ]
             });
             PROPERTIES.as_ref()
@@ -94,6 +99,7 @@ mod imp {
                 "number" => self.number.borrow().to_value(),
                 "duration" => self.duration.borrow().to_value(),
                 "cover" => self.cover.borrow().to_value(),
+                "playing" => self.playing.get().to_value(),
                 _ => unimplemented!(),
             }
         }
@@ -179,6 +185,19 @@ impl LibraryItem {
 
     pub fn data(&self) -> LibraryItemData {
         self.imp().data.borrow().clone()
+    }
+
+    pub fn is_track_at(&self, path: &Path) -> bool {
+        match *self.imp().data.borrow() {
+            LibraryItemData::Track(ref track) => track.path == path,
+            _ => false,
+        }
+    }
+
+    pub fn set_playing(&self, playing: bool) {
+        if playing != self.imp().playing.replace(playing) {
+            self.notify("playing");
+        }
     }
 
     pub fn cover(&self) -> Option<gdk::Texture> {
