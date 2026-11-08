@@ -797,7 +797,7 @@ mod tests {
             Some(LibraryDB::VARIOUS_ARTISTS)
         );
 
-        let tracks = db.album_tracks("Album", Some("X")).unwrap();
+        let tracks = db.album_tracks("Album", Some("X"), None).unwrap();
         assert_eq!(tracks.len(), 2);
         assert_eq!(tracks[0].artists, vec!["X", "Y"]);
 
