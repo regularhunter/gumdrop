@@ -220,6 +220,18 @@
                                     </child>
                                     <child>
                                       <object class="AdwViewStackPage">
+                                        <property name="name">playlists</property>
+                                        <property name="title" translatable="yes">Playlists</property>
+                                        <property name="icon-name">view-list-symbolic</property>
+                                        <property name="child">
+                                          <object class="GumdropLibraryView" id="playlists_view">
+                                            <property name="mode">playlists</property>
+                                          </object>
+                                        </property>
+                                      </object>
+                                    </child>
+                                    <child>
+                                      <object class="AdwViewStackPage">
                                         <property name="name">queue</property>
                                         <property name="title" translatable="yes">Queue</property>
                                         <property name="icon-name">folder-music-symbolic</property>

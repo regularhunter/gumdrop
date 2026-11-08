@@ -95,6 +95,8 @@ mod imp {
         #[template_child]
         pub album_view: TemplateChild<LibraryView>,
         #[template_child]
+        pub playlists_view: TemplateChild<LibraryView>,
+        #[template_child]
         pub add_folder_button: TemplateChild<gtk::Button>,
 
         pub provider: gtk::CssProvider,
@@ -279,6 +281,7 @@ mod imp {
                 sidebar_stack: TemplateChild::default(),
                 library_view: TemplateChild::default(),
                 album_view: TemplateChild::default(),
+                playlists_view: TemplateChild::default(),
                 loading_songs: Cell::new(false),
                 scanning_library: Cell::new(false),
                 playlist_shuffled: Cell::new(false),
@@ -396,9 +399,13 @@ impl Window {
             .is_some_and(|n| n > 0)
     }
 
-    fn library_views(&self) -> [LibraryView; 2] {
+    fn library_views(&self) -> [LibraryView; 3] {
         let imp = self.imp();
-        [imp.library_view.get(), imp.album_view.get()]
+        [
+            imp.library_view.get(),
+            imp.album_view.get(),
+            imp.playlists_view.get(),
+        ]
     }
 
     fn visible_library_view(&self) -> Option<LibraryView> {
@@ -570,9 +577,14 @@ impl Window {
         self.add_toast(i18n("Adding songs to the library…"));
 
         let res = gio::spawn_blocking(move || {
-            folders.iter().try_fold(0, |n, folder| {
-                scanner::scan_folder(&db, folder).map(|added| n + added)
-            })
+           folders
+                .iter()
+                .try_fold(scanner::ScanSummary::default(), |total, folder| {
+                    scanner::scan_folder(&db, folder).map(|added| scanner::ScanSummary {
+                        songs: total.songs + added.songs,
+                        playlists: total.playlists + added.playlists,
+                    })
+                })
         })
         .await;
 
@@ -580,18 +592,36 @@ impl Window {
         self.update_library_actions();
 
         match res {
-            Ok(Ok(0)) => self.add_toast(i18n("No new songs found")),
-            Ok(Ok(n)) => {
-                debug!("Added {} songs to the library", n);
+            Ok(Ok(added)) if added.songs == 0 && added.playlists == 0 => {
+                self.add_toast(i18n("No new songs found"))
+            }
+            Ok(Ok(added)) => {
+                debug!(
+                    "Added {} songs and {} playlists to the library",
+                    added.songs, added.playlists
+                );
                 self.reload_library();
-                self.add_toast(ni18n_f(
-                    // Translators: the `{}` must be left unmodified;
-                    // it will be expanded to the number of songs added
-                    "Added one song to the library",
-                    "Added {} songs to the library",
-                    n as u32,
-                    &[&n.to_string()],
-                ));
+                if added.songs > 0 {
+                    let n = added.songs;
+                    self.add_toast(ni18n_f(
+                        // Translators: the `{}` must be left unmodified;
+                        // it will be expanded to the number of songs added
+                        "Added one song to the library",
+                        "Added {} songs to the library",
+                        n as u32,
+                        &[&n.to_string()],
+                    ));
+                } else {
+                    let n = added.playlists;
+                    self.add_toast(ni18n_f(
+                        // Translators: the `{}` must be left unmodified;
+                        // it will be expanded to the number of playlists added
+                        "Added one playlist to the library",
+                        "Added {} playlists to the library",
+                        n as u32,
+                        &[&n.to_string()],
+                    ));
+                }
             }
             Ok(Err(e)) => {
                 warn!("Unable to add the folder to the library: {}", e);

@@ -34,6 +34,17 @@ pub struct Album {
 }
 
 #[derive(Debug, Clone, Default, PartialEq)]
+pub struct Playlist {
+    pub path: PathBuf,
+    pub name: String,
+    pub num_tracks: u32,
+    pub duration: f64,
+    pub first_track: Option<PathBuf>,
+    pub cover_track: Option<PathBuf>,
+    pub cover: Option<PathBuf>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct Artist {
     pub name: String,
     pub sort: Option<String>,

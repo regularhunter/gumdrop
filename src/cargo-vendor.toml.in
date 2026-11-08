@@ -1,0 +1,11 @@
+# SPDX-FileCopyrightText: 2025  Hunter Wardlaw
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# Cargo configuration for offline builds, filled in by src/meson.build with
+# the absolute path of the vendored crates and passed to cargo with --config
+
+[source.crates-io]
+replace-with = "vendored-sources"
+
+[source.vendored-sources]
+directory = @VENDOR_DIR@

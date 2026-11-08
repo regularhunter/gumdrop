@@ -185,7 +185,10 @@ impl LibraryRow {
         let kind = imp.kind.get();
 
         self.add_css_class(kind.as_ref());
-        imp.cover_stack.set_visible(kind == LibraryItemKind::Album);
+        imp.cover_stack.set_visible(matches!(
+            kind,
+            LibraryItemKind::Album | LibraryItemKind::Playlist
+        ));
     }
 
     fn set_playing(&self, playing: bool) {
