@@ -628,17 +628,19 @@ impl LibraryView {
         imp.playing_track.replace(path);
 
         for model in [imp.tracks_model.get(), imp.search_tracks_model.get()] {
-            self.mark_playing_tracks(&model, 0, model.n_items());
+            let items: Vec<LibraryItem> = model
+                .iter::<LibraryItem>()
+                .filter_map(Result::ok)
+                .collect();
+            self.mark_playing_tracks(&items);
         }
     }
 
-    fn mark_playing_tracks(&self, model: &gio::ListStore, position: u32, count: u32) {
-        let playing = self.imp().playing_track.borrow().clone();
-        for i in position..position + count {
-            if let Some(item) = model.item(i).and_downcast::<LibraryItem>() {
-                let is_playing = playing.as_deref().is_some_and(|p| item.is_track_at(p));
-                item.set_playing(is_playing);
-            }
+    fn mark_playing_tracks(&self, items: &[LibraryItem]) {
+        let playing = self.imp().playing_track.borrow();
+        for item in items {
+            let is_playing = playing.as_deref().is_some_and(|p| item.is_track_at(p));
+            item.set_playing(is_playing);
         }
     }
 
@@ -1002,6 +1004,7 @@ impl LibraryView {
                 LibraryItem::album_track(track.clone(), album_artist.as_deref(), multi_disc)
             })
             .collect();
+        self.mark_playing_tracks(&items);
         imp.tracks_model
             .splice(0, imp.tracks_model.n_items(), &items);
         imp.play_album_button.set_sensitive(!tracks.is_empty());
@@ -1062,6 +1065,7 @@ impl LibraryView {
             .map(|(album, cover)| LibraryItem::album(album, cover, None))
             .collect();
         let tracks: Vec<LibraryItem> = results.tracks.into_iter().map(LibraryItem::track).collect();
+        self.mark_playing_tracks(&tracks);
 
         imp.search_artists_model
             .splice(0, imp.search_artists_model.n_items(), &artists);
