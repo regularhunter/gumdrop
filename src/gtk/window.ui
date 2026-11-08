@@ -259,7 +259,7 @@
     </child>
     <child>
       <object class="AdwBreakpoint">
-        <condition>min-width: 600sp and min-height: 760sp</condition>
+        <condition>min-width: 640sp and min-height: 760sp</condition>
         <setter object="song_cover" property="cover-size">larger</setter>
       </object>
     </child>
