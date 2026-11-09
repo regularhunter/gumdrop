@@ -167,7 +167,7 @@
                           <object class="AdwStatusPage">
                             <property name="icon-name">view-list-symbolic</property>
                             <property name="title" translatable="yes">No Playlists</property>
-                            <property name="description" translatable="yes">Playlist files (.m3u) in your library folders show up here</property>
+                            <property name="description" translatable="yes">Playlist files (.m3u) in your library show up here</property>
                             <style>
                               <class name="compact"/>
                             </style>
