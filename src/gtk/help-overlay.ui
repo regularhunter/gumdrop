@@ -40,13 +40,13 @@
             <property name="title" translatable="yes" context="shortcut window">Playlist</property>
             <child>
               <object class="GtkShortcutsShortcut">
-                <property name="title" translatable="yes" context="shortcut window">Add a song to the playlist</property>
+                <property name="title" translatable="yes" context="shortcut window">Add a song to the queue</property>
                 <property name="action-name">queue.add-song</property>
               </object>
             </child>
             <child>
               <object class="GtkShortcutsShortcut">
-                <property name="title" translatable="yes" context="shortcut window">Add a folder to the playlist</property>
+                <property name="title" translatable="yes" context="shortcut window">Add a folder to the queue</property>
                 <property name="action-name">queue.add-folder</property>
               </object>
             </child>
