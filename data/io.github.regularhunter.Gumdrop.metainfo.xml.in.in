@@ -45,6 +45,20 @@
     <control>touch</control>
   </recommends>
   <releases>
+    <release version="0.3.0" date="2026-11-09">
+      <description>
+        <ul>
+          <li>m3u playlist support</li>
+          <li>Distinguish albums by the same artist with the same name but different year</li>
+          <li>Various text formatting changes in library sidebar</li>
+          <li>Currently playing track in library sidebar is now bold</li>
+          <li>Show empty library page when clearing library and artist album page is open</li>
+          <li>Adjust large cover art window sizing threshold</li>
+          <li>Display bitrate info for lossy tracks</li>
+          <li>Change 'Add Folder/Song' UI labels to 'Queue Folder/Track'</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.2.0" date="2026-11-06">
       <description>
         <ul>

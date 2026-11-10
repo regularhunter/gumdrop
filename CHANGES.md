@@ -2,7 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
-## 0.2.0 - 2025-11-06
+## 0.3.0 - 2026-11-06
+
+- m3u playlist support
+- Distinguish albums by the same artist with the same name but different year
+- Various text formatting changes in library sidebar
+- Currently playing track in library sidebar is now bold
+- Show empty library page when clearing library and artist album page is open
+- Adjust large cover art window sizing threshold
+- Display bitrate info for lossy tracks
+- Change 'Add Folder/Song' UI labels to 'Queue Folder/Track'
+
+## 0.2.0 - 2026-11-06
 
 - Add rescan library shortcut (Ctrl+R)
 - Find new tracks during rescan, not just removed tracks
