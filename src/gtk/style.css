@@ -75,7 +75,7 @@ libraryrow label.row-title {
 }
 
 libraryrow.track label.row-title {
-  font-weight: normal;
+  font-weight: 450;
 }
 
 libraryrow.track.playing label.row-title,
