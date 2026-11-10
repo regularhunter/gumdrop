@@ -176,7 +176,7 @@ mod imp {
         pub has_tracks: Cell<Option<bool>>,
         pub current_artist: RefCell<Option<ArtistKey>>,
         pub current_album: RefCell<Option<Album>>,
-        pub current_playlist: RefCell<Option<PathBuf>>,
+        pub current_playlist: RefCell<Option<Playlist>>,
         pub playing_track: RefCell<Option<PathBuf>>,
         pub current_tracks: RefCell<Vec<Track>>,
         pub generations: [Cell<u64>; N_QUERIES],
