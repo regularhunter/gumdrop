@@ -246,6 +246,13 @@ fn describe_audio_format(file_type: FileType, properties: &FileProperties) -> Op
         // Translators: the `{}` must be left unmodified;
         // it will be expanded to the bit depth, e.g. "16-bit"
         parts.push(i18n_f("{}-bit", &[&bits.to_string()]));
+    } else if let Some(kbps) = properties
+        .audio_bitrate()
+        .or_else(|| properties.overall_bitrate())
+        .filter(|&b| b > 0)
+    {
+        // Show bitrate for lossy formats
+        parts.push(i18n_f("{} kbps", &[&kbps.to_string()]));
     }
     if let Some(rate) = properties.sample_rate().filter(|&r| r > 0) {
         // 44100 Hz is "44.1 kHz", 48000 Hz is "48 kHz"

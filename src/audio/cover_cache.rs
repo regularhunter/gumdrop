@@ -93,7 +93,7 @@ impl CoverCache {
         // playlist model
         if let Some(p) = path {
             let ext_cover_basename = vec!["Cover", "cover", "Folder", "folder"];
-            let ext_cover_ext = vec!["jpg", "png"];
+            let ext_cover_ext = vec!["jpg", "png", "webp"];
 
             let ext_covers = ext_cover_basename
                 .iter()

@@ -1,15 +1,18 @@
 // SPDX-FileCopyrightText: 2025  Hunter Wardlaw
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-use std::cell::RefCell;
+use std::{
+    cell::{Cell, RefCell},
+    path::Path,
+};
 
-use glib::{ParamSpec, ParamSpecEnum, ParamSpecObject, ParamSpecString, Value};
+use glib::{ParamSpec, ParamSpecBoolean, ParamSpecEnum, ParamSpecObject, ParamSpecString, Value};
 use gtk::{gdk, glib, prelude::*, subclass::prelude::*};
 use once_cell::sync::Lazy;
 
 use crate::{
     i18n::{i18n, ni18n_f},
-    library::{Album, LibraryDB, Track},
+    library::{Album, LibraryDB, Playlist, Track},
     utils,
 };
 
@@ -21,6 +24,7 @@ pub enum LibraryItemKind {
     #[default]
     Artist,
     Album,
+    Playlist,
     Track,
 }
 
@@ -29,6 +33,7 @@ impl AsRef<str> for LibraryItemKind {
         match self {
             LibraryItemKind::Artist => "artist",
             LibraryItemKind::Album => "album",
+            LibraryItemKind::Playlist => "playlist",
             LibraryItemKind::Track => "track",
         }
     }
@@ -38,6 +43,7 @@ impl AsRef<str> for LibraryItemKind {
 pub enum LibraryItemData {
     Artist(ArtistKey),
     Album(Album),
+    Playlist(Playlist),
     Track(Track),
 }
 
@@ -58,6 +64,7 @@ mod imp {
         pub number: RefCell<Option<String>>,
         pub duration: RefCell<Option<String>>,
         pub cover: RefCell<Option<gdk::Texture>>,
+        pub playing: Cell<bool>,
     }
 
     #[glib::object_subclass]
@@ -80,6 +87,7 @@ mod imp {
                     ParamSpecObject::builder::<gdk::Texture>("cover")
                         .read_only()
                         .build(),
+                    ParamSpecBoolean::builder("playing").read_only().build(),
                 ]
             });
             PROPERTIES.as_ref()
@@ -94,6 +102,7 @@ mod imp {
                 "number" => self.number.borrow().to_value(),
                 "duration" => self.duration.borrow().to_value(),
                 "cover" => self.cover.borrow().to_value(),
+                "playing" => self.playing.get().to_value(),
                 _ => unimplemented!(),
             }
         }
@@ -169,16 +178,53 @@ impl LibraryItem {
         item
     }
 
+    pub fn playlist(playlist: Playlist, cover: Option<gdk::Texture>) -> Self {
+        let title = playlist.name.clone();
+        let subtitle = songs_label(playlist.num_tracks);
+        let item = LibraryItem::new(LibraryItemData::Playlist(playlist), title, subtitle);
+        item.imp().cover.replace(cover);
+        item
+    }
+
+    pub fn playlist_track(track: Track, position: usize) -> Self {
+        let subtitle = if track.artists.is_empty() {
+            artist_display_name(track.album_artist.as_deref())
+        } else {
+            track.artists.join(", ")
+        };
+
+        let title = track.title.clone();
+        let duration = duration_text(track.duration);
+        let item = LibraryItem::new(LibraryItemData::Track(track), title, subtitle);
+        item.imp().number.replace(Some((position + 1).to_string()));
+        item.imp().duration.replace(Some(duration));
+        item
+    }
+
     pub fn kind(&self) -> LibraryItemKind {
         match *self.imp().data.borrow() {
             LibraryItemData::Artist(_) => LibraryItemKind::Artist,
             LibraryItemData::Album(_) => LibraryItemKind::Album,
+            LibraryItemData::Playlist(_) => LibraryItemKind::Playlist,
             LibraryItemData::Track(_) => LibraryItemKind::Track,
         }
     }
 
     pub fn data(&self) -> LibraryItemData {
         self.imp().data.borrow().clone()
+    }
+
+    pub fn is_track_at(&self, path: &Path) -> bool {
+        match *self.imp().data.borrow() {
+            LibraryItemData::Track(ref track) => track.path == path,
+            _ => false,
+        }
+    }
+
+    pub fn set_playing(&self, playing: bool) {
+        if playing != self.imp().playing.replace(playing) {
+            self.notify("playing");
+        }
     }
 
     pub fn cover(&self) -> Option<gdk::Texture> {
@@ -226,6 +272,17 @@ pub fn artists_label(n: u32) -> String {
         // it will be expanded to the number of artists
         "{} artist",
         "{} artists",
+        n,
+        &[&n.to_string()],
+    )
+}
+
+pub fn playlists_label(n: u32) -> String {
+    ni18n_f(
+        // Translators: the `{}` must be left unmodified;
+        // it will be expanded to the number of playlists
+        "{} playlist",
+        "{} playlists",
         n,
         &[&n.to_string()],
     )

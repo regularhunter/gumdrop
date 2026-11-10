@@ -33,10 +33,10 @@ use once_cell::sync::Lazy;
 
 use crate::{
     i18n::i18n,
-    library::{db, Album, Artist, LibraryDB, Track},
+    library::{db, Album, Artist, LibraryDB, Playlist, Track},
     library_item::{
         album_details, album_display_title, albums_label, artist_display_name, artists_label,
-        ArtistKey, LibraryItem, LibraryItemData, LibraryItemKind,
+        playlists_label, songs_label, ArtistKey, LibraryItem, LibraryItemData, LibraryItemKind,
     },
     library_row::LibraryRow,
 };
@@ -72,6 +72,8 @@ pub enum LibraryMode {
     Artists,
     #[enum_value(name = "albums")]
     Albums,
+    #[enum_value(name = "playlists")]
+    Playlists,
 }
 
 #[derive(Clone)]
@@ -79,6 +81,7 @@ enum MenuTarget {
     Tracks(Vec<PathBuf>),
     Album(Album),
     Artist(ArtistKey),
+    Playlist(Playlist),
 }
 
 #[derive(Clone, Copy)]
@@ -173,6 +176,8 @@ mod imp {
         pub has_tracks: Cell<Option<bool>>,
         pub current_artist: RefCell<Option<ArtistKey>>,
         pub current_album: RefCell<Option<Album>>,
+        pub current_playlist: RefCell<Option<Playlist>>,
+        pub playing_track: RefCell<Option<PathBuf>>,
         pub current_tracks: RefCell<Vec<Track>>,
         pub generations: [Cell<u64>; N_QUERIES],
         pub queue_handler: RefCell<Option<QueueHandler>>,
@@ -278,6 +283,7 @@ impl LibraryView {
         let title = match imp.mode.get() {
             LibraryMode::Artists => i18n("Artists"),
             LibraryMode::Albums => i18n("Albums"),
+            LibraryMode::Playlists => i18n("Playlists"),
         };
         imp.root_page.set_title(&title);
         imp.root_title_label.set_label(&title);
@@ -402,6 +408,10 @@ impl LibraryView {
                     .property_expression("item")
                     .chain_property::<LibraryItem>("cover")
                     .bind(&row, "cover", gtk::Widget::NONE);
+                list_item
+                    .property_expression("item")
+                    .chain_property::<LibraryItem>("playing")
+                    .bind(&row, "playing", gtk::Widget::NONE);
 
                 this.add_context_menu(&row, album_tracks);
                 if album_tracks {
@@ -431,6 +441,7 @@ impl LibraryView {
             let title = match kind {
                 Some(LibraryItemKind::Artist) => i18n("Artists"),
                 Some(LibraryItemKind::Album) => i18n("Albums"),
+                Some(LibraryItemKind::Playlist) => i18n("Playlists"),
                 Some(LibraryItemKind::Track) => i18n("Songs"),
                 None => String::new(),
             };
@@ -444,7 +455,11 @@ impl LibraryView {
     fn activate_item(&self, item: &LibraryItem) {
         match item.data() {
             LibraryItemData::Artist(artist) => self.show_artist(artist),
-            LibraryItemData::Album(album) => self.show_album(album),
+            LibraryItemData::Album(album) => {
+                self.leave_playlist();
+                self.show_album(album);
+            }
+            LibraryItemData::Playlist(playlist) => self.show_playlist(playlist),
             LibraryItemData::Track(track) => self.play_track_in_album(track),
         }
     }
@@ -564,6 +579,7 @@ impl LibraryView {
         match item.data() {
             LibraryItemData::Artist(artist) => Some(MenuTarget::Artist(artist)),
             LibraryItemData::Album(album) => Some(MenuTarget::Album(album)),
+            LibraryItemData::Playlist(playlist) => Some(MenuTarget::Playlist(playlist)),
             LibraryItemData::Track(_) if album_tracks => {
                 self.track_menu_target(self.track_position(item)?)
             }
@@ -614,6 +630,30 @@ impl LibraryView {
         self.imp().tracks_selection.unselect_all();
     }
 
+    pub fn set_playing_track(&self, path: Option<PathBuf>) {
+        let imp = self.imp();
+        if *imp.playing_track.borrow() == path {
+            return;
+        }
+        imp.playing_track.replace(path);
+
+        for model in [imp.tracks_model.get(), imp.search_tracks_model.get()] {
+            let items: Vec<LibraryItem> = model
+                .iter::<LibraryItem>()
+                .filter_map(Result::ok)
+                .collect();
+            self.mark_playing_tracks(&items);
+        }
+    }
+
+    fn mark_playing_tracks(&self, items: &[LibraryItem]) {
+        let playing = self.imp().playing_track.borrow();
+        for item in items {
+            let is_playing = playing.as_deref().is_some_and(|p| item.is_track_at(p));
+            item.set_playing(is_playing);
+        }
+    }
+
     pub fn set_library(&self, db: Option<LibraryDB>) {
         self.imp().db.replace(db);
         self.reload();
@@ -637,6 +677,11 @@ impl LibraryView {
         let album = imp.current_album.borrow().clone();
         if let Some(album) = album {
             self.load_tracks(album);
+        }
+
+        let playlist = imp.current_playlist.borrow().clone();
+        if let Some(playlist) = playlist {
+            self.load_playlist_tracks(playlist);
         }
     }
 
@@ -741,7 +786,11 @@ impl LibraryView {
         self.query(
             Query::Play,
             move |db| {
-                let tracks = db.album_tracks(&track.album, track.album_artist.as_deref())?;
+                let tracks = db.album_tracks(
+                    &track.album,
+                    track.album_artist.as_deref(),
+                    track.year.as_deref(),
+                )?;
                 Ok((tracks, track.path))
             },
             |this, (tracks, path)| match tracks.iter().position(|t| t.path == path) {
@@ -755,6 +804,7 @@ impl LibraryView {
         match self.imp().mode.get() {
             LibraryMode::Artists => self.load_artists(),
             LibraryMode::Albums => self.load_all_albums(),
+            LibraryMode::Playlists => self.load_playlists(),
         }
     }
 
@@ -765,7 +815,31 @@ impl LibraryView {
         imp.root_subtitle_label.set_label(subtitle);
         imp.has_tracks.set(Some(!items.is_empty()));
 
+        if items.is_empty() {
+            self.return_to_root();
+        }
+
         self.update_root_page();
+    }
+
+    fn return_to_root(&self) {
+        let imp = self.imp();
+
+        // Drop loads still in flight for the pages being left
+        self.next_generation(Query::Albums);
+        self.next_generation(Query::AlbumCovers);
+        self.next_generation(Query::Tracks);
+
+        imp.current_artist.replace(None);
+        imp.current_album.replace(None);
+        self.leave_playlist();
+        imp.albums_model.remove_all();
+        imp.tracks_model.remove_all();
+        imp.current_tracks.borrow_mut().clear();
+
+        if imp.navigation_view.visible_page_tag().as_deref() != Some("root") {
+            imp.navigation_view.pop_to_tag("root");
+        }
     }
 
     // ---- Artists ----
@@ -838,6 +912,7 @@ impl LibraryView {
                         a.title.is_empty(),
                         a.title.to_lowercase(),
                         a.album_artist.as_deref().map(str::to_lowercase),
+                        a.year.clone(),
                     )
                 });
                 Ok(albums)
@@ -919,7 +994,13 @@ impl LibraryView {
     fn load_tracks(&self, album: Album) {
         self.query(
             Query::Tracks,
-            move |db| db.album_tracks(&album.title, album.album_artist.as_deref()),
+            move |db| {
+                db.album_tracks(
+                    &album.title,
+                    album.album_artist.as_deref(),
+                    album.year.as_deref(),
+                )
+            },
             |this, tracks| this.show_tracks(tracks),
         );
     }
@@ -939,6 +1020,95 @@ impl LibraryView {
                 LibraryItem::album_track(track.clone(), album_artist.as_deref(), multi_disc)
             })
             .collect();
+        self.mark_playing_tracks(&items);
+        imp.tracks_model
+            .splice(0, imp.tracks_model.n_items(), &items);
+        imp.play_album_button.set_sensitive(!tracks.is_empty());
+        imp.current_tracks.replace(tracks);
+    }
+
+    // ---- Playlists ----
+
+    fn load_playlists(&self) {
+        self.query(
+            Query::Root,
+            |db| db.playlists(),
+            |this, playlists| this.show_playlists(playlists),
+        );
+    }
+
+    fn show_playlists(&self, playlists: Vec<Playlist>) {
+        let items: Vec<LibraryItem> = playlists
+            .iter()
+            .map(|playlist| {
+                LibraryItem::playlist(playlist.clone(), cached_playlist_cover(playlist))
+            })
+            .collect();
+        self.show_root_items(&items, &playlists_label(items.len() as u32));
+
+        self.query(
+            Query::Covers,
+            move |_| {
+                Ok(playlists
+                    .iter()
+                    .map(load_playlist_cover)
+                    .collect::<Vec<_>>())
+            },
+            move |_, covers| {
+                for (item, cover) in items.iter().zip(covers) {
+                    if item.cover() != cover {
+                        item.set_cover(cover);
+                    }
+                }
+            },
+        );
+    }
+
+    fn show_playlist(&self, playlist: Playlist) {
+        let imp = self.imp();
+
+        imp.tracks_page.set_title(&playlist.name);
+        imp.tracks_title_label.set_label(&playlist.name);
+        imp.tracks_subtitle_label
+            .set_label(&songs_label(playlist.num_tracks));
+        imp.play_album_button
+            .set_tooltip_text(Some(&i18n("Play Playlist")));
+        imp.tracks_model.remove_all();
+        imp.current_tracks.borrow_mut().clear();
+        imp.current_album.replace(None);
+        imp.current_playlist.replace(Some(playlist.clone()));
+        self.load_playlist_tracks(playlist);
+
+        imp.navigation_view.replace_with_tags(&["root", "tracks"]);
+    }
+
+    fn leave_playlist(&self) {
+        let imp = self.imp();
+        if imp.current_playlist.take().is_some() {
+            imp.play_album_button
+                .set_tooltip_text(Some(&i18n("Play Album")));
+        }
+    }
+
+    fn load_playlist_tracks(&self, playlist: Playlist) {
+        self.query(
+            Query::Tracks,
+            move |db| db.playlist_tracks(&playlist.path),
+            |this, tracks| this.show_playlist_tracks(tracks),
+        );
+    }
+
+    fn show_playlist_tracks(&self, tracks: Vec<Track>) {
+        let imp = self.imp();
+
+        let items: Vec<LibraryItem> = tracks
+            .iter()
+            .enumerate()
+            .map(|(position, track)| LibraryItem::playlist_track(track.clone(), position))
+            .collect();
+        // The playlist may have gained or lost songs since it was listed
+        imp.tracks_subtitle_label
+            .set_label(&songs_label(tracks.len() as u32));
         imp.tracks_model
             .splice(0, imp.tracks_model.n_items(), &items);
         imp.play_album_button.set_sensitive(!tracks.is_empty());
@@ -999,6 +1169,7 @@ impl LibraryView {
             .map(|(album, cover)| LibraryItem::album(album, cover, None))
             .collect();
         let tracks: Vec<LibraryItem> = results.tracks.into_iter().map(LibraryItem::track).collect();
+        self.mark_playing_tracks(&tracks);
 
         imp.search_artists_model
             .splice(0, imp.search_artists_model.n_items(), &artists);
@@ -1018,7 +1189,12 @@ impl LibraryView {
         // Avoid flashing the empty state before the first load finishes
         let imp = self.imp();
         if imp.has_tracks.get() == Some(false) {
-            imp.root_stack.set_visible_child_name("empty");
+            // No playlists doesn't mean the library is empty
+            let empty_page = match imp.mode.get() {
+                LibraryMode::Playlists => "no-playlists",
+                _ => "empty",
+            };
+            imp.root_stack.set_visible_child_name(empty_page);
         } else {
             imp.root_stack.set_visible_child_name("list");
         }
@@ -1115,29 +1291,55 @@ fn target_paths(db: &LibraryDB, target: &MenuTarget) -> db::Result<Vec<PathBuf>>
         MenuTarget::Tracks(paths) => return Ok(paths.clone()),
         MenuTarget::Album(album) => vec![album.clone()],
         MenuTarget::Artist(artist) => artist_albums(db, artist)?,
+        MenuTarget::Playlist(playlist) => {
+            let tracks = db.playlist_tracks(&playlist.path)?;
+            return Ok(tracks.into_iter().map(|t| t.path).collect());
+        }
     };
 
     let mut paths = Vec::new();
     for album in albums {
-        let tracks = db.album_tracks(&album.title, album.album_artist.as_deref())?;
+        let tracks = db.album_tracks(
+            &album.title,
+            album.album_artist.as_deref(),
+            album.year.as_deref(),
+        )?;
         paths.extend(tracks.into_iter().map(|t| t.path));
     }
     Ok(paths)
 }
 
-fn album_cover_source(album: &Album) -> &Path {
-    album.cover.as_deref().unwrap_or(&album.sample_track)
+fn cover_source<'a>(cover: Option<&'a Path>, song: &'a Path) -> &'a Path {
+    cover.unwrap_or(song)
 }
 
 fn cached_album_cover(album: &Album) -> Option<gdk::Texture> {
-    let cache = COVER_CACHE.lock().ok()?;
-    cache
-        .get(album_cover_source(album))
-        .and_then(|cached| cached.texture.clone())
+    cached_cover(album.cover.as_deref(), &album.sample_track)
 }
 
 fn load_album_cover(album: &Album) -> Option<gdk::Texture> {
-    let source = album_cover_source(album);
+    load_cover(album.cover.as_deref(), &album.sample_track)
+}
+
+fn cached_playlist_cover(playlist: &Playlist) -> Option<gdk::Texture> {
+    let song = playlist.cover_track.as_deref()?;
+    cached_cover(playlist.cover.as_deref(), song)
+}
+
+fn load_playlist_cover(playlist: &Playlist) -> Option<gdk::Texture> {
+    let song = playlist.cover_track.as_deref()?;
+    load_cover(playlist.cover.as_deref(), song)
+}
+
+fn cached_cover(cover: Option<&Path>, song: &Path) -> Option<gdk::Texture> {
+    let cache = COVER_CACHE.lock().ok()?;
+    cache
+        .get(cover_source(cover, song))
+        .and_then(|cached| cached.texture.clone())
+}
+
+fn load_cover(cover: Option<&Path>, song: &Path) -> Option<gdk::Texture> {
+    let source = cover_source(cover, song);
     let modified = source.metadata().and_then(|m| m.modified()).ok();
 
     if let Ok(cache) = COVER_CACHE.lock() {
@@ -1149,7 +1351,7 @@ fn load_album_cover(album: &Album) -> Option<gdk::Texture> {
     }
 
     // Decode without holding the lock so other covers can also load
-    let texture = decode_album_cover(album);
+    let texture = decode_cover(cover, song);
     if let Ok(mut cache) = COVER_CACHE.lock() {
         cache.insert(
             source.to_path_buf(),
@@ -1162,15 +1364,13 @@ fn load_album_cover(album: &Album) -> Option<gdk::Texture> {
     texture
 }
 
-fn decode_album_cover(album: &Album) -> Option<gdk::Texture> {
-    let pixbuf = album
-        .cover
-        .as_ref()
+fn decode_cover(cover: Option<&Path>, song: &Path) -> Option<gdk::Texture> {
+    let pixbuf = cover
         .and_then(|path| {
             gdk_pixbuf::Pixbuf::from_file_at_scale(path, COVER_DECODE_SIZE, COVER_DECODE_SIZE, true)
                 .ok()
         })
-        .or_else(|| load_embedded_cover(&album.sample_track))?;
+        .or_else(|| load_embedded_cover(song))?;
 
     Some(gdk::Texture::for_pixbuf(&pixbuf))
 }

@@ -15,4 +15,4 @@ pub mod db;
 pub mod scanner;
 
 #[allow(unused_imports)]
-pub use db::{Album, Artist, LibraryDB, Track};
+pub use db::{Album, Artist, LibraryDB, Playlist, Track};

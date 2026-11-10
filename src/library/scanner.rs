@@ -37,6 +37,12 @@ pub fn is_audio_file(path: &Path) -> bool {
     path.extension().and_then(FileType::from_ext).is_some()
 }
 
+pub fn is_playlist_file(path: &Path) -> bool {
+    path.extension()
+        .and_then(|e| e.to_str())
+        .is_some_and(|e| e.eq_ignore_ascii_case("m3u") || e.eq_ignore_ascii_case("m3u8"))
+}
+
 fn non_empty(s: Option<&str>) -> Option<String> {
     s.map(str::trim).filter(|s| !s.is_empty()).map(String::from)
 }
@@ -209,6 +215,14 @@ pub fn audio_files_in_folder(folder: &Path) -> Vec<PathBuf> {
 }
 
 fn audio_files(folder: &Path, recursive: bool) -> Vec<PathBuf> {
+    files_in_folder(folder, recursive, is_audio_file)
+}
+
+fn playlist_files(folder: &Path, recursive: bool) -> Vec<PathBuf> {
+    files_in_folder(folder, recursive, is_playlist_file)
+}
+
+fn files_in_folder(folder: &Path, recursive: bool, wanted: fn(&Path) -> bool) -> Vec<PathBuf> {
     let mut files = Vec::new();
     let mut pending = vec![folder.to_path_buf()];
 
@@ -233,7 +247,7 @@ fn audio_files(folder: &Path, recursive: bool) -> Vec<PathBuf> {
                     pending.push(path);
                 }
             } else if (file_type.is_file() || (file_type.is_symlink() && path.is_file()))
-                && is_audio_file(&path)
+                && wanted(&path)
             {
                 files.push(path);
             }
@@ -243,11 +257,138 @@ fn audio_files(folder: &Path, recursive: bool) -> Vec<PathBuf> {
     files
 }
 
-pub fn scan_folder(db: &LibraryDB, folder: &Path) -> Result<usize> {
+#[derive(Debug, Default, Clone, Copy, PartialEq)]
+pub struct ScanSummary {
+    pub songs: usize,
+    pub playlists: usize,
+}
+
+pub fn scan_folder(db: &LibraryDB, folder: &Path) -> Result<ScanSummary> {
     debug!("Scanning folder {:?}", folder);
     db.add_folders(&[folder.to_path_buf()])?;
     db.remove_missing()?;
-    index_files(db, audio_files_in_folder(folder))
+    let songs = index_files(db, audio_files_in_folder(folder))?;
+    let (playlists, listed_songs) = index_playlists(db, playlist_files(folder, true), false)?;
+    Ok(ScanSummary {
+        songs: songs + listed_songs,
+        playlists,
+    })
+}
+
+fn index_playlists<I>(db: &LibraryDB, files: I, force: bool) -> Result<(usize, usize)>
+where
+    I: IntoIterator<Item = PathBuf>,
+{
+    let mut playlists = 0;
+    let mut songs = 0;
+
+    for path in files {
+        let modified = match modified_time(&path) {
+            Some(m) => m,
+            None => continue,
+        };
+        if !force && db.is_playlist_indexed(&path, modified)? {
+            continue;
+        }
+
+        let (name, entries) = match read_playlist(&path) {
+            Some(playlist) => playlist,
+            None => continue,
+        };
+        let songs_on_disk: Vec<PathBuf> = entries
+            .iter()
+            .filter(|p| is_audio_file(p) && p.is_file())
+            .cloned()
+            .collect();
+        songs += index_files(db, songs_on_disk)?;
+
+        db.set_playlist(&path, &name, modified, &entries)?;
+        playlists += 1;
+    }
+
+    Ok((playlists, songs))
+}
+
+pub fn read_playlist(path: &Path) -> Option<(String, Vec<PathBuf>)> {
+    let bytes = match fs::read(path) {
+        Ok(bytes) => bytes,
+        Err(e) => {
+            warn!("Unable to read playlist {:?}: {}", path, e);
+            return None;
+        }
+    };
+    // .m3u files are often not UTF-8; keep what can be read
+    let text = String::from_utf8_lossy(&bytes);
+    let folder = path.parent().unwrap_or_else(|| Path::new(""));
+
+    let mut name = None;
+    let mut entries = Vec::new();
+    for line in text.lines() {
+        let line = line.trim_start_matches('\u{feff}').trim();
+        if line.is_empty() {
+            continue;
+        }
+        if let Some(title) = line.strip_prefix("#PLAYLIST:") {
+            name = non_empty(Some(title));
+            continue;
+        }
+        if line.starts_with('#') {
+            continue;
+        }
+
+        if let Some(entry) = playlist_entry_path(line) {
+            let entry = if entry.is_absolute() {
+                entry
+            } else {
+                folder.join(entry)
+            };
+            // Rebuilding the path from its components evens out separators
+            // and drops "." segments, so that it matches the library's paths
+            entries.push(entry.components().collect());
+        }
+    }
+
+    let name = name.unwrap_or_else(|| {
+        path.file_stem()
+            .map(|s| s.to_string_lossy().into_owned())
+            .unwrap_or_default()
+    });
+    Some((name, entries))
+}
+
+fn playlist_entry_path(entry: &str) -> Option<PathBuf> {
+    if let Some(uri) = entry.strip_prefix("file://") {
+        let uri = uri.strip_prefix("localhost").unwrap_or(uri);
+        return Some(PathBuf::from(percent_decode(uri)));
+    }
+    if entry.contains("://") {
+        return None;
+    }
+
+    if cfg!(unix) {
+        Some(PathBuf::from(entry.replace('\\', "/")))
+    } else {
+        Some(PathBuf::from(entry))
+    }
+}
+
+fn percent_decode(s: &str) -> String {
+    let bytes = s.as_bytes();
+    let mut out = Vec::with_capacity(bytes.len());
+    let mut i = 0;
+    while i < bytes.len() {
+        if bytes[i] == b'%' && i + 2 < bytes.len() {
+            let hex = std::str::from_utf8(&bytes[i + 1..i + 3]).ok();
+            if let Some(byte) = hex.and_then(|h| u8::from_str_radix(h, 16).ok()) {
+                out.push(byte);
+                i += 3;
+                continue;
+            }
+        }
+        out.push(bytes[i]);
+        i += 1;
+    }
+    String::from_utf8_lossy(&out).into_owned()
 }
 
 fn library_folders(db: &LibraryDB) -> Result<Vec<PathBuf>> {
@@ -285,7 +426,24 @@ pub fn rescan(db: &LibraryDB) -> Result<RescanSummary> {
         new_files.extend(audio_files(folder, false));
     }
     new_files.retain(|path| !known.contains(path));
-    let added = index_files(db, new_files)?;
+    let mut added = index_files(db, new_files)?;
+
+    let known_playlists: HashSet<PathBuf> = db.playlist_paths()?.into_iter().collect();
+    let mut new_playlists: HashSet<PathBuf> = HashSet::new();
+    for folder in library_folders(db)? {
+        new_playlists.extend(playlist_files(&folder, true));
+    }
+    let playlist_folders: HashSet<&Path> = known
+        .iter()
+        .chain(known_playlists.iter())
+        .filter_map(|p| p.parent())
+        .collect();
+    for folder in playlist_folders {
+        new_playlists.extend(playlist_files(folder, false));
+    }
+    new_playlists.retain(|path| !known_playlists.contains(path));
+    added += index_playlists(db, known_playlists, true)?.1;
+    added += index_playlists(db, new_playlists, false)?.1;
 
     debug!("Rescan removed {} and added {} tracks", removed, added);
     Ok(RescanSummary { removed, added })
@@ -303,6 +461,7 @@ pub fn refresh(db: &LibraryDB, force: bool) -> Result<usize> {
         db.outdated_tracks()?
     };
     let reindexed = index(db, paths, true)?;
+    let (playlists, listed) = index_playlists(db, db.playlist_paths()?, force)?;
 
-    Ok(removed + reindexed)
+    Ok(removed + reindexed + playlists + listed)
 }

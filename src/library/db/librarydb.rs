@@ -19,7 +19,7 @@ use rusqlite::{
     TransactionBehavior,
 };
 
-use super::models::{Album, Artist, Track};
+use super::models::{Album, Artist, Playlist, Track};
 
 // Schema migrations. Each entry upgrades the database by one version and the
 // 'user_version' pragma records how many have been applied. Only ever append
@@ -28,6 +28,8 @@ const MIGRATIONS: &[&str] = &[
     include_str!("sql/schema.sql"),
     include_str!("sql/folders.sql"),
     include_str!("sql/various_artists.sql"),
+    include_str!("sql/album_years.sql"),
+    include_str!("sql/playlists.sql"),
 ];
 
 const INSERT_TRACK: &str = "
@@ -283,6 +285,7 @@ impl LibraryDB {
             let removed = tx.execute("DELETE FROM tracks WHERE is_subdir(path, ?1)", [folder])?;
             tx.execute("DELETE FROM covers WHERE is_subdir(path, ?1)", [folder])?;
             tx.execute("DELETE FROM folders WHERE is_subdir(path, ?1)", [folder])?;
+            tx.execute("DELETE FROM playlists WHERE is_subdir(path, ?1)", [folder])?;
             update_album_artists(tx)?;
             Ok(removed)
         })
@@ -293,6 +296,7 @@ impl LibraryDB {
         self.write(|tx| {
             let removed = tx.execute("DELETE FROM tracks WHERE NOT path_exists(path)", [])?;
             tx.execute("DELETE FROM covers WHERE NOT path_exists(path)", [])?;
+            tx.execute("DELETE FROM playlists WHERE NOT path_exists(path)", [])?;
             if removed > 0 {
                 update_album_artists(tx)?;
             }
@@ -308,6 +312,8 @@ impl LibraryDB {
             tx.execute("DELETE FROM genres", [])?;
             tx.execute("DELETE FROM covers", [])?;
             tx.execute("DELETE FROM folders", [])?;
+            tx.execute("DELETE FROM playlist_entries", [])?;
+            tx.execute("DELETE FROM playlists", [])?;
             let removed = tx.execute("DELETE FROM tracks", [])?;
             Ok(removed)
         })
@@ -324,6 +330,40 @@ impl LibraryDB {
             let mut insert = tx.prepare_cached("INSERT INTO folders (path) VALUES (?1)")?;
             for folder in folders.iter().filter_map(|f| path_to_str(f)) {
                 insert.execute([folder])?;
+            }
+            Ok(())
+        })
+    }
+
+    // Adds a playlist or replaces the songs of a playlist already in the library
+    pub fn set_playlist(
+        &self,
+        path: &Path,
+        name: &str,
+        modified: f64,
+        entries: &[PathBuf],
+    ) -> Result<()> {
+        let path = match path_to_str(path) {
+            Some(p) => p,
+            None => return Ok(()),
+        };
+
+        self.write(|tx| {
+            tx.execute(
+                "INSERT INTO playlists (path, name, modified) VALUES (?1, ?2, ?3)
+                 ON CONFLICT (path) DO UPDATE SET
+                     name = excluded.name,
+                     modified = excluded.modified",
+                params![path, name, modified],
+            )?;
+            tx.execute("DELETE FROM playlist_entries WHERE playlist = ?1", [path])?;
+
+            let mut insert = tx.prepare_cached(
+                "INSERT INTO playlist_entries (playlist, position, path) VALUES (?1, ?2, ?3)",
+            )?;
+            let entries = entries.iter().filter_map(|p| path_to_str(p));
+            for (position, entry) in entries.enumerate() {
+                insert.execute(params![path, position as i64, entry])?;
             }
             Ok(())
         })
@@ -361,6 +401,30 @@ impl LibraryDB {
             .optional()?;
 
         Ok(indexed == Some(modified))
+    }
+
+    // Whether a playlist file is in the library and unchanged since it was read
+    pub fn is_playlist_indexed(&self, path: &Path, modified: f64) -> Result<bool> {
+        let path = match path_to_str(path) {
+            Some(p) => p,
+            None => return Ok(false),
+        };
+
+        let conn = self.connection()?;
+        let indexed: Option<f64> = conn
+            .query_row(
+                "SELECT modified FROM playlists WHERE path = ?1",
+                [path],
+                |r| r.get(0),
+            )
+            .optional()?;
+
+        Ok(indexed == Some(modified))
+    }
+
+    // Paths of all playlist files in the library
+    pub fn playlist_paths(&self) -> Result<Vec<PathBuf>> {
+        self.query_paths("SELECT path FROM playlists")
     }
 
     // Folders that were added to the library
@@ -410,11 +474,16 @@ impl LibraryDB {
     }
 
     // The tracks of an album, in disc and track order
-    pub fn album_tracks(&self, album: &str, album_artist: Option<&str>) -> Result<Vec<Track>> {
+    pub fn album_tracks(
+        &self,
+        album: &str,
+        album_artist: Option<&str>,
+        year: Option<&str>,
+    ) -> Result<Vec<Track>> {
         self.query_tracks(
-            "WHERE t.album = ?1 AND t.albumartist IS ?2",
+            "WHERE t.album = ?1 AND t.albumartist IS ?2 AND t.year IS ?3",
             ALBUM_TRACK_ORDER,
-            params![album, album_artist],
+            params![album, album_artist, year],
         )
     }
 
@@ -470,7 +539,8 @@ impl LibraryDB {
         self.query_albums(
             "WHERE t.albumartist = ?1 OR EXISTS \
              (SELECT 1 FROM tracks t3 JOIN artists a ON a.path = t3.path \
-              WHERE t3.album = t.album AND t3.albumartist IS t.albumartist AND a.name = ?1)",
+              WHERE t3.album = t.album AND t3.albumartist IS t.albumartist \
+              AND t3.year IS t.year AND a.name = ?1)",
             [artist],
         )
     }
@@ -484,7 +554,8 @@ impl LibraryDB {
         self.query_albums(
             "WHERE EXISTS \
              (SELECT 1 FROM tracks t3 JOIN genres g ON g.path = t3.path \
-              WHERE t3.album = t.album AND t3.albumartist IS t.albumartist AND g.name = ?1)",
+              WHERE t3.album = t.album AND t3.albumartist IS t.albumartist \
+              AND t3.year IS t.year AND g.name = ?1)",
             [genre],
         )
     }
@@ -538,6 +609,69 @@ impl LibraryDB {
         let rows = stmt.query_map([], |r| r.get(0))?;
         let genres = rows.collect::<rusqlite::Result<Vec<_>>>()?;
         Ok(genres)
+    }
+
+    // PLAYLISTS
+
+    pub fn playlists(&self) -> Result<Vec<Playlist>> {
+        let conn = self.connection()?;
+        let mut stmt = conn.prepare_cached(
+            "SELECT q.path, q.name, q.num_tracks, q.duration, q.first_track, q.cover_track,
+                 CASE WHEN q.cover_track IS NULL THEN NULL
+                 ELSE (SELECT c.path FROM covers c WHERE same_dir(c.path, q.cover_track)
+                     ORDER BY c.path LIMIT 1)
+                 END AS cover
+             FROM (
+                 SELECT s.*,
+                     (SELECT MIN(t3.path) FROM tracks f
+                         JOIN tracks t3
+                             ON t3.album = f.album AND t3.albumartist IS f.albumartist
+                                 AND t3.year IS f.year
+                         WHERE f.path = s.first_track) AS cover_track
+                 FROM (
+                     SELECT p.path, p.name,
+                         COUNT(t.path) AS num_tracks,
+                         COALESCE(SUM(t.duration), 0) AS duration,
+                         (SELECT e2.path FROM playlist_entries e2
+                             JOIN tracks t2 ON t2.path = e2.path
+                             WHERE e2.playlist = p.path
+                             ORDER BY e2.position LIMIT 1) AS first_track
+                     FROM playlists p
+                     LEFT JOIN playlist_entries e ON e.playlist = p.path
+                     LEFT JOIN tracks t ON t.path = e.path
+                     GROUP BY p.path
+                 ) AS s
+             ) AS q
+             ORDER BY q.name COLLATE NOCASE, q.path",
+        )?;
+        let rows = stmt.query_map([], |row| {
+            Ok(Playlist {
+                path: PathBuf::from(row.get::<_, String>(0)?),
+                name: row.get(1)?,
+                num_tracks: row.get(2)?,
+                duration: row.get(3)?,
+                first_track: row.get::<_, Option<String>>(4)?.map(PathBuf::from),
+                cover_track: row.get::<_, Option<String>>(5)?.map(PathBuf::from),
+                cover: row.get::<_, Option<String>>(6)?.map(PathBuf::from),
+            })
+        })?;
+        let playlists = rows.collect::<rusqlite::Result<Vec<_>>>()?;
+        Ok(playlists)
+    }
+
+    // The songs of a playlist in order including repeats. Songs that aren't
+    // in the library are left out
+    pub fn playlist_tracks(&self, playlist: &Path) -> Result<Vec<Track>> {
+        let playlist = match path_to_str(playlist) {
+            Some(p) => p,
+            None => return Ok(Vec::new()),
+        };
+
+        self.query_tracks(
+            "JOIN playlist_entries e ON e.path = t.path WHERE e.playlist = ?1",
+            "e.position",
+            [playlist],
+        )
     }
 }
 
@@ -788,7 +922,7 @@ mod tests {
             Some(LibraryDB::VARIOUS_ARTISTS)
         );
 
-        let tracks = db.album_tracks("Album", Some("X")).unwrap();
+        let tracks = db.album_tracks("Album", Some("X"), None).unwrap();
         assert_eq!(tracks.len(), 2);
         assert_eq!(tracks[0].artists, vec!["X", "Y"]);
 

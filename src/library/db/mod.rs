@@ -8,4 +8,4 @@ mod models;
 #[allow(unused_imports)]
 pub use librarydb::{Error, LibraryDB, Result};
 #[allow(unused_imports)]
-pub use models::{Album, Artist, Track};
+pub use models::{Album, Artist, Playlist, Track};
