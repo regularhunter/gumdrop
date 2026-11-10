@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Currently playing track in library sidebar is now bold
 - Show empty library page when clearing library and artist album page is open
 - Adjust large cover art window sizing threshold
+- Add support for webp cover art
 - Display bitrate info for lossy tracks
 - Change 'Add Folder/Song' UI labels to 'Queue Folder/Track'
 

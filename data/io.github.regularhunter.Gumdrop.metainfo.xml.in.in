@@ -54,6 +54,7 @@
           <li>Currently playing track in library sidebar is now bold</li>
           <li>Show empty library page when clearing library and artist album page is open</li>
           <li>Adjust large cover art window sizing threshold</li>
+          <li>Add support for webp cover art</li>
           <li>Display bitrate info for lossy tracks</li>
           <li>Change 'Add Folder/Song' UI labels to 'Queue Folder/Track'</li>
         </ul>
