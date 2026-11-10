@@ -1573,23 +1573,23 @@ impl Window {
                     .build();
 
                 list_item
-                    .property_expression("item")
+                    .property_expression_weak("item")
                     .chain_property::<Song>("artist")
                     .bind(&row, "song-artist", gtk::Widget::NONE);
                 list_item
-                    .property_expression("item")
+                    .property_expression_weak("item")
                     .chain_property::<Song>("title")
                     .bind(&row, "song-title", gtk::Widget::NONE);
                 list_item
-                    .property_expression("item")
+                    .property_expression_weak("item")
                     .chain_property::<Song>("cover")
                     .bind(&row, "song-cover", gtk::Widget::NONE);
                 list_item
-                    .property_expression("item")
+                    .property_expression_weak("item")
                     .chain_property::<Song>("playing")
                     .bind(&row, "playing", gtk::Widget::NONE);
                 list_item
-                    .property_expression("item")
+                    .property_expression_weak("item")
                     .chain_property::<Song>("selected")
                     .bind(&row, "selected", gtk::Widget::NONE);
             }
