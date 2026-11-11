@@ -1109,6 +1109,7 @@ impl LibraryView {
         // The playlist may have gained or lost songs since it was listed
         imp.tracks_subtitle_label
             .set_label(&songs_label(tracks.len() as u32));
+        self.mark_playing_tracks(&items);
         imp.tracks_model
             .splice(0, imp.tracks_model.n_items(), &items);
         imp.play_album_button.set_sensitive(!tracks.is_empty());
