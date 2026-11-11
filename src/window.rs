@@ -708,7 +708,12 @@ impl Window {
                 });
 
                 if let Some((player, pos)) = queued_pos {
-                    player.skip_to(pos);
+                    if player.queue().current_song_index() == Some(pos) {
+                        // Already the current song, restart it
+                        player.seek_start();
+                    } else {
+                        player.skip_to(pos);
+                    }
                     player.play();
                 } else {
                     // Otherwise replace the queue and play from the chosen song
