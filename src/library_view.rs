@@ -385,31 +385,31 @@ impl LibraryView {
                     .build();
 
                 list_item
-                    .property_expression_weak("item")
+                    .property_expression("item")
                     .chain_property::<LibraryItem>("kind")
                     .bind(&row, "kind", gtk::Widget::NONE);
                 list_item
-                    .property_expression_weak("item")
+                    .property_expression("item")
                     .chain_property::<LibraryItem>("title")
                     .bind(&row, "title", gtk::Widget::NONE);
                 list_item
-                    .property_expression_weak("item")
+                    .property_expression("item")
                     .chain_property::<LibraryItem>("subtitle")
                     .bind(&row, "subtitle", gtk::Widget::NONE);
                 list_item
-                    .property_expression_weak("item")
+                    .property_expression("item")
                     .chain_property::<LibraryItem>("number")
                     .bind(&row, "number", gtk::Widget::NONE);
                 list_item
-                    .property_expression_weak("item")
+                    .property_expression("item")
                     .chain_property::<LibraryItem>("duration")
                     .bind(&row, "duration", gtk::Widget::NONE);
                 list_item
-                    .property_expression_weak("item")
+                    .property_expression("item")
                     .chain_property::<LibraryItem>("cover")
                     .bind(&row, "cover", gtk::Widget::NONE);
                 list_item
-                    .property_expression_weak("item")
+                    .property_expression("item")
                     .chain_property::<LibraryItem>("playing")
                     .bind(&row, "playing", gtk::Widget::NONE);
 
