@@ -2,7 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-## 0.3.0 - 2026-11-06
+## 0.3.1 - 2026-11-12
+
+- Change 'Queue Track' UI label to 'Queue Song'
+- Properly style currently playing track when opening playlist containing it
+- If the clicked song is already queued, jump to it instead of re-queuing
+
+## 0.3.0 - 2026-11-09
 
 - m3u playlist support
 - Distinguish albums by the same artist with the same name but different year
