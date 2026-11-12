@@ -11,7 +11,7 @@ Fast gtk4 music player written in rust. Forked from [Amberol](https://gitlab.gno
 Why fork Amberol?
 -----------------------------------
 
-Amberol is an intentionally minimal application. Gumdrop's goals are of a larger scope including 
+Amberol is an intentionally simple application. Gumdrop's goals are of a larger scope including 
 persistent organization of large music libraries and integration with Last.fm. Gumdrop is intended 
 for browsing large music collections, Amberol is not.
 

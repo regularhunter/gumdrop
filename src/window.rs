@@ -691,13 +691,39 @@ impl Window {
         let files: Vec<gio::File> = paths.iter().map(gio::File::for_path).collect();
         match action {
             QueueAction::Play(index) => {
-                // Replace the queue and play from the chosen song
-                let mode = match files.get(index) {
-                    Some(file) => QueueMode::PlayFrom(file.clone()),
-                    None => QueueMode::Append,
-                };
-                self.clear_queue();
-                self.queue_songs(files, mode);
+                // If the chosen song is already queued, jump to it and leave
+                // the queue as it is
+                let queued_pos = files.get(index).and_then(|file| {
+                    let uri = file.uri();
+                    let player = self.player()?;
+                    let model = player.queue().model();
+                    (0..model.n_items())
+                        .find(|&i| {
+                            model
+                                .item(i)
+                                .and_downcast::<Song>()
+                                .is_some_and(|s| s.uri() == uri.as_str())
+                        })
+                        .map(|pos| (player.clone(), pos))
+                });
+
+                if let Some((player, pos)) = queued_pos {
+                    if player.queue().current_song_index() == Some(pos) {
+                        // Already the current song, restart it
+                        player.seek_start();
+                    } else {
+                        player.skip_to(pos);
+                    }
+                    player.play();
+                } else {
+                    // Otherwise replace the queue and play from the chosen song
+                    let mode = match files.get(index) {
+                        Some(file) => QueueMode::PlayFrom(file.clone()),
+                        None => QueueMode::Append,
+                    };
+                    self.clear_queue();
+                    self.queue_songs(files, mode);
+                }
 
                 // Get out of the way when the sidebar covers the player
                 if self.imp().split_view.is_collapsed() {

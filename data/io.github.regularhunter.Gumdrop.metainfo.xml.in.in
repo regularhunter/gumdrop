@@ -45,6 +45,15 @@
     <control>touch</control>
   </recommends>
   <releases>
+    <release version="0.3.1" date="2026-11-12">
+      <description>
+        <ul>
+          <li>Change 'Queue Track' UI label to 'Queue Song'</li>
+          <li>Properly style currently playing track when opening playlist containing it</li>
+          <li>If the chosen song is already queued, jump to it instead of re-queuing</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.3.0" date="2026-11-09">
       <description>
         <ul>

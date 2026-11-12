@@ -154,7 +154,7 @@
     </section>
     <section>
       <item>
-        <attribute name="label" translatable="yes">Queue _Track</attribute>
+        <attribute name="label" translatable="yes">Queue _Song</attribute>
         <attribute name="action">queue.add-song</attribute>
       </item>
       <item>
