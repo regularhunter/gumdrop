@@ -1,5 +1,5 @@
 {
-    "app-id" : "io.github.regularhunter.Gumdrop",
+    "app-id" : "io.github.regularhunter.Gumdrop.Devel",
     "runtime" : "org.gnome.Platform",
     "runtime-version" : "51",
     "sdk" : "org.gnome.Sdk",
@@ -30,7 +30,7 @@
             "builddir" : true,
             "buildsystem" : "meson",
             "config-opts" : [
-                "-Dprofile=default",
+                "-Dprofile=development",
                 "--libdir=lib"
             ],
             "sources" : [
