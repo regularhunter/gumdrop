@@ -17,11 +17,13 @@
     ],
     "build-options" : {
         "append-path" : "/usr/lib/sdk/rust-stable/bin",
+        "build-args" : [
+            "--share=network"
+        ],
         "env" : {
             "G_MESSAGES_DEBUG" : "none",
             "RUST_BACKTRACE" : "1",
-            "RUST_LOG" : "gumdrop=debug,glib=debug",
-            "CARGO_NET_OFFLINE": "true"
+            "RUST_LOG" : "gumdrop=debug,glib=debug"
         }
     },
     "modules" : [
@@ -38,8 +40,7 @@
                     "type" : "git",
                     "url" : "https://github.com/regularhunter/gumdrop.git",
                     "commit" : "69df27f190b1de132f9850339a4b3cb25523a9e6"
-                },
-                "cargo-sources.json"
+                }
             ]
         }
     ]
