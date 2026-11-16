@@ -24,6 +24,26 @@
     <color type="primary" scheme_preference="light">#90c0ff</color>
     <color type="primary" scheme_preference="dark">#003681</color>
   </branding>
+  <screenshots>
+  <screenshot type="default">
+    <image>https://github.com/regularhunter/gumdrop/raw/main/data/screenshots/gumdrop.png</image>
+  </screenshot>
+  <screenshot>
+    <image>https://github.com/regularhunter/gumdrop/raw/main/data/screenshots/gumdrop-artist-albums.png</image>
+  </screenshot>
+  <screenshot>
+    <image>https://github.com/regularhunter/gumdrop/raw/main/data/screenshots/gumdrop-artists.png</image>
+  </screenshot>
+  <screenshot>
+    <image>https://github.com/regularhunter/gumdrop/raw/main/data/screenshots/gumdrop-albums.png</image>
+  </screenshot>
+  <screenshot>
+    <image>https://github.com/regularhunter/gumdrop/raw/main/data/screenshots/gumdrop-playlists.png</image>
+  </screenshot>
+  <screenshot>
+    <image>https://github.com/regularhunter/gumdrop/raw/main/data/screenshots/gumdrop-queue.png</image>
+  </screenshot>
+</screenshots>
   <launchable type="desktop-id">@APPLICATION_ID@.desktop</launchable>
   <url type="homepage">https://github.com/regularhunter/gumdrop</url>
   <url type="bugtracker">https://github.com/regularhunter/gumdrop/issues</url>
@@ -45,6 +65,13 @@
     <control>touch</control>
   </recommends>
   <releases>
+    <release version="0.3.2" date="2026-11-16">
+      <description>
+        <ul>
+          <li>Style sidebar when collapsed</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.3.1" date="2026-11-12">
       <description>
         <ul>
