@@ -10,7 +10,7 @@
       <object class="GtkWindowHandle">
         <child>
           <object class="DragOverlay" id="drag_overlay">
-            <property name="title" translatable="yes">Drop a song to add it to the playlist</property>
+            <property name="title" translatable="yes">Drop a song to add it to the queue</property>
             <property name="child">
 
               <object class="AdwToastOverlay" id="toast_overlay">
@@ -40,7 +40,7 @@
                                     <property name="margin-start">12</property>
                                     <property name="margin-end">12</property>
                                     <property name="title">Gumdrop</property>
-                                    <property name="description" translatable="yes">Select a file or a folder, or drag files from your file manager to the application window to add songs to your library.</property>
+                                    <property name="description" translatable="yes">Select a folder to add songs to your library, or drag files from your file manager to the application window to add songs to the queue.</property>
                                     <property name="child">
                                       <object class="GtkBox">
                                         <property name="orientation">vertical</property>
