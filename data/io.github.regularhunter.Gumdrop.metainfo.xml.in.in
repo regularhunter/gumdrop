@@ -24,6 +24,11 @@
     <color type="primary" scheme_preference="light">#90c0ff</color>
     <color type="primary" scheme_preference="dark">#003681</color>
   </branding>
+  <screenshots>
+  <screenshot type="default">
+    <image>https://github.com/regularhunter/gumdrop/raw/main/data/screenshots/gumdrop.png</image>
+  </screenshot>
+</screenshots>
   <launchable type="desktop-id">@APPLICATION_ID@.desktop</launchable>
   <url type="homepage">https://github.com/regularhunter/gumdrop</url>
   <url type="bugtracker">https://github.com/regularhunter/gumdrop/issues</url>
