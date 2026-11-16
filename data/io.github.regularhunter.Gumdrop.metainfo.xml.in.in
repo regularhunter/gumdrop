@@ -28,6 +28,21 @@
   <screenshot type="default">
     <image>https://github.com/regularhunter/gumdrop/raw/main/data/screenshots/gumdrop.png</image>
   </screenshot>
+  <screenshot>
+    <image>https://github.com/regularhunter/gumdrop/raw/main/data/screenshots/gumdrop-artist-albums.png</image>
+  </screenshot>
+  <screenshot>
+    <image>https://github.com/regularhunter/gumdrop/raw/main/data/screenshots/gumdrop-artists.png</image>
+  </screenshot>
+  <screenshot>
+    <image>https://github.com/regularhunter/gumdrop/raw/main/data/screenshots/gumdrop-albums.png</image>
+  </screenshot>
+  <screenshot>
+    <image>https://github.com/regularhunter/gumdrop/raw/main/data/screenshots/gumdrop-playlists.png</image>
+  </screenshot>
+  <screenshot>
+    <image>https://github.com/regularhunter/gumdrop/raw/main/data/screenshots/gumdrop-queue.png</image>
+  </screenshot>
 </screenshots>
   <launchable type="desktop-id">@APPLICATION_ID@.desktop</launchable>
   <url type="homepage">https://github.com/regularhunter/gumdrop</url>
