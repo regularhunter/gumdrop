@@ -93,6 +93,17 @@ impl Queue {
         self.imp().model.as_ref()
     }
 
+    pub fn matches_uris<S: AsRef<str>>(&self, uris: &[S]) -> bool {
+        let store = &self.imp().store;
+        store.n_items() as usize == uris.len()
+            && uris.iter().enumerate().all(|(i, uri)| {
+                store
+                    .item(i as u32)
+                    .and_downcast::<Song>()
+                    .is_some_and(|s| s.uri() == uri.as_ref())
+            })
+    }
+
     pub fn song_at(&self, pos: u32) -> Option<Song> {
         if let Some(song) = self.imp().model.item(pos) {
             return Some(song.downcast::<Song>().unwrap());

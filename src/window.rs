@@ -690,10 +690,20 @@ impl Window {
 
         let files: Vec<gio::File> = paths.iter().map(gio::File::for_path).collect();
         match action {
-            QueueAction::Play(index) => {
+            QueueAction::Play(index) | QueueAction::PlayAll(index) => {
+                // Playing a whole album or playlist only keeps the queue when
+                // it holds exactly those songs
+                let keep_queue = match action {
+                    QueueAction::PlayAll(_) => self.player().is_some_and(|player| {
+                        let uris: Vec<String> = files.iter().map(|f| f.uri().into()).collect();
+                        player.queue().matches_uris(&uris)
+                    }),
+                    _ => true,
+                };
+
                 // If the chosen song is already queued, jump to it and leave
                 // the queue as it is
-                let queued_pos = files.get(index).and_then(|file| {
+                let queued_pos = files.get(index).filter(|_| keep_queue).and_then(|file| {
                     let uri = file.uri();
                     let player = self.player()?;
                     let model = player.queue().model();

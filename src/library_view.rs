@@ -58,6 +58,7 @@ const MAX_SONG_RESULTS: usize = 50;
 #[derive(Clone, Copy, Debug)]
 pub enum QueueAction {
     Play(usize),
+    PlayAll(usize),
     PlayNext,
     Append,
 }
@@ -365,7 +366,7 @@ impl LibraryView {
         imp.play_album_button.connect_clicked(clone!(
             #[weak(rename_to = this)]
             self,
-            move |_| this.play_current_album(0)
+            move |_| this.play_whole_current_album()
         ));
     }
 
@@ -770,16 +771,25 @@ impl LibraryView {
         self.queue(paths, QueueAction::Play(index));
     }
 
-    fn play_current_album(&self, index: usize) {
-        self.clear_track_selection();
-        let paths: Vec<PathBuf> = self
-            .imp()
+    fn current_track_paths(&self) -> Vec<PathBuf> {
+        self.imp()
             .current_tracks
             .borrow()
             .iter()
             .map(|t| t.path.clone())
-            .collect();
+            .collect()
+    }
+
+    fn play_current_album(&self, index: usize) {
+        self.clear_track_selection();
+        let paths = self.current_track_paths();
         self.play(paths, index);
+    }
+
+    fn play_whole_current_album(&self) {
+        self.clear_track_selection();
+        let paths = self.current_track_paths();
+        self.queue(paths, QueueAction::PlayAll(0));
     }
 
     fn play_track_in_album(&self, track: Track) {
