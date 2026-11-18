@@ -39,7 +39,7 @@
                 {
                     "type" : "git",
                     "url" : "https://github.com/regularhunter/gumdrop.git",
-                    "commit" : "8392975c76a78267dbd459b49d9bc21141a9e63b"
+                    "commit" : "8d6e1c8de51487656bdcb84a5745edc349b4f63a"
                 }
             ]
         }
