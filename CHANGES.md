@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.3.4 - 2026-11-18
+
+- 'Play Album/Playlist' buttons now re-queue album/playlist if not already set
+
 ## 0.3.3 - 2026-11-16
 
 - Update landing page text

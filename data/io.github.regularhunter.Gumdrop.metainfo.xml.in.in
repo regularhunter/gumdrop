@@ -65,6 +65,13 @@
     <control>touch</control>
   </recommends>
   <releases>
+    <release version="0.3.4" date="2026-11-18">
+      <description>
+        <ul>
+          <li>'Play Album/Playlist' buttons now re-queue album/playlist if not already set</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.3.3" date="2026-11-16">
       <description>
         <ul>
