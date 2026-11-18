@@ -40,7 +40,7 @@
                                     <property name="margin-start">12</property>
                                     <property name="margin-end">12</property>
                                     <property name="title">Gumdrop</property>
-                                    <property name="description" translatable="yes">Select a folder to add songs to your library, or drag files from your file manager to the application window to add songs to the queue.</property>
+                                    <property name="description" translatable="yes">Select a folder to add songs to your library, or drag files from your file manager to the application window to add songs to the queue</property>
                                     <property name="child">
                                       <object class="GtkBox">
                                         <property name="orientation">vertical</property>
