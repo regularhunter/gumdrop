@@ -22,7 +22,7 @@
 	    <default>true</default>
 	  </key>
 	  <key name="lastfm-username" type="s">
-      <default>''</default>
-    </key>
+	    <default>''</default>
+	  </key>
 	</schema>
 </schemalist>
