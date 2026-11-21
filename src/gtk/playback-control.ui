@@ -173,6 +173,8 @@
         <attribute name="label" translatable="yes">Clear Library</attribute>
         <attribute name="action">library.clear</attribute>
       </item>
+    </section>
+    <section>
       <item>
         <attribute name="label" translatable="yes">_Last.fm Login</attribute>
         <attribute name="action">win.connect-lastfm</attribute>
