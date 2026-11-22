@@ -233,7 +233,7 @@ impl QueueView {
                     b.y() as i32,
                     b.width() as i32,
                     b.height() as i32,
-               )
+                )
             }),
         };
 

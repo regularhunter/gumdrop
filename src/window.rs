@@ -242,6 +242,7 @@ mod imp {
             klass.install_property_action("queue.shuffle", "queue-shuffled");
             klass.install_property_action("queue.select", "queue-selection");
             klass.install_property_action("queue.search", "queue-search");
+            klass.install_property_action("win.replaygain", "replaygain-mode");
 
             klass.install_action(
                 "win.skip-to",
