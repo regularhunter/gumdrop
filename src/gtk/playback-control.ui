@@ -71,7 +71,7 @@
                 <property name="spacing">12</property>
                 <property name="margin-end">18</property>
                 <child>
-                  <object class="GtkToggleButton" id="playlist_button">
+                  <object class="GtkToggleButton" id="queue_button">
                     <property name="icon-name">view-queue-symbolic</property>
                     <property name="action-name">queue.toggle</property>
                     <property name="valign">center</property>
@@ -89,7 +89,7 @@
                     <property name="icon-name">media-playlist-shuffle-symbolic</property>
                     <property name="action-name">queue.shuffle</property>
                     <property name="valign">center</property>
-                    <property name="tooltip-text" translatable="yes">Shuffle the Playlist</property>
+                    <property name="tooltip-text" translatable="yes">Shuffle the Queue</property>
                     <accessibility>
                       <property name="label" translatable="yes" context="a11y">Shuffle</property>
                     </accessibility>

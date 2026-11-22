@@ -90,7 +90,7 @@ impl CoverCache {
         // We always favour the cover art in the song metadata because it's going
         // to be in a hot cache; looking for a separate file will blow a bunch of
         // caches out of the water, which will slow down loading the song into the
-        // playlist model
+        // queue model
         if let Some(p) = path {
             let ext_cover_basename = vec!["Cover", "cover", "Folder", "folder"];
             let ext_cover_ext = vec!["jpg", "png", "webp"];

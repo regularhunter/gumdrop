@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.3.5 - 2026-11-22
+
+- Add right-click menu in queue for individual song removal
+- Code cleanup
+
 ## 0.3.4 - 2026-11-18
 
 - 'Play Album/Playlist' buttons now re-queue album/playlist if not already set

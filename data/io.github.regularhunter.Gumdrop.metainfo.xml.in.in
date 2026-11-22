@@ -65,6 +65,14 @@
     <control>touch</control>
   </recommends>
   <releases>
+    <release version="0.3.5" date="2026-11-22">
+      <description>
+        <ul>
+          <li>Add right-click menu in queue for individual song removal</li>
+          <li>Code cleaup</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.3.4" date="2026-11-18">
       <description>
         <ul>

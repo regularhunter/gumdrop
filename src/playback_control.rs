@@ -32,7 +32,7 @@ mod imp {
         pub volume_control: TemplateChild<VolumeControl>,
 
         #[template_child]
-        pub playlist_button: TemplateChild<gtk::ToggleButton>,
+        pub queue_button: TemplateChild<gtk::ToggleButton>,
         #[template_child]
         pub shuffle_button: TemplateChild<gtk::ToggleButton>,
         #[template_child]
