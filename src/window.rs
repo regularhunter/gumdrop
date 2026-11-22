@@ -1628,6 +1628,20 @@ impl Window {
                     .property_expression("item")
                     .chain_property::<Song>("selected")
                     .bind(&row, "selected", gtk::Widget::NONE);
+
+                win.imp().playlist_view.add_context_menu(&row);
+            }
+        ));
+
+        imp.playlist_view.set_remove_handler(clone!(
+            #[weak(rename_to = win)]
+            self,
+            move |song| {
+                win.remove_song(&song);
+                if let Some(player) = win.player() {
+                    // Store the current state of the playlist
+                    utils::store_playlist(player.queue());
+                }
             }
         ));
         imp.playlist_view

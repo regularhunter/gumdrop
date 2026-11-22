@@ -2,13 +2,18 @@
 // SPDX-FileCopyrightText: 2025  Hunter Wardlaw
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+use std::{cell::RefCell, rc::Rc};
 use adw::subclass::prelude::*;
-use gtk::{gio, glib, prelude::*, CompositeTemplate};
+use glib::clone;
+use gtk::{gdk, gio, glib, graphene, prelude::*, CompositeTemplate};
+use crate::{audio::Song, queue_row::QueueRow};
+
+type RemoveHandler = Rc<dyn Fn(Song)>;
 
 mod imp {
     use super::*;
 
-    #[derive(Debug, Default, CompositeTemplate)]
+    #[derive(Default, CompositeTemplate)]
     #[template(resource = "/org/gnome/Gumdrop/playlist-view.ui")]
     pub struct PlaylistView {
         #[template_child]
@@ -31,6 +36,10 @@ mod imp {
         pub playlist_searchbar: TemplateChild<gtk::SearchBar>,
         #[template_child]
         pub playlist_searchentry: TemplateChild<gtk::SearchEntry>,
+        #[template_child]
+        pub context_menu: TemplateChild<gtk::PopoverMenu>,
+        pub remove_handler: RefCell<Option<RemoveHandler>>,
+        pub menu_target: RefCell<Option<Song>>,
     }
 
     #[glib::object_subclass]
@@ -44,6 +53,10 @@ mod imp {
 
             klass.set_layout_manager_type::<gtk::BinLayout>();
             klass.set_accessible_role(gtk::AccessibleRole::Group);
+
+            klass.install_action("playlist.remove-from-queue", None, |this, _, _| {
+                this.remove_menu_target();
+            });
         }
 
         fn instance_init(obj: &glib::subclass::InitializingObject<Self>) {
@@ -62,6 +75,7 @@ mod imp {
             self.parent_constructed();
 
             self.obj().setup_searchbar();
+            self.obj().add_menu_shortcut();
         }
     }
 
@@ -144,4 +158,113 @@ impl PlaylistView {
     pub fn set_search(&self, search: bool) {
         self.imp().playlist_searchbar.set_search_mode(search);
     }
+
+    pub fn set_remove_handler<F: Fn(Song) + 'static>(&self, handler: F) {
+        self.imp().remove_handler.replace(Some(Rc::new(handler)));
+    }
+
+    pub fn add_context_menu(&self, row: &QueueRow) {
+        let click = gtk::GestureClick::builder()
+            .button(gdk::BUTTON_SECONDARY)
+            .build();
+        click.connect_pressed(clone!(
+            #[weak(rename_to = this)]
+            self,
+            #[weak]
+            row,
+            move |gesture, _, x, y| {
+                gesture.set_state(gtk::EventSequenceState::Claimed);
+                this.popup_menu(&row, Some((x, y)));
+            }
+        ));
+        row.add_controller(click);
+
+        let long_press = gtk::GestureLongPress::builder().touch_only(true).build();
+        long_press.connect_pressed(clone!(
+            #[weak(rename_to = this)]
+            self,
+            #[weak]
+            row,
+            move |gesture, x, y| {
+                gesture.set_state(gtk::EventSequenceState::Claimed);
+                this.popup_menu(&row, Some((x, y)));
+            }
+        ));
+        row.add_controller(long_press);
+    }
+
+    fn add_menu_shortcut(&self) {
+        let trigger = match gtk::ShortcutTrigger::parse_string("Menu|<Shift>F10") {
+            Some(trigger) => trigger,
+            None => return,
+        };
+        let action = gtk::CallbackAction::new(clone!(
+            #[weak(rename_to = this)]
+            self,
+            #[upgrade_or]
+            glib::Propagation::Proceed,
+            move |view, _| match focused_row(view) {
+                Some(row) => {
+                    this.popup_menu(&row, None);
+                    glib::Propagation::Stop
+                }
+                None => glib::Propagation::Proceed,
+            }
+        ));
+
+        let shortcuts = gtk::ShortcutController::new();
+        shortcuts.add_shortcut(gtk::Shortcut::new(Some(trigger), Some(action)));
+        self.imp().queue_view.add_controller(shortcuts);
+    }
+
+    fn popup_menu(&self, row: &QueueRow, point: Option<(f64, f64)>) {
+        let song = match row.property::<Option<Song>>("song") {
+            Some(song) => song,
+            None => return,
+        };
+
+        let rect = match point {
+            Some((x, y)) => row
+                .compute_point(self, &graphene::Point::new(x as f32, y as f32))
+                .map(|p| gdk::Rectangle::new(p.x() as i32, p.y() as i32, 1, 1)),
+            None => row.compute_bounds(self).map(|b| {
+                gdk::Rectangle::new(
+                    b.x() as i32,
+                    b.y() as i32,
+                    b.width() as i32,
+                    b.height() as i32,
+               )
+            }),
+        };
+
+        let imp = self.imp();
+        imp.menu_target.replace(Some(song));
+        imp.context_menu.set_pointing_to(rect.as_ref());
+        imp.context_menu.popup();
+    }
+
+    fn remove_menu_target(&self) {
+        let song = match self.imp().menu_target.take() {
+            Some(song) => song,
+            None => return,
+        };
+
+        let handler = self.imp().remove_handler.borrow().clone();
+        if let Some(handler) = handler {
+            handler(song);
+        }
+    }
+}
+
+fn focused_row(view: &gtk::Widget) -> Option<QueueRow> {
+    let focus = view.root()?.focus()?;
+    if !focus.is_ancestor(view) {
+        return None;
+    }
+
+    focus
+        .clone()
+        .downcast::<QueueRow>()
+        .ok()
+        .or_else(|| focus.first_child().and_downcast::<QueueRow>())
 }

@@ -133,5 +133,20 @@
         </style>
       </object>
     </child>
+    <child>
+      <object class="GtkPopoverMenu" id="context_menu">
+        <property name="menu-model">context_menu_model</property>
+        <property name="has-arrow">false</property>
+        <property name="halign">start</property>
+      </object>
+    </child>
   </template>
+  <menu id="context_menu_model">
+    <section>
+      <item>
+        <attribute name="label" translatable="yes">Remove from Queue</attribute>
+        <attribute name="action">playlist.remove-from-queue</attribute>
+      </item>
+    </section>
+  </menu>
 </interface>
