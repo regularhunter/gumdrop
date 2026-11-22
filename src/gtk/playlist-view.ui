@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <requires lib="gtk" version="4.0"/>
-  <template class="GumdropPlaylistView" parent="GtkWidget">
+  <template class="GumdropQueueView" parent="GtkWidget">
     <child>
       <object class="AdwToolbarView">
         <child type="top">
@@ -57,9 +57,9 @@
           </object>
         </child>
         <child type="top">
-          <object class="GtkSearchBar" id="playlist_searchbar">
+          <object class="GtkSearchBar" id="queue_searchbar">
             <property name="child">
-              <object class="GtkSearchEntry" id="playlist_searchentry">
+              <object class="GtkSearchEntry" id="queue_searchentry">
                 <property name="placeholder-text" translatable="yes">Search songs</property>
                 <property name="hexpand">True</property>
                 <accessibility>
@@ -71,9 +71,9 @@
           </object>
         </child>
         <property name="content">
-          <object class="GtkOverlay" id="playlist_overlay">
+          <object class="GtkOverlay" id="queue_overlay">
             <child type="overlay">
-              <object class="GtkProgressBar" id="playlist_progress">
+              <object class="GtkProgressBar" id="queue_progress">
                 <property name="valign">start</property>
                 <property name="hexpand">true</property>
                 <property name="visible">false</property>
@@ -89,7 +89,7 @@
                 <property name="propagate-natural-height">true</property>
                 <property name="vexpand">true</property>
                 <property name="child">
-                  <object class="GtkListView" id="queue_view">
+                  <object class="GtkListView" id="queue_list_view">
                     <property name="single-click-activate">true</property>
                     <!--<property name="hexpand">false</property>-->
                     <style>
@@ -145,7 +145,7 @@
     <section>
       <item>
         <attribute name="label" translatable="yes">Remove from Queue</attribute>
-        <attribute name="action">playlist.remove-from-queue</attribute>
+        <attribute name="action">queue-view.remove-from-queue</attribute>
       </item>
     </section>
   </menu>

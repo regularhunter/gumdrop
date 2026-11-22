@@ -24,7 +24,7 @@ use crate::{
     library::{scanner, LibraryDB},
     library_view::{LibraryView, QueueAction},
     playback_control::PlaybackControl,
-    playlist_view::PlaylistView,
+    queue_view::QueueView,
     queue_row::QueueRow,
     search::FuzzyFilter,
     song_cover::SongCover,
@@ -87,7 +87,7 @@ mod imp {
         #[template_child]
         pub split_view: TemplateChild<adw::OverlaySplitView>,
         #[template_child]
-        pub playlist_view: TemplateChild<PlaylistView>,
+        pub queue_view: TemplateChild<QueueView>,
         #[template_child]
         pub sidebar_stack: TemplateChild<adw::ViewStack>,
         #[template_child]
@@ -102,15 +102,15 @@ mod imp {
         pub provider: gtk::CssProvider,
         pub settings: gio::Settings,
 
-        pub playlist_shuffled: Cell<bool>,
-        pub playlist_visible: Cell<bool>,
-        pub playlist_selection: Cell<bool>,
-        pub playlist_search: Cell<bool>,
+        pub queue_shuffled: Cell<bool>,
+        pub queue_visible: Cell<bool>,
+        pub queue_selection: Cell<bool>,
+        pub queue_search: Cell<bool>,
         pub replaygain_mode: Cell<ReplayGainMode>,
         pub loading_songs: Cell<bool>,
         pub scanning_library: Cell<bool>,
 
-        pub playlist_filtermodel: RefCell<Option<gio::ListModel>>,
+        pub queue_filtermodel: RefCell<Option<gio::ListModel>>,
 
         pub notify_playing_id: RefCell<Option<glib::SignalHandlerId>>,
         pub notify_position_id: RefCell<Option<glib::SignalHandlerId>>,
@@ -238,11 +238,10 @@ mod imp {
                 win.rescan_library().await;
             });
 
-            klass.install_property_action("queue.toggle", "playlist-visible");
-            klass.install_property_action("queue.shuffle", "playlist-shuffled");
-            klass.install_property_action("queue.select", "playlist-selection");
-            klass.install_property_action("queue.search", "playlist-search");
-            klass.install_property_action("win.replaygain", "replaygain-mode");
+            klass.install_property_action("queue.toggle", "queue-visible");
+            klass.install_property_action("queue.shuffle", "queue-shuffled");
+            klass.install_property_action("queue.select", "queue-selection");
+            klass.install_property_action("queue.search", "queue-search");
 
             klass.install_action(
                 "win.skip-to",
@@ -277,18 +276,18 @@ mod imp {
                 main_stack: TemplateChild::default(),
                 status_page: TemplateChild::default(),
                 add_folder_button: TemplateChild::default(),
-                playlist_view: TemplateChild::default(),
+                queue_view: TemplateChild::default(),
                 sidebar_stack: TemplateChild::default(),
                 library_view: TemplateChild::default(),
                 album_view: TemplateChild::default(),
                 playlists_view: TemplateChild::default(),
                 loading_songs: Cell::new(false),
                 scanning_library: Cell::new(false),
-                playlist_shuffled: Cell::new(false),
-                playlist_visible: Cell::new(true),
-                playlist_selection: Cell::new(false),
-                playlist_search: Cell::new(false),
-                playlist_filtermodel: RefCell::default(),
+                queue_shuffled: Cell::new(false),
+                queue_visible: Cell::new(true),
+                queue_selection: Cell::new(false),
+                queue_search: Cell::new(false),
+                queue_filtermodel: RefCell::default(),
                 replaygain_mode: Cell::new(ReplayGainMode::default()),
                 provider: gtk::CssProvider::new(),
                 settings: utils::settings_manager(),
@@ -315,10 +314,10 @@ mod imp {
         fn properties() -> &'static [ParamSpec] {
             static PROPERTIES: Lazy<Vec<ParamSpec>> = Lazy::new(|| {
                 vec![
-                    ParamSpecBoolean::builder("playlist-shuffled").build(),
-                    ParamSpecBoolean::builder("playlist-visible").build(),
-                    ParamSpecBoolean::builder("playlist-selection").build(),
-                    ParamSpecBoolean::builder("playlist-search").build(),
+                    ParamSpecBoolean::builder("queue-shuffled").build(),
+                    ParamSpecBoolean::builder("queue-visible").build(),
+                    ParamSpecBoolean::builder("queue-selection").build(),
+                    ParamSpecBoolean::builder("queue-search").build(),
                     ParamSpecEnum::builder::<ReplayGainMode>("replaygain-mode").build(),
                 ]
             });
@@ -328,10 +327,10 @@ mod imp {
         fn set_property(&self, _id: usize, value: &Value, pspec: &ParamSpec) {
             let obj = self.obj();
             match pspec.name() {
-                "playlist-shuffled" => obj.set_playlist_shuffled(value.get::<bool>().unwrap()),
-                "playlist-visible" => obj.set_playlist_visible(value.get::<bool>().unwrap()),
-                "playlist-selection" => obj.set_playlist_selection(value.get::<bool>().unwrap()),
-                "playlist-search" => obj.set_playlist_search(value.get::<bool>().unwrap()),
+                "queue-shuffled" => obj.set_queue_shuffled(value.get::<bool>().unwrap()),
+                "queue-visible" => obj.set_queue_visible(value.get::<bool>().unwrap()),
+                "queue-selection" => obj.set_queue_selection(value.get::<bool>().unwrap()),
+                "queue-search" => obj.set_queue_search(value.get::<bool>().unwrap()),
                 "replaygain-mode" => obj.set_replaygain(value.get::<ReplayGainMode>().unwrap()),
                 _ => unimplemented!(),
             }
@@ -340,10 +339,10 @@ mod imp {
         fn property(&self, _id: usize, pspec: &ParamSpec) -> Value {
             let obj = self.obj();
             match pspec.name() {
-                "playlist-shuffled" => obj.playlist_shuffled().to_value(),
-                "playlist-visible" => obj.playlist_visible().to_value(),
-                "playlist-selection" => obj.playlist_selection().to_value(),
-                "playlist-search" => obj.playlist_search().to_value(),
+                "queue-shuffled" => obj.queue_shuffled().to_value(),
+                "queue-visible" => obj.queue_visible().to_value(),
+                "queue-selection" => obj.queue_selection().to_value(),
+                "queue-search" => obj.queue_search().to_value(),
                 "replaygain-mode" => obj.replaygain().to_value(),
                 _ => unimplemented!(),
             }
@@ -371,7 +370,7 @@ impl Window {
 
         win.setup_waveform();
         win.setup_actions();
-        win.setup_playlist();
+        win.setup_queue();
         win.setup_drop_target();
         win.setup_provider();
         win.bind_state();
@@ -432,7 +431,7 @@ impl Window {
                     #[weak(rename_to = win)]
                     self,
                     move |searchbar, _| {
-                        win.set_playlist_search(searchbar.is_search_mode());
+                        win.set_queue_search(searchbar.is_search_mode());
                     }
                 ),
             );
@@ -449,17 +448,17 @@ impl Window {
     fn sidebar_page_changed(&self) {
         let imp = self.imp();
 
-        imp.playlist_view.set_search(false);
+        imp.queue_view.set_search(false);
         for view in self.library_views() {
             view.set_search(false);
             view.library_searchbar()
                 .set_key_capture_widget(gtk::Widget::NONE);
         }
-        if imp.playlist_search.replace(false) {
-            self.notify("playlist-search");
+        if imp.queue_search.replace(false) {
+            self.notify("queue-search");
         }
 
-        let queue_searchbar = imp.playlist_view.playlist_searchbar();
+        let queue_searchbar = imp.queue_view.queue_searchbar();
         if let Some(view) = self.visible_library_view() {
             queue_searchbar.set_key_capture_widget(gtk::Widget::NONE);
             view.library_searchbar()
@@ -737,7 +736,7 @@ impl Window {
 
                 // Get out of the way when the sidebar covers the player
                 if self.imp().split_view.is_collapsed() {
-                    self.set_playlist_visible(false);
+                    self.set_queue_visible(false);
                 }
             }
             QueueAction::PlayNext => self.queue_songs(files, QueueMode::PlayNext),
@@ -812,10 +811,10 @@ impl Window {
 
     fn reset_queue(&self) {
         if !self.library_has_tracks() {
-            self.set_playlist_visible(false);
+            self.set_queue_visible(false);
         }
-        self.set_playlist_shuffled(false);
-        self.set_playlist_selection(false);
+        self.set_queue_shuffled(false);
+        self.set_queue_selection(false);
         self.update_style(None);
     }
 
@@ -825,25 +824,25 @@ impl Window {
         }
     }
 
-    fn playlist_visible(&self) -> bool {
-        self.imp().playlist_visible.get()
+    fn queue_visible(&self) -> bool {
+        self.imp().queue_visible.get()
     }
 
-    fn set_playlist_visible(&self, visible: bool) {
-        if visible != self.imp().playlist_visible.replace(visible) {
+    fn set_queue_visible(&self, visible: bool) {
+        if visible != self.imp().queue_visible.replace(visible) {
             self.imp().split_view.set_show_sidebar(visible);
-            self.notify("playlist-visible");
+            self.notify("queue-visible");
         }
     }
 
-    fn playlist_shuffled(&self) -> bool {
-        self.imp().playlist_shuffled.get()
+    fn queue_shuffled(&self) -> bool {
+        self.imp().queue_shuffled.get()
     }
 
-    fn set_playlist_shuffled(&self, shuffled: bool) {
+    fn set_queue_shuffled(&self, shuffled: bool) {
         let imp = self.imp();
 
-        if shuffled != imp.playlist_shuffled.replace(shuffled) {
+        if shuffled != imp.queue_shuffled.replace(shuffled) {
             if let Some(player) = self.player() {
                 let queue = player.queue();
                 let state = player.state();
@@ -856,18 +855,18 @@ impl Window {
                 }
             }
 
-            self.notify("playlist-shuffled");
+            self.notify("queue-shuffled");
         }
     }
 
-    fn playlist_selection(&self) -> bool {
-        self.imp().playlist_selection.get()
+    fn queue_selection(&self) -> bool {
+        self.imp().queue_selection.get()
     }
 
-    fn set_playlist_selection(&self, selection: bool) {
+    fn set_queue_selection(&self, selection: bool) {
         let imp = self.imp();
 
-        if selection != imp.playlist_selection.replace(selection) {
+        if selection != imp.queue_selection.replace(selection) {
             if !selection {
                 if let Some(player) = self.player() {
                     let queue = player.queue();
@@ -876,28 +875,28 @@ impl Window {
             }
 
             self.imp()
-                .playlist_view
+                .queue_view
                 .queue_actionbar()
                 .set_revealed(selection);
 
-            self.notify("playlist-selection");
+            self.notify("queue-selection");
         }
     }
 
-    fn playlist_search(&self) -> bool {
-        self.imp().playlist_search.get()
+    fn queue_search(&self) -> bool {
+        self.imp().queue_search.get()
     }
 
-    fn set_playlist_search(&self, search: bool) {
+    fn set_queue_search(&self, search: bool) {
         let imp = self.imp();
 
-        if search != imp.playlist_search.replace(search) {
+        if search != imp.queue_search.replace(search) {
             if let Some(view) = self.visible_library_view() {
                 view.set_search(search);
             } else {
-                imp.playlist_view.set_search(search);
+                imp.queue_view.set_search(search);
             }
-            self.notify("playlist-search");
+            self.notify("queue-search");
         }
     }
 
@@ -916,7 +915,7 @@ impl Window {
         self.action_set_enabled("queue.clear", false);
         self.update_library_actions();
 
-        self.imp().playlist_view.begin_loading();
+        self.imp().queue_view.begin_loading();
 
         // Begin the trace
         let now = Instant::now();
@@ -938,7 +937,7 @@ impl Window {
                 files
                     .next()
                     .map(|f| {
-                        win.imp().playlist_view.update_loading(cur_file, n_files);
+                        win.imp().queue_view.update_loading(cur_file, n_files);
                         if let Ok(s) = Song::from_uri(f.uri().as_str()) {
                             if let Some(player) = win.player() {
                                 let queue = player.queue();
@@ -965,7 +964,7 @@ impl Window {
                         win.action_set_enabled("queue.clear", true);
                         win.imp().loading_songs.set(false);
                         win.update_library_actions();
-                        win.imp().playlist_view.end_loading();
+                        win.imp().queue_view.end_loading();
 
                         if songs.is_empty() {
                             if duplicates == 0 {
@@ -990,8 +989,8 @@ impl Window {
 
                             win.add_songs_to_library(&songs);
 
-                            // Store the current state of the playlist
-                            utils::store_playlist(queue);
+                            // Store the current state of the queue
+                            utils::store_queue(queue);
 
                             debug!(
                                 "Queue was empty: {}, new size: {}",
@@ -1046,7 +1045,7 @@ impl Window {
                                     ni18n_f(
                                         // Translators: the `{}` must be left unmodified;
                                         // it will be expanded to the number of songs added
-                                        // to the playlist
+                                        // to the queue
                                         "Added one song",
                                         "Added {} songs",
                                         songs.len() as u32,
@@ -1167,7 +1166,7 @@ impl Window {
                     #[weak(rename_to = win)]
                     self,
                     move |_, _| {
-                        win.set_playlist_selection(false);
+                        win.set_queue_selection(false);
                         win.update_play_button();
                     }
                 ),
@@ -1299,7 +1298,7 @@ impl Window {
                             }
                         }
 
-                        win.update_playlist_time();
+                        win.update_queue_time();
                     }
                 ),
             );
@@ -1364,9 +1363,9 @@ impl Window {
                 #[weak(rename_to = win)]
                 self,
                 move |split_view, _| {
-                    win.set_playlist_visible(split_view.shows_sidebar());
+                    win.set_queue_visible(split_view.shows_sidebar());
                     win.imp()
-                        .playlist_view
+                        .queue_view
                         .back_button()
                         .set_visible(split_view.is_collapsed());
                     for view in win.library_views() {
@@ -1382,7 +1381,7 @@ impl Window {
                 #[weak(rename_to = win)]
                 self,
                 move |split_view, _| {
-                    win.set_playlist_visible(split_view.shows_sidebar());
+                    win.set_queue_visible(split_view.shows_sidebar());
                 }
             ),
         );
@@ -1425,14 +1424,14 @@ impl Window {
             );
 
         self.imp()
-            .playlist_view
+            .queue_view
             .queue_select_all_button()
             .connect_clicked(clone!(
                 #[weak(rename_to = win)]
                 self,
                 move |_| {
-                    if win.playlist_search() {
-                        if let Some(ref model) = *win.imp().playlist_filtermodel.borrow() {
+                    if win.queue_search() {
+                        if let Some(ref model) = *win.imp().queue_filtermodel.borrow() {
                             for idx in 0..model.n_items() {
                                 let item = model.item(idx).unwrap();
                                 let song = item.downcast_ref::<Song>().unwrap();
@@ -1450,7 +1449,7 @@ impl Window {
             ));
 
         self.imp()
-            .playlist_view
+            .queue_view
             .queue_remove_button()
             .connect_clicked(clone!(
                 #[weak(rename_to = win)]
@@ -1472,22 +1471,22 @@ impl Window {
                             win.remove_song(&song);
                         }
 
-                        // Store the current state of the playlist
-                        utils::store_playlist(queue);
+                        // Store the current state of the queue
+                        utils::store_queue(queue);
                     }
                 }
             ));
 
         self.imp()
-            .playlist_view
-            .playlist_searchbar()
+            .queue_view
+            .queue_searchbar()
             .connect_notify_local(
                 Some("search-mode-enabled"),
                 clone!(
                     #[weak(rename_to = win)]
                     self,
                     move |searchbar, _| {
-                        win.set_playlist_search(searchbar.is_search_mode());
+                        win.set_queue_search(searchbar.is_search_mode());
                     }
                 ),
             );
@@ -1532,8 +1531,8 @@ impl Window {
         });
 
         self.imp()
-            .playlist_view
-            .playlist_searchbar()
+            .queue_view
+            .queue_searchbar()
             .set_key_capture_widget(Some(self.upcast_ref::<gtk::Widget>()));
     }
 
@@ -1560,7 +1559,7 @@ impl Window {
             self.imp()
                 .playback_control
                 .set_repeat_mode(queue.repeat_mode());
-            self.set_playlist_shuffled(queue.is_shuffled());
+            self.set_queue_shuffled(queue.is_shuffled());
 
             // Manually update the icon on the initial empty state
             // to avoid generating the UI definition file at build
@@ -1576,7 +1575,7 @@ impl Window {
         }
     }
 
-    fn setup_playlist(&self) {
+    fn setup_queue(&self) {
         let imp = self.imp();
 
         let factory = gtk::SignalListItemFactory::new();
@@ -1599,7 +1598,7 @@ impl Window {
                     ),
                 );
 
-                win.bind_property("playlist-selection", &row, "selection-mode")
+                win.bind_property("queue-selection", &row, "selection-mode")
                     .sync_create()
                     .build();
 
@@ -1629,23 +1628,23 @@ impl Window {
                     .chain_property::<Song>("selected")
                     .bind(&row, "selected", gtk::Widget::NONE);
 
-                win.imp().playlist_view.add_context_menu(&row);
+                win.imp().queue_view.add_context_menu(&row);
             }
         ));
 
-        imp.playlist_view.set_remove_handler(clone!(
+        imp.queue_view.set_remove_handler(clone!(
             #[weak(rename_to = win)]
             self,
             move |song| {
                 win.remove_song(&song);
                 if let Some(player) = win.player() {
-                    // Store the current state of the playlist
-                    utils::store_playlist(player.queue());
+                    // Store the current state of the queue
+                    utils::store_queue(player.queue());
                 }
             }
         ));
-        imp.playlist_view
-            .queue_view()
+        imp.queue_view
+            .queue_list_view()
             .set_factory(Some(&factory.upcast::<gtk::ListItemFactory>()));
 
         if let Some(player) = self.player() {
@@ -1657,10 +1656,10 @@ impl Window {
             let sorter = FuzzySorter::new();
             let sorter_model = gtk::SortListModel::new(Some(filter_model), Some(sorter.clone()));
             let selection = gtk::NoSelection::new(Some(sorter_model.clone()));
-            imp.playlist_view
-                .queue_view()
+            imp.queue_view
+                .queue_list_view()
                 .set_model(Some(selection.upcast_ref::<gtk::SelectionModel>()));
-            imp.playlist_view.queue_view().connect_activate(clone!(
+            imp.queue_view.queue_list_view().connect_activate(clone!(
                 #[weak(rename_to = win)]
                 self,
                 #[weak]
@@ -1688,7 +1687,7 @@ impl Window {
                         }
 
                         if let Some(real_pos) = real_pos {
-                            if win.playlist_selection() {
+                            if win.queue_selection() {
                                 queue.select_song_at(real_pos);
                             } else if queue.current_song_index() != Some(real_pos) {
                                 player.skip_to(real_pos);
@@ -1701,26 +1700,26 @@ impl Window {
                 }
             ));
 
-            imp.playlist_filtermodel
+            imp.queue_filtermodel
                 .replace(Some(sorter_model.upcast::<gio::ListModel>()));
 
-            imp.playlist_view
-                .playlist_searchentry()
+            imp.queue_view
+                .queue_searchentry()
                 .bind_property("text", &filter, "search")
                 .sync_create()
                 .build();
-            imp.playlist_view
-                .playlist_searchentry()
+            imp.queue_view
+                .queue_searchentry()
                 .bind_property("text", &sorter, "search")
                 .sync_create()
                 .build();
-            imp.playlist_view
-                .playlist_searchentry()
+            imp.queue_view
+                .queue_searchentry()
                 .connect_search_changed(clone!(
                     #[weak(rename_to = win)]
                     self,
                     move |_| {
-                        if let Some(adjustment) = win.imp().playlist_view.queue_view().vadjustment()
+                        if let Some(adjustment) = win.imp().queue_view.queue_list_view().vadjustment()
                         {
                             adjustment.set_value(0.0);
                         }
@@ -1796,8 +1795,8 @@ impl Window {
     fn update_song(&self) {
         if let Some(player) = self.player() {
             let state = player.state();
-            self.scroll_playlist_to_song();
-            self.update_playlist_time();
+            self.scroll_queue_to_song();
+            self.update_queue_time();
             self.update_title(state.current_song().as_ref());
             self.update_style(state.current_song().as_ref());
 
@@ -1822,7 +1821,7 @@ impl Window {
         }
     }
 
-    fn update_playlist_time(&self) {
+    fn update_queue_time(&self) {
         if let Some(player) = self.player() {
             let queue = player.queue();
             let n_songs = queue.n_songs();
@@ -1863,7 +1862,7 @@ impl Window {
                     ni18n_f(
                         // Translators: the '{}' must be left unmodified, and
                         // it will be replaced by the number of minutes remaining
-                        // in the playlist
+                        // in the queue
                         "{} minute remaining",
                         "{} minutes remaining",
                         remaining_min,
@@ -1872,28 +1871,28 @@ impl Window {
                 };
 
                 self.imp()
-                    .playlist_view
+                    .queue_view
                     .queue_length_label()
                     .set_label(&remaining_str);
                 self.imp()
-                    .playlist_view
+                    .queue_view
                     .queue_length_label()
                     .set_visible(true);
             } else {
                 self.imp()
-                    .playlist_view
+                    .queue_view
                     .queue_length_label()
                     .set_visible(false);
             }
         }
     }
 
-    fn scroll_playlist_to_song(&self) {
-        let queue_view = self.imp().playlist_view.queue_view();
+    fn scroll_queue_to_song(&self) {
+        let queue_list_view = self.imp().queue_view.queue_list_view();
         if let Some(player) = self.player() {
             if let Some(current_idx) = player.queue().current_song_index() {
-                debug!("Scrolling playlist to {}", current_idx);
-                queue_view
+                debug!("Scrolling queue to {}", current_idx);
+                queue_list_view
                     .upcast_ref::<gtk::Widget>()
                     .activate_action("list.scroll-to-item", Some(&current_idx.to_variant()))
                     .expect("Failed to activate action");
@@ -1981,7 +1980,7 @@ impl Window {
             };
 
             self.imp()
-                .playlist_view
+                .queue_view
                 .queue_selected_label()
                 .set_label(&selected_str);
         }
@@ -2005,7 +2004,7 @@ impl Window {
             p.remove_song(song);
         }
         self.update_selected_count();
-        self.update_playlist_time();
+        self.update_queue_time();
     }
 
     pub fn add_toast(&self, msg: String) {

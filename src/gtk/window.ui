@@ -236,7 +236,7 @@
                                         <property name="title" translatable="yes">Queue</property>
                                         <property name="icon-name">folder-music-symbolic</property>
                                         <property name="child">
-                                          <object class="GumdropPlaylistView" id="playlist_view"/>
+                                          <object class="GumdropPlaylistView" id="queue_view"/>
                                         </property>
                                       </object>
                                     </child>

@@ -14,12 +14,12 @@ mod imp {
     use super::*;
 
     #[derive(Default, CompositeTemplate)]
-    #[template(resource = "/org/gnome/Gumdrop/playlist-view.ui")]
-    pub struct PlaylistView {
+    #[template(resource = "/org/gnome/Gumdrop/queue-view.ui")]
+    pub struct QueueView {
         #[template_child]
         pub back_button: TemplateChild<gtk::Button>,
         #[template_child]
-        pub queue_view: TemplateChild<gtk::ListView>,
+        pub queue_list_view: TemplateChild<gtk::ListView>,
         #[template_child]
         pub queue_length_label: TemplateChild<gtk::Label>,
         #[template_child]
@@ -31,11 +31,11 @@ mod imp {
         #[template_child]
         pub queue_selected_label: TemplateChild<gtk::Label>,
         #[template_child]
-        pub playlist_progress: TemplateChild<gtk::ProgressBar>,
+        pub queue_progress: TemplateChild<gtk::ProgressBar>,
         #[template_child]
-        pub playlist_searchbar: TemplateChild<gtk::SearchBar>,
+        pub queue_searchbar: TemplateChild<gtk::SearchBar>,
         #[template_child]
-        pub playlist_searchentry: TemplateChild<gtk::SearchEntry>,
+        pub queue_searchentry: TemplateChild<gtk::SearchEntry>,
         #[template_child]
         pub context_menu: TemplateChild<gtk::PopoverMenu>,
         pub remove_handler: RefCell<Option<RemoveHandler>>,
@@ -43,9 +43,9 @@ mod imp {
     }
 
     #[glib::object_subclass]
-    impl ObjectSubclass for PlaylistView {
-        const NAME: &'static str = "GumdropPlaylistView";
-        type Type = super::PlaylistView;
+    impl ObjectSubclass for QueueView {
+        const NAME: &'static str = "GumdropQueueView";
+        type Type = super::QueueView;
         type ParentType = gtk::Widget;
 
         fn class_init(klass: &mut Self::Class) {
@@ -54,7 +54,7 @@ mod imp {
             klass.set_layout_manager_type::<gtk::BinLayout>();
             klass.set_accessible_role(gtk::AccessibleRole::Group);
 
-            klass.install_action("playlist.remove-from-queue", None, |this, _, _| {
+            klass.install_action("queue-view.remove-from-queue", None, |this, _, _| {
                 this.remove_menu_target();
             });
         }
@@ -64,7 +64,7 @@ mod imp {
         }
     }
 
-    impl ObjectImpl for PlaylistView {
+    impl ObjectImpl for QueueView {
         fn dispose(&self) {
             while let Some(child) = self.obj().first_child() {
                 child.unparent();
@@ -79,30 +79,30 @@ mod imp {
         }
     }
 
-    impl WidgetImpl for PlaylistView {}
+    impl WidgetImpl for QueueView {}
 }
 
 glib::wrapper! {
-    pub struct PlaylistView(ObjectSubclass<imp::PlaylistView>)
+    pub struct QueueView(ObjectSubclass<imp::QueueView>)
         @extends gtk::Widget,
         @implements gio::ActionGroup, gio::ActionMap, gtk::Accessible,
                     gtk::Buildable, gtk::ConstraintTarget;
 }
 
-impl Default for PlaylistView {
+impl Default for QueueView {
     fn default() -> Self {
         glib::Object::new()
     }
 }
 
-impl PlaylistView {
+impl QueueView {
     pub fn new() -> Self {
         Self::default()
     }
 
     fn setup_searchbar(&self) {
-        let entry = self.imp().playlist_searchentry.get();
-        self.imp().playlist_searchbar.connect_entry(&entry);
+        let entry = self.imp().queue_searchentry.get();
+        self.imp().queue_searchbar.connect_entry(&entry);
     }
 
     pub fn back_button(&self) -> gtk::Button {
@@ -125,38 +125,38 @@ impl PlaylistView {
         self.imp().queue_selected_label.get()
     }
 
-    pub fn queue_view(&self) -> gtk::ListView {
-        self.imp().queue_view.get()
+    pub fn queue_list_view(&self) -> gtk::ListView {
+        self.imp().queue_list_view.get()
     }
 
     pub fn queue_length_label(&self) -> gtk::Label {
         self.imp().queue_length_label.get()
     }
 
-    pub fn playlist_searchbar(&self) -> gtk::SearchBar {
-        self.imp().playlist_searchbar.get()
+    pub fn queue_searchbar(&self) -> gtk::SearchBar {
+        self.imp().queue_searchbar.get()
     }
 
-    pub fn playlist_searchentry(&self) -> gtk::SearchEntry {
-        self.imp().playlist_searchentry.get()
+    pub fn queue_searchentry(&self) -> gtk::SearchEntry {
+        self.imp().queue_searchentry.get()
     }
 
     pub fn begin_loading(&self) {
-        self.imp().playlist_progress.set_fraction(0.0);
-        self.imp().playlist_progress.set_visible(true);
+        self.imp().queue_progress.set_fraction(0.0);
+        self.imp().queue_progress.set_visible(true);
     }
 
     pub fn end_loading(&self) {
-        self.imp().playlist_progress.set_visible(false);
+        self.imp().queue_progress.set_visible(false);
     }
 
     pub fn update_loading(&self, cur: u32, max: u32) {
         let step = cur as f64 / max as f64;
-        self.imp().playlist_progress.set_fraction(step);
+        self.imp().queue_progress.set_fraction(step);
     }
 
     pub fn set_search(&self, search: bool) {
-        self.imp().playlist_searchbar.set_search_mode(search);
+        self.imp().queue_searchbar.set_search_mode(search);
     }
 
     pub fn set_remove_handler<F: Fn(Song) + 'static>(&self, handler: F) {
@@ -214,7 +214,7 @@ impl PlaylistView {
 
         let shortcuts = gtk::ShortcutController::new();
         shortcuts.add_shortcut(gtk::Shortcut::new(Some(trigger), Some(action)));
-        self.imp().queue_view.add_controller(shortcuts);
+        self.imp().queue_list_view.add_controller(shortcuts);
     }
 
     fn popup_menu(&self, row: &QueueRow, point: Option<(f64, f64)>) {

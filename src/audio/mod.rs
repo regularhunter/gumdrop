@@ -19,7 +19,7 @@
 //
 // AudioPlayer: the main object managing the audio playback
 // ├── PlayerState: the state tracker GObject used by the UI
-// ├── Queue: the playlist tracker GListModel
+// ├── Queue: the queue tracker GListModel
 // ├── GstBackend: a GstPlayer wrapper
 // ╰── controllers: external bits of code that interact with the state
 //     ╰── MprisController: an MPRIS wrapper

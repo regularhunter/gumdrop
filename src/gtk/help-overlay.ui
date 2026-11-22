@@ -37,7 +37,7 @@
         </child>
         <child>
           <object class="GtkShortcutsGroup">
-            <property name="title" translatable="yes" context="shortcut window">Playlist</property>
+            <property name="title" translatable="yes" context="shortcut window">Queue</property>
             <child>
               <object class="GtkShortcutsShortcut">
                 <property name="title" translatable="yes" context="shortcut window">Add a song to the queue</property>
@@ -52,7 +52,7 @@
             </child>
             <child>
               <object class="GtkShortcutsShortcut">
-                <property name="title" translatable="yes" context="shortcut window">Clear the playlist</property>
+                <property name="title" translatable="yes" context="shortcut window">Clear the queue</property>
                 <property name="action-name">queue.clear</property>
               </object>
             </child>

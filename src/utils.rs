@@ -245,11 +245,11 @@ pub fn load_files_from_folder(folder: &gio::File, recursive: bool) -> Vec<gio::F
     res
 }
 
-pub fn store_playlist(queue: &Queue) {
+pub fn store_queue(queue: &Queue) {
     let pls = glib::KeyFile::new();
-    pls.set_string("playlist", "X-GNOME-Title", "Gumdrop's current playlist");
+    pls.set_string("queue", "X-GNOME-Title", "Gumdrop's current queue");
 
-    pls.set_int64("playlist", "NumberOfEntries", queue.n_songs() as i64);
+    pls.set_int64("queue", "NumberOfEntries", queue.n_songs() as i64);
 
     let model = queue.model();
     for i in 0..model.n_items() {
@@ -257,18 +257,18 @@ pub fn store_playlist(queue: &Queue) {
         let song = item.downcast_ref::<Song>().unwrap();
         let path = song.file().path().expect("Unknown file");
         let path_str = path.to_string_lossy();
-        pls.set_value("playlist", &format!("File{i}"), &path_str);
+        pls.set_value("queue", &format!("File{i}"), &path_str);
     }
 
     let mut pls_cache = glib::user_cache_dir();
     pls_cache.push("gumdrop");
-    pls_cache.push("playlists");
+    pls_cache.push("queue");
     glib::mkdir_with_parents(&pls_cache, 0o755);
 
     pls_cache.push("current.pls");
     match pls.save_to_file(&pls_cache) {
-        Ok(_) => debug!("Current playlist updated to: {:?}", &pls_cache),
-        Err(e) => debug!("Unable to save current playlist: {e}"),
+        Ok(_) => debug!("Current queue updated to: {:?}", &pls_cache),
+        Err(e) => debug!("Unable to save current queue: {e}"),
     }
 }
 
